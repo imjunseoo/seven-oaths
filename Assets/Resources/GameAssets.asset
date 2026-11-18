@@ -1751,6 +1751,62 @@ MonoBehaviour:
       - 0.04
       - 0.029999986
       - 0.010000005
+  - name: title_portrait
+    defaultSprite: {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+    clips:
+    - tag: loop
+      frames:
+      - {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 2882875716942192226, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 7215712415133111752, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -1346910474691553580, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -6843913585168334351, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 1938217164015579134, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 2587236139276410301, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 8503266988272566493, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 4499570179154297350, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 6910523275754180471, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -6966522425309209838, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -4208556794411215924, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 6558552369389711442, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 3829015200181747721, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 7401816268499663986, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 5042479256964621527, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -5399488164542056648, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 6246819492647123734, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 1210457203513220273, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 6650232176082782542, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -5410998675461202946, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: -8172629020898563807, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 7600939715567407739, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 1790973323157257117, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      - {fileID: 1790973323157257117, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+      durations:
+      - 0.12
+      - 0.12
+      - 0.12000002
+      - 0.119999975
+      - 0.120000035
+      - 0.120000005
+      - 0.119999945
+      - 0.120000005
+      - 0.120000064
+      - 0.120000005
+      - 0.120000005
+      - 0.120000005
+      - 0.119999886
+      - 0.120000005
+      - 0.120000005
+      - 0.120000005
+      - 0.120000005
+      - 0.120000124
+      - 0.119999886
+      - 0.120000124
+      - 0.119999886
+      - 0.120000124
+      - 0.119999886
+      - 0.109999895
+      - 0.00999999
   - name: ui_hp
     defaultSprite: {fileID: 4896592003576973236, guid: 4907e7f617c523142ab44918ff7d509c, type: 3}
     clips:
@@ -3619,6 +3675,108 @@ MonoBehaviour:
     sprite: {fileID: -4323164642684094725, guid: 943bab5075e16134884f384fe0b98723, type: 3}
   - name: relic_endurance
     sprite: {fileID: 8903971247531921727, guid: b77b0186ea54b8b4a8ca6d18ac6c4851, type: 3}
+  - name: title_logo
+    sprite: {fileID: 2610686189526146675, guid: e29cff72c0e516445b254eed2220799e, type: 3}
+  - name: title_portrait/loop
+    sprite: {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait
+    sprite: {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_0
+    sprite: {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_0
+    sprite: {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_1
+    sprite: {fileID: 2882875716942192226, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_1
+    sprite: {fileID: 2882875716942192226, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_10
+    sprite: {fileID: -6966522425309209838, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_10
+    sprite: {fileID: -6966522425309209838, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_11
+    sprite: {fileID: -4208556794411215924, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_11
+    sprite: {fileID: -4208556794411215924, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_12
+    sprite: {fileID: 6558552369389711442, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_12
+    sprite: {fileID: 6558552369389711442, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_13
+    sprite: {fileID: 3829015200181747721, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_13
+    sprite: {fileID: 3829015200181747721, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_14
+    sprite: {fileID: 7401816268499663986, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_14
+    sprite: {fileID: 7401816268499663986, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_15
+    sprite: {fileID: 5042479256964621527, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_15
+    sprite: {fileID: 5042479256964621527, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_16
+    sprite: {fileID: -5399488164542056648, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_16
+    sprite: {fileID: -5399488164542056648, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_17
+    sprite: {fileID: 6246819492647123734, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_17
+    sprite: {fileID: 6246819492647123734, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_18
+    sprite: {fileID: 1210457203513220273, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_18
+    sprite: {fileID: 1210457203513220273, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_19
+    sprite: {fileID: 6650232176082782542, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_19
+    sprite: {fileID: 6650232176082782542, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_2
+    sprite: {fileID: 7215712415133111752, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_2
+    sprite: {fileID: 7215712415133111752, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_20
+    sprite: {fileID: -5410998675461202946, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_20
+    sprite: {fileID: -5410998675461202946, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_21
+    sprite: {fileID: -8172629020898563807, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_21
+    sprite: {fileID: -8172629020898563807, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_22
+    sprite: {fileID: 7600939715567407739, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_22
+    sprite: {fileID: 7600939715567407739, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_23
+    sprite: {fileID: 1790973323157257117, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_23
+    sprite: {fileID: 1790973323157257117, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_3
+    sprite: {fileID: -1346910474691553580, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_3
+    sprite: {fileID: -1346910474691553580, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_4
+    sprite: {fileID: -6843913585168334351, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_4
+    sprite: {fileID: -6843913585168334351, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_5
+    sprite: {fileID: 1938217164015579134, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_5
+    sprite: {fileID: 1938217164015579134, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_6
+    sprite: {fileID: 2587236139276410301, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_6
+    sprite: {fileID: 2587236139276410301, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_7
+    sprite: {fileID: 8503266988272566493, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_7
+    sprite: {fileID: 8503266988272566493, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_8
+    sprite: {fileID: 4499570179154297350, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_8
+    sprite: {fileID: 4499570179154297350, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: title_portrait/portrait_Frame_9
+    sprite: {fileID: 6910523275754180471, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
+  - name: portrait_Frame_9
+    sprite: {fileID: 6910523275754180471, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
   - name: ui_boss_banner
     sprite: {fileID: 6815988614484060729, guid: 5d6102d9c277b3648845baa8ebae2399, type: 3}
   - name: ui_boss_banner_mark

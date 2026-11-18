@@ -33,7 +33,7 @@ namespace SevenOaths
         TextMeshProUGUI _title;
         readonly List<Item> _items = new List<Item>();
         int _sel;
-        bool _options;
+        bool _options, _optionsOnly, _closeRequested;
         InputReader _input;
         SaveData _save;
         Action _resume, _saveQuit, _settingsChanged;
@@ -103,7 +103,7 @@ namespace SevenOaths
                 AddToggle("전체 화면", () => _save.fullscreen, v => _save.fullscreen = v, ref y, w);
                 AddToggle("패드 진동", () => _save.rumble, v => _save.rumble = v, ref y, w);
                 y -= 4;
-                AddButton("뒤로", () => { _options = false; _sel = 1; Rebuild(); }, ref y, w);
+                AddButton("뒤로", () => { if (_optionsOnly) _closeRequested = true; else { _options = false; _sel = 1; Rebuild(); } }, ref y, w);
             }
             var gemSet = GameAssets.Instance.Anim("ui_menu_gem");
             _gemClip = gemSet != null && gemSet.clips.Count > 0 ? gemSet.clips[0] : null;
@@ -187,6 +187,8 @@ namespace SevenOaths
         public void Open()
         {
             _options = false;
+            _optionsOnly = false;
+            _closeRequested = false;
             _sel = 0;
             _canvas.gameObject.SetActive(true);
             Rebuild();
@@ -199,6 +201,13 @@ namespace SevenOaths
             _options = true;
             _sel = 0;
             Rebuild();
+        }
+
+        /// <summary>타이틀에서: 옵션만 열고, 뒤로 가면 바로 닫힌다.</summary>
+        public void OpenOptionsOnly()
+        {
+            OpenOptions();
+            _optionsOnly = true;
         }
 
         public void Close()
@@ -232,7 +241,8 @@ namespace SevenOaths
             _view.anchoredPosition = new Vector2(o.x / (float)PixelScreen.Instance.Scale, o.y / (float)PixelScreen.Instance.Scale);
 
             if (_gem != null && _gemClip != null) _gem.sprite = _gemClip.frames[_gemClip.FrameAt(Time.unscaledTime, true)];
-            if (_input.MenuBack) { if (_options) { _options = false; _sel = 1; Rebuild(); } else return true; }
+            if (_closeRequested) { _closeRequested = false; return true; }
+            if (_input.MenuBack) { if (_options && !_optionsOnly) { _options = false; _sel = 1; Rebuild(); } else return true; }
             if (_input.MenuUp) Move(-1);
             if (_input.MenuDown) Move(1);
             if (_input.MenuLeft && _sel < _items.Count && _items[_sel].onAdjust != null) { _items[_sel].onAdjust(-1); Refresh(); }

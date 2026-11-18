@@ -31,6 +31,7 @@ namespace SevenOaths.EditorTools
             if (file.EndsWith("ground") || file.EndsWith("platform")) return SpriteAlignment.TopLeft;
             if (file.EndsWith("bg_far") || file.EndsWith("bg_mid")) return SpriteAlignment.BottomLeft;
             if (file == "gate_bars" || file == "checkpoint_altar") return SpriteAlignment.BottomCenter;
+            if (file.EndsWith("_portrait")) return SpriteAlignment.BottomCenter;   // 타이틀 포트레이트: 바닥 가운데를 화면 맨 아래에
             if (file == "torch_fire" || file.EndsWith("props")) return SpriteAlignment.BottomCenter;
             return SpriteAlignment.Center;
         }
@@ -55,6 +56,14 @@ namespace SevenOaths.EditorTools
                 imp.pivotSpace = PivotSpaces.Local;
                 imp.pivotAlignment = SpriteAlignment.BottomCenter;
             }
+            // 퍼핏(타이틀 포트레이트): 레이어마다 스프라이트, 피벗은 모두 캔버스 바닥 가운데 → 같은 자리에 겹치면 원래 그림
+            if (IsPuppet(path))
+            {
+                imp.layerImportMode = LayerImportModes.IndividualLayers;
+                imp.pivotSpace = PivotSpaces.Canvas;
+                imp.pivotAlignment = SpriteAlignment.BottomCenter;
+                imp.includeHiddenLayers = true;   // eyes_closed는 파일에선 숨김(평소 안 보임) — 코드가 깜빡일 때만 켬
+            }
 
             var ps = imp.GetImporterPlatformSettings(BuildTarget.NoTarget);
             if (ps != null)
@@ -65,6 +74,11 @@ namespace SevenOaths.EditorTools
         }
 
         static bool IsPropSheet(string path) => path.EndsWith("props.aseprite", System.StringComparison.OrdinalIgnoreCase);
+        static bool IsPuppet(string path)
+        {
+            string f = System.IO.Path.GetFileNameWithoutExtension(path);
+            return f.EndsWith("_puppet");   // (title_portrait는 사용자 결정으로 한 장짜리 반복 애니 — 일반 임포트)
+        }
 
         /// <summary>규칙과 다르게 임포트된 파일(피벗·레이어 방식)만 다시 적용해 재임포트. 빌드 전에 부른다.</summary>
         public static int EnforceAll()
@@ -75,9 +89,9 @@ namespace SevenOaths.EditorTools
                 string p = AssetDatabase.GUIDToAssetPath(g);
                 if (!p.EndsWith(".aseprite", System.StringComparison.OrdinalIgnoreCase)) continue;
                 if (!(AssetImporter.GetAtPath(p) is AsepriteImporter imp)) continue;
-                var wantLayer = IsPropSheet(p) ? LayerImportModes.IndividualLayers : LayerImportModes.MergeFrame;
-                var wantPivot = IsPropSheet(p) ? SpriteAlignment.BottomCenter : PivotFor(p);
-                if (imp.layerImportMode == wantLayer && imp.pivotAlignment == wantPivot) continue;
+                var wantLayer = IsPropSheet(p) || IsPuppet(p) ? LayerImportModes.IndividualLayers : LayerImportModes.MergeFrame;
+                var wantPivot = IsPropSheet(p) || IsPuppet(p) ? SpriteAlignment.BottomCenter : PivotFor(p);
+                if (imp.layerImportMode == wantLayer && imp.pivotAlignment == wantPivot && (!IsPuppet(p) || imp.includeHiddenLayers)) continue;
                 Apply(imp, p);
                 imp.SaveAndReimport();
                 Debug.Log($"[Aseprite] 규칙 재적용: {p}");

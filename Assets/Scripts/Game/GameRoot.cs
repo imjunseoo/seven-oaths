@@ -39,6 +39,7 @@ namespace SevenOaths
         DebugPanel _panel;
         PauseMenu _pause;
         RelicMenu _relicMenu;
+        TitleScreen _title;
         SaveData _save;
         bool _justOpened;
         AudioManager _audio;
@@ -90,6 +91,7 @@ namespace SevenOaths
             if (DebugAutomation.Flag("-soPause")) OpenPause();
             if (DebugAutomation.Flag("-soPauseOptions")) { OpenPause(); _pause.OpenOptions(); }
             if (DebugAutomation.Flag("-soRelicMenu")) OpenRelics(_w.Player.Owned.Count > 0 ? _w.Player.Owned[0] : RelicId.None);
+            if (DebugAutomation.Arg("-soLevel") == null || DebugAutomation.Flag("-soTitle")) OpenTitle();
         }
 
         // ───────────────────────── 일시정지·저장 ─────────────────────────
@@ -116,6 +118,55 @@ namespace SevenOaths
             _pause.Open();
             _audio.SetPaused(true);
             _justOpened = true;
+        }
+
+        // ───────────────────────── 타이틀 ─────────────────────────
+
+        void OpenTitle()
+        {
+            bool hasSave = System.IO.File.Exists(SaveSystem.PathFile) && (_save.checkpoint >= 0 || _save.level != "training" || _save.relics.Count > 0);
+            var items = new List<(string, System.Action)>();
+            if (hasSave) items.Add(("이어하기", StartFromTitle));
+            items.Add(("새 게임", () => { if (!hasSave || _title.AskConfirmNew()) NewGame(); }));
+            items.Add(("옵션", () => { _pause.OpenOptionsOnly(); }));
+            items.Add(("종료", () =>
+            {
+#if UNITY_EDITOR
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+            }));
+            _title = TitleScreen.Create(_input, items, "v" + Application.version);
+            _hud.gameObject.SetActive(false);
+            _audio.SwitchBgm(GameAssets.Instance.Audio("bgm_title") != null ? "bgm_title" : "bgm_training");
+        }
+
+        /// <summary>이어하기(또는 새 게임 뒤): 타이틀을 닫고 지금 레벨로.</summary>
+        void StartFromTitle()
+        {
+            if (_title == null) return;
+            _title.Close();
+            _title = null;
+            _hud.gameObject.SetActive(true);
+            _audio.StartMusic(_w.Level.Bgm, _w.Level.Amb);
+            float half = PixelScreen.ViewW * 0.5f;
+            _screen.CamPx = new Vector2(Mathf.Clamp(_w.Player.Body.Pos.X, half, Mathf.Max(half, _w.Level.Width - half)), PixelScreen.ViewH * 0.5f);
+            if (Titles.TryGetValue(_levelName, out var t)) _hud.ShowMessage(t.title, t.sub, 3f);
+            _input.ClearPresses();
+            _acc = 0f;
+        }
+
+        /// <summary>새 게임: 진행(레벨·제단·유물)만 지우고 설정은 그대로 → 수련장부터.</summary>
+        void NewGame()
+        {
+            _save.level = "training";
+            _save.checkpoint = -1;
+            _save.relics.Clear();
+            _save.equipped.Clear();
+            SaveSystem.Save(_save);
+            LoadLevel("training");
+            StartFromTitle();
         }
 
         // ───────────────────────── 서약 유물 ─────────────────────────
@@ -307,6 +358,13 @@ namespace SevenOaths
         void Update()
         {
             _input.Poll();
+            if (_title != null)
+            {
+                // 타이틀: 게임은 멈춘 채 타이틀만(옵션은 일시정지 메뉴의 옵션 화면을 빌려 씀)
+                if (_pause.IsOpen) { if (_pause.Tick()) _pause.Close(); }
+                else _title.Tick(_screen);
+                return;
+            }
             if (_input.ConsumeDebugToggle()) _panel.Toggle();
 
             if (_pause.IsOpen)

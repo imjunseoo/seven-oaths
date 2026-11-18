@@ -85,6 +85,8 @@ SPEC = {
     "FX/fx_riposte_slash.aseprite": (64, 64, {"play": (5, 30)}),
     "FX/fx_riposte_blast.aseprite": (128, 128, {"play": (14, None)}),   # per-frame ms, boom = frame 4
     "FX/fx_riposte_barrage.aseprite": (128, 128, {"play": (22, None)}),  # 50/33 ms alternating
+    "UI/title_logo.aseprite": (240, 84, None),                          # title lettering, 1 frame
+    "UI/title_portrait.aseprite": (158, 100, {"loop": (24, 120)}),       # looping portrait (GPT art via Chunckxel 12px, extended L36/T8), shown x2
     "UI/ui_boss_banner.aseprite": (64, 32, None),
     "UI/ui_boss_banner_mark.aseprite": (32, 32, None),
     "UI/ui_oath_banner.aseprite": (64, 32, None),

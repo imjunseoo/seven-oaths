@@ -147,15 +147,21 @@ namespace SevenOaths
             Directory.CreateDirectory(folder);
             yield return new WaitForSecondsRealtime(start);
             long lastTick = -1;
+            int lastFrame = -1;
+            bool real = Flag("-soSeqRealtime");   // 타이틀처럼 게임이 멈춘 화면: 게임 틱 대신 화면 프레임 기준
             int i = 0;
             while (i < count)
             {
                 yield return new WaitForEndOfFrame();
-                if (_w.RealTicks - lastTick < every) continue;
-                lastTick = _w.RealTicks;
+                if (real) { if (lastFrame >= 0 && Time.frameCount - lastFrame < every) continue; lastFrame = Time.frameCount; }
+                else
+                {
+                    if (_w.RealTicks - lastTick < every) continue;
+                    lastTick = _w.RealTicks;
+                }
                 ScreenCapture.CaptureScreenshot(Path.Combine(folder, $"frame_{i:000}.png"));
                 var p = _w.Player;   // 캡처 한 장마다 플레이어 상태를 로그에 남겨 그림과 대조
-                Debug.Log($"[Seq] {i:000} tick {_w.RealTicks} {p.State} f{p.StateFrame} x{p.Body.Pos.X:0} vx{p.Body.Vel.X:0.0} face{p.Body.Facing} dash{(p.DashActive ? 1 : 0)}");
+                Debug.Log($"[Seq] {i:000} tick {_w.RealTicks} {p.State} f{p.StateFrame} x{p.Body.Pos.X:0} vx{p.Body.Vel.X:0.0} face{p.Body.Facing} dash{(p.DashActive ? 1 : 0)} t{Time.unscaledTime:0.000}");
                 i++;
             }
             Debug.Log($"[DebugAutomation] 연속 캡처 {count}장: {folder}");
