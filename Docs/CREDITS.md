@@ -7,3 +7,7 @@
 
 ## 그 밖의 사운드
 - 그 외 모든 효과음·배경음악(`bgm_training`, `bgm_region1`)·앰비언스는 이 프로젝트에서 직접 코드로 합성한 오리지널이다(`AudioSource/`). 샘플·실존 곡을 쓰지 않았다.
+
+## 글꼴 (Fonts)
+- **Galmuri** (Galmuri11 · Galmuri9 · Galmuri7) by Lee Minseo (quiple) — SIL Open Font License 1.1, https://github.com/quiple/galmuri
+  - 라이선스 원문: `Assets/Fonts/Galmuri/LICENSE.txt`
