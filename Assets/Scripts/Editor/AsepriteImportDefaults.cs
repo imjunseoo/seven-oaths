@@ -1,0 +1,147 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.U2D.Aseprite;
+using UnityEngine;
+
+namespace SevenOaths.EditorTools
+{
+    /// <summary>
+    /// Assets/Art 아래 .aseprite가 처음 임포트될 때(메타 없음) ASSET_SPEC 규칙 적용:
+    /// PPU 32, Point, 무압축, 레이어 병합, 애니메이션 클립 생성, 피벗(캐릭터·적·발 붙는 FX = 바닥 중앙,
+    /// 바닥·난간 = 왼쪽 위, 원경·중경 = 왼쪽 아래, fx_dash = 왼쪽 가운데, 나머지 = 가운데).
+    /// </summary>
+    public class AsepriteImportDefaults : AssetPostprocessor
+    {
+        void OnPreprocessAsset()
+        {
+            if (!assetPath.StartsWith("Assets/Art/") || !assetPath.EndsWith(".aseprite", System.StringComparison.OrdinalIgnoreCase)) return;
+            if (!(assetImporter is AsepriteImporter imp)) return;
+            if (!imp.importSettingsMissing) return;
+            Apply(imp, assetPath);
+        }
+
+        public static SpriteAlignment PivotFor(string path)
+        {
+            string file = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (path.StartsWith("Assets/Art/Characters/") || path.StartsWith("Assets/Art/Enemies/") || path.StartsWith("Assets/Art/Bosses/")) return SpriteAlignment.BottomCenter;
+            if (file.StartsWith("fx_slash") || file == "fx_dust" || file == "fx_shockwave" || file == "fx_pillar") return SpriteAlignment.BottomCenter;
+            if (file == "fx_dash") return SpriteAlignment.LeftCenter;
+            if (file.EndsWith("ground") || file.EndsWith("platform")) return SpriteAlignment.TopLeft;
+            if (file.EndsWith("bg_far") || file.EndsWith("bg_mid")) return SpriteAlignment.BottomLeft;
+            if (file == "gate_bars" || file == "checkpoint_altar") return SpriteAlignment.BottomCenter;
+            if (file == "torch_fire" || file.EndsWith("props")) return SpriteAlignment.BottomCenter;
+            return SpriteAlignment.Center;
+        }
+
+        public static void Apply(AsepriteImporter imp, string path)
+        {
+            imp.importMode = FileImportModes.AnimatedSprite;
+            imp.layerImportMode = LayerImportModes.MergeFrame;
+            imp.spritePixelsPerUnit = 32f;
+            imp.filterMode = FilterMode.Point;
+            imp.mipmapEnabled = false;
+            imp.wrapMode = TextureWrapMode.Clamp;
+            imp.generateAnimationClips = true;
+            imp.generateModelPrefab = true;
+            imp.pivotSpace = PivotSpaces.Canvas;
+            imp.pivotAlignment = PivotFor(path);
+
+            // 소품 시트: 레이어 1장 = 소품 1개(레이어 이름 = 소품 이름), 각자 바닥 중앙
+            if (IsPropSheet(path))
+            {
+                imp.layerImportMode = LayerImportModes.IndividualLayers;
+                imp.pivotSpace = PivotSpaces.Local;
+                imp.pivotAlignment = SpriteAlignment.BottomCenter;
+            }
+
+            var ps = imp.GetImporterPlatformSettings(BuildTarget.NoTarget);
+            if (ps != null)
+            {
+                ps.textureCompression = TextureImporterCompression.Uncompressed;
+                imp.SetImporterPlatformSettings(ps);
+            }
+        }
+
+        static bool IsPropSheet(string path) => path.EndsWith("props.aseprite", System.StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>규칙과 다르게 임포트된 파일(피벗·레이어 방식)만 다시 적용해 재임포트. 빌드 전에 부른다.</summary>
+        public static int EnforceAll()
+        {
+            int n = 0;
+            foreach (var g in AssetDatabase.FindAssets("", new[] { "Assets/Art" }))
+            {
+                string p = AssetDatabase.GUIDToAssetPath(g);
+                if (!p.EndsWith(".aseprite", System.StringComparison.OrdinalIgnoreCase)) continue;
+                if (!(AssetImporter.GetAtPath(p) is AsepriteImporter imp)) continue;
+                var wantLayer = IsPropSheet(p) ? LayerImportModes.IndividualLayers : LayerImportModes.MergeFrame;
+                var wantPivot = IsPropSheet(p) ? SpriteAlignment.BottomCenter : PivotFor(p);
+                if (imp.layerImportMode == wantLayer && imp.pivotAlignment == wantPivot) continue;
+                Apply(imp, p);
+                imp.SaveAndReimport();
+                Debug.Log($"[Aseprite] 규칙 재적용: {p}");
+                n++;
+            }
+            return n;
+        }
+
+        const string HashFile = "Library/SevenOaths_aseprite_hashes.txt";
+
+        /// <summary>
+        /// 2d.aseprite 3.0.1 임포터 버그 대응: 캔버스·프레임 수·시트 크기가 그대로면 그림만 바뀌어도
+        /// 프레임 rect(시트 안 좌표)를 갱신하지 않는다 → 텍스처는 새로 패킹되는데 rect는 옛 위치라 엉뚱한 조각이 나온다.
+        /// 내용이 바뀐 파일은 메타의 '이전 시트 크기'를 0으로 지워(= 시트 크기 바뀜) rect·피벗을 강제로 다시 계산하고 메타에 저장한다.
+        /// </summary>
+        public static int RefreshChangedRects()
+        {
+            var old = File.Exists(HashFile)
+                ? File.ReadAllLines(HashFile).Select(l => l.Split('|')).Where(a => a.Length == 2).ToDictionary(a => a[0], a => a[1])
+                : new Dictionary<string, string>();
+            var now = new Dictionary<string, string>();
+            int n = 0;
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+            {
+                foreach (var g in AssetDatabase.FindAssets("", new[] { "Assets/Art" }))
+                {
+                    string p = AssetDatabase.GUIDToAssetPath(g);
+                    if (!p.EndsWith(".aseprite", System.StringComparison.OrdinalIgnoreCase)) continue;
+                    string h = System.BitConverter.ToString(md5.ComputeHash(File.ReadAllBytes(p)));
+                    now[p] = h;
+                    if (old.TryGetValue(p, out var oh) && oh == h) continue;
+                    if (!(AssetImporter.GetAtPath(p) is AsepriteImporter imp)) continue;
+                    var so = new SerializedObject(imp);
+                    var prev = so.FindProperty("m_PreviousTextureSize") ?? so.FindProperty("previousTextureSize");
+                    if (prev == null) { Debug.LogWarning($"[Aseprite] previousTextureSize 없음: {p}"); continue; }
+                    prev.vector2Value = Vector2.zero;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                    imp.SaveAndReimport();                       // 시트 크기 바뀜으로 인식 → 새 rect·피벗
+                    var after = AssetImporter.GetAtPath(p);      // 임포트 중 갱신된 rect를 메타에 기록
+                    EditorUtility.SetDirty(after);
+                    AssetDatabase.WriteImportSettingsIfDirty(p);
+                    AssetDatabase.ImportAsset(p, ImportAssetOptions.ForceUpdate);
+                    n++;
+                }
+            }
+            File.WriteAllLines(HashFile, now.Select(kv => kv.Key + "|" + kv.Value));
+            Debug.Log($"[Aseprite] 바뀐 파일 rect 재계산: {n}개");
+            return n;
+        }
+
+        [MenuItem("Seven Oaths/Re-apply Aseprite Import Defaults")]
+        public static void ReapplyAll()
+        {
+            int n = 0;
+            foreach (var g in AssetDatabase.FindAssets("", new[] { "Assets/Art" }))
+            {
+                string p = AssetDatabase.GUIDToAssetPath(g);
+                if (!p.EndsWith(".aseprite", System.StringComparison.OrdinalIgnoreCase)) continue;
+                if (!(AssetImporter.GetAtPath(p) is AsepriteImporter imp)) continue;
+                Apply(imp, p);
+                imp.SaveAndReimport();
+                n++;
+            }
+            Debug.Log($"[Aseprite] 임포트 기본값 재적용: {n}개");
+        }
+    }
+}

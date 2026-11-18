@@ -1,0 +1,14 @@
+{
+  "name": "chunckxel",
+  "displayName": "Chunckxel",
+  "description": "Cleans AI-generated pixel animation frames into true pixel art (smears, palette, lonely pixels, specks, 1px outline, frame flicker) with a 2x->1x downscaler, background removal and sheet split.",
+  "version": "0.1.0",
+  "author": { "name": "NexusBreaker" },
+  "license": "Proprietary (NexusBreaker project tool)",
+  "categories": ["Scripts"],
+  "contributes": {
+    "scripts": [
+      { "path": "./chunckxel.lua" }
+    ]
+  }
+}

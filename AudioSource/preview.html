@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>일곱 서약 사운드</title>
+<style>
+:root{
+  --bg:#110e18; --panel:#1c1826; --panel2:#2a2536; --line:#3a3448; --text:#dedae4; --muted:#9d97a8;
+  --crystal:#56b0ff; --crystal2:#95d6ff; --gold:#dcaa48; --crimson:#e8343f; --onaccent:#0b1f3d;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f2f8; --panel:#ffffff; --panel2:#ebe8f0; --line:#bfbac8; --text:#1c1826; --muted:#4d475c;
+    --crystal:#1d5ba8; --crystal2:#133a6e; --gold:#6e4c1d; --crimson:#b0182f; --onaccent:#ffffff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#110e18; --panel:#1c1826; --panel2:#2a2536; --line:#3a3448; --text:#dedae4; --muted:#9d97a8;
+  --crystal:#56b0ff; --crystal2:#95d6ff; --gold:#dcaa48; --crimson:#e8343f; --onaccent:#0b1f3d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 "Segoe UI","Malgun Gothic",system-ui,sans-serif}
+header{padding:22px 16px 6px;max-width:1120px;margin:auto}
+h1{margin:0;font-size:22px;letter-spacing:.3px}
+h1 small{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px}
+.lead{color:var(--muted);margin:6px 0 0;max-width:820px}
+main{max-width:1120px;margin:auto;padding:0 16px 48px}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.bar label{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px}
+.bar input[type=range]{width:110px;accent-color:var(--crystal)}
+.bar output{min-width:44px;color:var(--text);font-variant-numeric:tabular-nums}
+button{font:inherit;border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:6px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--crystal)}
+button.on{background:var(--crystal);color:var(--onaccent);border-color:var(--crystal)}
+button.stop{border-color:var(--crimson);color:var(--crimson)}
+button.good.sel{background:var(--crystal);color:var(--onaccent);border-color:var(--crystal)}
+button.fix.sel{background:var(--crimson);color:#fff;border-color:var(--crimson)}
+h2{font-size:16px;margin:28px 0 8px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+h2 span{color:var(--muted);font-size:12px;font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card.playing{border-color:var(--crystal)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.name{font-family:Consolas,monospace;font-size:13px;font-weight:600;word-break:break-all}
+.tag{font-size:11px;padding:1px 6px;border-radius:10px;border:1px solid var(--line);color:var(--muted)}
+.tag.loop{color:var(--crystal);border-color:var(--crystal)}
+.desc{color:var(--muted);font-size:12.5px}
+.meta{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.fb{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fb input{flex:1;min-width:120px;font:inherit;font-size:12.5px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.test{background:var(--panel2);border:1px dashed var(--line);border-radius:8px;padding:10px 12px}
+.test p{margin:4px 0 8px;color:var(--muted);font-size:12.5px}
+.test.disabled{opacity:.5}
+progress{width:100%;height:6px;accent-color:var(--crystal)}
+.reports{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.reports a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px;color:var(--muted);font-size:12px;text-decoration:none}
+.reports img{width:100%;display:block;border-radius:4px;margin-bottom:4px;background:#000}
+#fbOut{width:100%;min-height:90px;font:12.5px/1.5 Consolas,monospace;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;display:none;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>일곱 서약 — 사운드 미리듣기 <small>전부 코드로 합성 · 44.1kHz 16-bit</small></h1>
+  <p class="lead">카드의 ▶로 하나씩, 아래 <b>시뮬레이션</b>으로 실제 전투 박자대로 겹쳐 들어보세요(GDD 프레임 데이터·히트스톱 반영).
+  카드마다 <b>좋음 / 고쳐줘 + 메모</b>를 남기고 맨 위 <b>피드백 복사</b>를 누르면 채팅에 붙여넣을 글이 만들어집니다.</p>
+</header>
+<main>
+  <div class="bar">
+    <label>BGM <input type="range" min="-30" max="6" step="1" data-g="BGM"><output></output></label>
+    <label>SFX <input type="range" min="-30" max="6" step="1" data-g="SFX"><output></output></label>
+    <label>앰비언스 <input type="range" min="-30" max="6" step="1" data-g="Ambient"><output></output></label>
+    <button class="stop" id="stopAll">■ 전부 정지</button>
+    <button id="fbCopy">피드백 복사</button>
+  </div>
+  <textarea id="fbOut" readonly></textarea>
+
+  <h2>시뮬레이션 <span>휘두르기는 '휘익 정점'이 타격 프레임보다 살짝 앞에 오도록 맞춰 재생</span></h2>
+  <div class="tests" id="tests"></div>
+
+  <div id="lists"></div>
+
+  <h2>측정 리포트 <span>AudioSource/report/*.png · 가로선 = 5 kHz / 10 kHz</span></h2>
+  <div class="reports" id="reports"></div>
+</main>
+<script>
+const DATA = [{"name": "amb_cloister", "cat": "Ambient", "src": "../Assets/Audio/Ambient/amb_cloister.ogg", "title": "회랑 앰비언스", "desc": "48초 루프. 원형 노이즈 3밴드 밤바람(돌풍 LFO는 루프 정수 주기) + 아치 사이로 우는 좁은 대역 공명 + 좌·우 횃불 두 개(불꽃 웅웅 + 송진 톡톡·타닥 연발) + 먼 종 두 번(A2·D3, 성당 잔향 4초).", "loop": true, "dur": 48.0, "tp": -6.72, "lufs_i": -24.03, "lufs_m": -18.9, "ch": 2, "peak_ms": 0, "ev": {}}, {"name": "amb_rampart", "cat": "Ambient", "src": "../Assets/Audio/Ambient/amb_rampart.ogg", "title": "성벽 위", "desc": "52초 루프. 성벽 위 강풍(돌풍 깊고 고역 많음)+총안 사이 휘파람(820Hz 부근 좁은 대역)+먼 종 한 번(17초, A2)+낮은 침식 웅웅(46Hz 드론+배음, 맥놀이, 0.25Hz 맥동)+가끔 진홍 지글거림 4번.", "loop": true, "dur": 52.0, "tp": -9.62, "lufs_i": -24.04, "lufs_m": -19.8, "ch": 2, "peak_ms": 0, "ev": {}}, {"name": "bgm_boss", "cat": "BGM", "src": "../Assets/Audio/BGM/bgm_boss.ogg", "title": "보스전", "desc": "외부 곡: 'Dragon Castle'(Boss Battle 30) — Makai Symphony (makai-symphony.com, 무료 배포). 원곡 162.6초 중 25.000–131.424초 구간(106.424초)을 끊김 없는 루프로 잘라 120 ms 크로스페이드(반복부 → A 시작으로 돌아감), 9 kHz 위 −3 dB, -18 LUFS로 맞춤.", "loop": true, "dur": 106.424, "tp": -8.34, "lufs_i": -18.07, "lufs_m": -14.16, "ch": 2, "peak_ms": 0, "ev": {}}, {"name": "bgm_region1", "cat": "BGM", "src": "../Assets/Audio/BGM/bgm_region1.ogg", "title": "1지역 잿빛 성벽", "desc": "100 BPM · D단조 · 32마디 76.8초 루프, 1지역 '잿빛 성벽' 길. 저음 현 당김음 마르카토(다 · 다다 · 다다다)+큰북·팀파니·작은북 행진+성벽을 스치는 바람(루프 주기 노이즈) → B: 멀리서 부르는 호른(D-F-A) → C: 높은 현 단2도 트레몰로 긴장+저음 금관 펄스+낮은 합창 '우' → D: 숨 고르고 작은북 롤로 처음으로. 수련장·보스와 같은 D단조라 전환 자연스러움.", "loop": true, "dur": 76.8, "tp": -2.65, "lufs_i": -18.01, "lufs_m": -14.46, "ch": 2, "peak_ms": 0, "ev": {}}, {"name": "bgm_training", "cat": "BGM", "src": "../Assets/Audio/BGM/bgm_training.ogg", "title": "밤의 성당 수련장", "desc": "72 BPM · D단조 · 24마디 80초 루프. A: 낮은 현(베이스·첼로)+합창 '우'+먼 종, 첼로 솔로가 주제를 예고 → B: 첼로 솔로 주제+하프 아르페지오+합창 '오'+약한 팀파니 → C: 바이올린이 한 옥타브 위로 주제, 합창 '아', 마지막 마디에서 잦아들며 처음으로. 성당 잔향(RT 3.6초).", "loop": true, "dur": 80.0, "tp": -6.04, "lufs_i": -17.99, "lufs_m": -14.15, "ch": 2, "peak_ms": 0, "ev": {}}, {"name": "sfx_altar", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_altar.wav", "title": "", "desc": "성수 제단: 맑은 교회 종 두 번(D5·A5, 금속 종 배음)+물이 솟는 방울·흐름", "loop": false, "dur": 3.2, "tp": -11.72, "lufs_i": -24.24, "lufs_m": -20.0, "ch": 1, "peak_ms": 335, "ev": {}}, {"name": "sfx_bolt_aim", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_bolt_aim.wav", "title": "", "desc": "석궁 조준(0.5초=30f): 빨라지는 시위·나무 삐걱+작은 어두운 떨림음, 0.5초에 끊김", "loop": false, "dur": 0.699, "tp": -13.52, "lufs_i": -27.57, "lufs_m": -27.0, "ch": 1, "peak_ms": 332, "ev": {}}, {"name": "sfx_bolt_hit", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_bolt_hit.wav", "title": "", "desc": "화살이 주인공에 박힘: 날카로운 '척'+몸 퍽+화살대 떨림", "loop": false, "dur": 0.508, "tp": -6.43, "lufs_i": -20.08, "lufs_m": -20.08, "ch": 1, "peak_ms": 1, "ev": {}}, {"name": "sfx_bolt_shoot", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_bolt_shoot.wav", "title": "", "desc": "석궁 발사 '퉁': 개머리 쿵+시위 튕김(음이 처짐)+짧은 화살 쉭", "loop": false, "dur": 0.689, "tp": -7.57, "lufs_i": -24.59, "lufs_m": -22.01, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_boss_banner", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_banner.wav", "title": "", "desc": "붉은 이름 배너: 트라이톤 낀 저음 금관 브람+일그러진 붐 한 방", "loop": false, "dur": 1.4, "tp": -5.95, "lufs_i": -18.9, "lufs_m": -15.01, "ch": 1, "peak_ms": 109, "ev": {}}, {"name": "sfx_boss_bash", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_bash.wav", "title": "", "desc": "철벽 방패 밀치기: 거대한 탑실드(쇠+나무 심) '쾅'+무거운 쿵+달그락", "loop": false, "dur": 1.511, "tp": -4.17, "lufs_i": -20.11, "lufs_m": -15.02, "ch": 1, "peak_ms": 19, "ev": {}}, {"name": "sfx_boss_charge_line", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_charge_line.wav", "title": "", "desc": "돌진 2단계(붉은 줄): 쇠를 빠르게 긋는 '치잉'+짧은 강철 울림+딱+짧은 낮은 붐 (~0.4초)", "loop": false, "dur": 0.45, "tp": -4.51, "lufs_i": -18.05, "lufs_m": -18.05, "ch": 1, "peak_ms": 4, "ev": {}}, {"name": "sfx_boss_charge_loop", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_charge_loop.wav", "title": "", "desc": "철벽 방패 돌진(루프 1.2초): 판금 발소리 3걸음+쇳소리+방패 덜컹+땅 울림", "loop": true, "dur": 1.2, "tp": -4.72, "lufs_i": -21.57, "lufs_m": -21.0, "ch": 1, "peak_ms": 852, "ev": {}}, {"name": "sfx_boss_charge_up", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_charge_up.wav", "title": "", "desc": "돌진 1단계(차징, 0.5초): 판금이 낮게 긁히며 올라가는 쇳소리+빨라지는 삐걱+커지는 침식 웅웅 → 0.5초에 툭 끊김", "loop": false, "dur": 0.542, "tp": -7.04, "lufs_i": -21.48, "lufs_m": -20.0, "ch": 1, "peak_ms": 470, "ev": {}}, {"name": "sfx_boss_death", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_death.wav", "title": "", "desc": "철벽 쓰러짐: 깊은 붐+판금 조각이 하나씩 떨어짐+침식 흩어짐(날숨·지글거림·가라앉는 그르렁)", "loop": false, "dur": 4.74, "tp": -2.65, "lufs_i": -16.91, "lufs_m": -14.0, "ch": 1, "peak_ms": 130, "ev": {}}, {"name": "sfx_boss_intro_shout", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_intro_shout.wav", "title": "", "desc": "철벽 첫 함성: 투구 속에서 울리는 낮은 포효(포먼트+쇳빛 공명) → 0.95초 방패를 땅에 '쿵'", "loop": false, "dur": 2.2, "tp": -7.4, "lufs_i": -16.93, "lufs_m": -15.0, "ch": 1, "peak_ms": 947, "ev": {"slam_s": 0.95}}, {"name": "sfx_boss_roar", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_roar.wav", "title": "", "desc": "2페이즈 포효(목소리 없음): 갑옷이 종처럼 울리는 금속 공명+침식 FM 그르렁+밀려나는 압력+지글거림", "loop": false, "dur": 3.49, "tp": -4.56, "lufs_i": -16.5, "lufs_m": -14.0, "ch": 1, "peak_ms": 449, "ev": {}}, {"name": "sfx_boss_slam", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_slam.wav", "title": "", "desc": "철벽 장검 내려베기: 무거운 휘익 → 0.30초 땅 충격(강철 깡+돌 균열+깊은 붐+충격파+자갈 비)", "loop": false, "dur": 3.322, "tp": -4.21, "lufs_i": -18.19, "lufs_m": -13.5, "ch": 1, "peak_ms": 338, "ev": {"impact_s": 0.3}}, {"name": "sfx_boss_wall_hit", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_boss_wall_hit.wav", "title": "", "desc": "벽 충돌: 거대한 쇠+돌벽 굉음+무너지는 돌+떨어지는 덩어리+먼지", "loop": false, "dur": 2.977, "tp": -2.9, "lufs_i": -17.88, "lufs_m": -13.01, "ch": 1, "peak_ms": 57, "ev": {}}, {"name": "sfx_charge_loop", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_charge_loop.wav", "title": "", "desc": "차지 중 강철이 버티는 웅웅 (1.5초 완전 루프, D3 강철 막대 배음+맥놀이+트레몰로+낮은 압력음)", "loop": true, "dur": 1.5, "tp": -17.31, "lufs_i": -27.11, "lufs_m": -26.07, "ch": 1, "peak_ms": 705, "ev": {}}, {"name": "sfx_charge_ready_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_charge_ready_01.wav", "title": "", "desc": "차지 1단 도달: 칼날 긁힘 뒤 강철 '칭' (A4)", "loop": false, "dur": 1.888, "tp": -9.02, "lufs_i": -26.72, "lufs_m": -21.0, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_charge_ready_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_charge_ready_02.wav", "title": "", "desc": "차지 2단 도달: 강철 '칭—' (D5+D4, 저음 부풂)", "loop": false, "dur": 1.9, "tp": -11.11, "lufs_i": -24.57, "lufs_m": -19.01, "ch": 1, "peak_ms": 81, "ev": {}}, {"name": "sfx_dash_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dash_01.wav", "title": "", "desc": "대쉬 공격: 칼 돌리는 '스윽'+가죽 삐걱 예비음 → 83ms(5f)에 공기 찢는 돌진(빠른 대역 스윕+거친 펄럭임+떨어지는 '즈웅')+낮은 바람 꼬리", "loop": false, "dur": 0.886, "tp": -8.38, "lufs_i": -23.64, "lufs_m": -21.0, "ch": 1, "peak_ms": 108, "ev": {"rush_s": 0.083}}, {"name": "sfx_dash_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dash_02.wav", "title": "", "desc": "대쉬 공격: 칼 돌리는 '스윽'+가죽 삐걱 예비음 → 83ms(5f)에 공기 찢는 돌진(빠른 대역 스윕+거친 펄럭임+떨어지는 '즈웅')+낮은 바람 꼬리", "loop": false, "dur": 0.899, "tp": -8.48, "lufs_i": -23.55, "lufs_m": -21.0, "ch": 1, "peak_ms": 135, "ev": {"rush_s": 0.083}}, {"name": "sfx_dodge_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dodge_01.wav", "title": "", "desc": "회피: 발 구름+케이프 펄럭임+돌바닥 미끄러짐", "loop": false, "dur": 0.442, "tp": -12.99, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 76, "ev": {}}, {"name": "sfx_dodge_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dodge_02.wav", "title": "", "desc": "회피: 발 구름+케이프 펄럭임+돌바닥 미끄러짐", "loop": false, "dur": 0.432, "tp": -13.34, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 13, "ev": {}}, {"name": "sfx_dodge_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dodge_03.wav", "title": "", "desc": "회피: 발 구름+케이프 펄럭임+돌바닥 미끄러짐", "loop": false, "dur": 0.438, "tp": -13.82, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 29, "ev": {}}, {"name": "sfx_dummy_hit_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dummy_hit_01.wav", "title": "", "desc": "허수아비: 마른 나무 퉁+짚 바스락", "loop": false, "dur": 0.406, "tp": -8.25, "lufs_i": -21.01, "lufs_m": -21.01, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_dummy_hit_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dummy_hit_02.wav", "title": "", "desc": "허수아비: 마른 나무 퉁+짚 바스락 + 낡은 투구 깡", "loop": false, "dur": 0.403, "tp": -7.38, "lufs_i": -21.01, "lufs_m": -21.01, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_dummy_hit_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_dummy_hit_03.wav", "title": "", "desc": "허수아비: 마른 나무 퉁+짚 바스락", "loop": false, "dur": 0.348, "tp": -8.76, "lufs_i": -21.01, "lufs_m": -21.01, "ch": 1, "peak_ms": 31, "ev": {}}, {"name": "sfx_enemy_death", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_enemy_death.wav", "title": "", "desc": "적 사망: 낮은 날숨+지글거림이 흩어짐+가라앉는 FM 그르렁+갑옷 떨어짐", "loop": false, "dur": 2.041, "tp": -8.52, "lufs_i": -22.53, "lufs_m": -19.0, "ch": 1, "peak_ms": 319, "ev": {}}, {"name": "sfx_enemy_glint", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_enemy_glint.wav", "title": "", "desc": "적 공격 예고 '!': 한 번에 탁 찍히는 강철 '팅!'+진홍 금관 찌르기(D#–A 트라이톤)+낮은 충격, 짧은 꼬리", "loop": false, "dur": 1.0, "tp": -9.14, "lufs_i": -22.66, "lufs_m": -19.0, "ch": 1, "peak_ms": 63, "ev": {}}, {"name": "sfx_enemy_swing", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_enemy_swing.wav", "title": "", "desc": "적 휘두르기: 낮고 둔한 휘익+탁한 그르렁", "loop": false, "dur": 0.796, "tp": -9.69, "lufs_i": -23.41, "lufs_m": -22.0, "ch": 1, "peak_ms": 203, "ev": {}}, {"name": "sfx_execute", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_execute.wav", "title": "", "desc": "처형: 들숨 정적(선딜 18f를 덮음) → 0.30초에 꽂힘(긴 칼날 긁힘+날카로운 강철 '깡'+살)+붐+돌 균열", "loop": false, "dur": 2.7, "tp": -4.78, "lufs_i": -18.19, "lufs_m": -14.0, "ch": 1, "peak_ms": 334, "ev": {"stab_s": 0.3}}, {"name": "sfx_gate_drop", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_gate_drop.wav", "title": "", "desc": "창살 떨어짐: 사슬 풀림 → 떨어지는 쉭 → 0.18초에 쇠창살이 돌에 쾅+튕기는 달그락", "loop": false, "dur": 2.425, "tp": -3.17, "lufs_i": -18.95, "lufs_m": -15.0, "ch": 1, "peak_ms": 200, "ev": {"slam_s": 0.18}}, {"name": "sfx_gate_rise", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_gate_rise.wav", "title": "", "desc": "창살 올라감: 래칫 딸깍딸깍+사슬+갈리는 소리+쇳소리 끼익 → 2.1초에 걸리는 '철컥'", "loop": false, "dur": 2.825, "tp": -8.31, "lufs_i": -22.31, "lufs_m": -21.0, "ch": 1, "peak_ms": 2096, "ev": {"lock_s": 2.1}}, {"name": "sfx_glide_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_glide_01.wav", "title": "", "desc": "질주 보폭(v1.3, 약 0.25초마다): 짧고 낮은 공기·천 '쉭'+아주 옅은 발끝 스침. 3kHz 위 깎음", "loop": false, "dur": 0.294, "tp": -16.71, "lufs_i": -33.0, "lufs_m": -33.0, "ch": 1, "peak_ms": 53, "ev": {}}, {"name": "sfx_glide_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_glide_02.wav", "title": "", "desc": "질주 보폭(v1.3, 약 0.25초마다): 짧고 낮은 공기·천 '쉭'+아주 옅은 발끝 스침. 3kHz 위 깎음", "loop": false, "dur": 0.305, "tp": -19.26, "lufs_i": -33.0, "lufs_m": -33.0, "ch": 1, "peak_ms": 61, "ev": {}}, {"name": "sfx_glide_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_glide_03.wav", "title": "", "desc": "질주 보폭(v1.3, 약 0.25초마다): 짧고 낮은 공기·천 '쉭'+아주 옅은 발끝 스침. 3kHz 위 깎음", "loop": false, "dur": 0.301, "tp": -18.89, "lufs_i": -33.0, "lufs_m": -33.0, "ch": 1, "peak_ms": 57, "ev": {}}, {"name": "sfx_glide_04", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_glide_04.wav", "title": "", "desc": "질주 보폭(v1.3, 약 0.25초마다): 짧고 낮은 공기·천 '쉭'+아주 옅은 발끝 스침. 3kHz 위 깎음", "loop": false, "dur": 0.295, "tp": -17.68, "lufs_i": -33.0, "lufs_m": -33.0, "ch": 1, "peak_ms": 75, "ev": {}}, {"name": "sfx_hit_finisher", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_finisher.wav", "title": "", "desc": "마무리: 짧은 '칭' → 0.14초 정적 → 폭발(거대한 강철 굉음+긴 칼날 울림+갑옷 터짐·불꽃+쇳조각 떨어짐+낮은 붐+짧은 홀)", "loop": false, "dur": 2.6, "tp": -4.46, "lufs_i": -18.35, "lufs_m": -13.5, "ch": 1, "peak_ms": 324, "ev": {"boom_s": 0.14}}, {"name": "sfx_hit_heavy_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_heavy_01.wav", "title": "", "desc": "강 타격: 더 크고 긴 강철 '깡—'(420·760Hz 판 2장+980Hz 칼날)+긴 긁힘+불꽃 소나기+55Hz 붐(스윕 없음)", "loop": false, "dur": 1.5, "tp": -7.76, "lufs_i": -22.41, "lufs_m": -16.52, "ch": 1, "peak_ms": 11, "ev": {}}, {"name": "sfx_hit_heavy_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_heavy_02.wav", "title": "", "desc": "강 타격: 더 크고 긴 강철 '깡—'(420·760Hz 판 2장+980Hz 칼날)+긴 긁힘+불꽃 소나기+55Hz 붐(스윕 없음)", "loop": false, "dur": 1.5, "tp": -8.65, "lufs_i": -21.91, "lufs_m": -16.52, "ch": 1, "peak_ms": 15, "ev": {}}, {"name": "sfx_hit_heavy_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_heavy_03.wav", "title": "", "desc": "강 타격: 더 크고 긴 강철 '깡—'(420·760Hz 판 2장+980Hz 칼날)+긴 긁힘+불꽃 소나기+55Hz 붐(스윕 없음)", "loop": false, "dur": 1.5, "tp": -8.97, "lufs_i": -21.8, "lufs_m": -16.51, "ch": 1, "peak_ms": 21, "ev": {}}, {"name": "sfx_hit_light_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_light_01.wav", "title": "", "desc": "약 타격: 날카로운 강철 충돌 '챙'(620Hz 강철 모드+1.25kHz 칼날 울림)+쇳소리 어택+칼날 긁힘+불꽃", "loop": false, "dur": 0.994, "tp": -9.98, "lufs_i": -24.09, "lufs_m": -19.53, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_hit_light_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_light_02.wav", "title": "", "desc": "약 타격: 날카로운 강철 충돌 '챙'(620Hz 강철 모드+1.25kHz 칼날 울림)+쇳소리 어택+칼날 긁힘+불꽃", "loop": false, "dur": 0.992, "tp": -9.92, "lufs_i": -24.17, "lufs_m": -19.54, "ch": 1, "peak_ms": 5, "ev": {}}, {"name": "sfx_hit_light_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_light_03.wav", "title": "", "desc": "약 타격: 날카로운 강철 충돌 '챙'(620Hz 강철 모드+1.25kHz 칼날 울림)+쇳소리 어택+칼날 긁힘+불꽃", "loop": false, "dur": 1.006, "tp": -10.31, "lufs_i": -24.61, "lufs_m": -19.52, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_hit_light_04", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_hit_light_04.wav", "title": "", "desc": "약 타격: 날카로운 강철 충돌 '챙'(620Hz 강철 모드+1.25kHz 칼날 울림)+쇳소리 어택+칼날 긁힘+불꽃", "loop": false, "dur": 0.993, "tp": -9.25, "lufs_i": -24.15, "lufs_m": -19.51, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_jump", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_jump.wav", "title": "", "desc": "점프: 발 구름+짧은 휘익+천", "loop": false, "dur": 0.367, "tp": -13.51, "lufs_i": -28.0, "lufs_m": -28.0, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_kick", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_kick.wav", "title": "", "desc": "석궁병 발차기: 장화가 몸을 치는 둔한 퍽+가죽+작은 달그락", "loop": false, "dur": 0.325, "tp": -6.79, "lufs_i": -21.04, "lufs_m": -21.04, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_land", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_land.wav", "title": "", "desc": "착지: 쿵+돌+자갈 긁힘+케이프+작은 금속 짤랑", "loop": false, "dur": 0.433, "tp": -8.66, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_oath_absorb", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_oath_absorb.wav", "title": "", "desc": "배너 글자가 빛 알갱이로 빨려 듦: 상승하는 쉬익+올라가는 작은 금속 틱 → 0.62초 맑은 '칭'", "loop": false, "dur": 1.3, "tp": -15.24, "lufs_i": -23.63, "lufs_m": -21.02, "ch": 1, "peak_ms": 647, "ev": {"ching_s": 0.62}}, {"name": "sfx_oath_inherit", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_oath_inherit.wav", "title": "", "desc": "서약을 이었다: Dsus4로 차오르다 1.0초에 D장조로 해결(합창+오르간+높은 현)+금속 차임 아르페지오", "loop": false, "dur": 3.0, "tp": -10.53, "lufs_i": -20.51, "lufs_m": -18.0, "ch": 1, "peak_ms": 2009, "ev": {"resolve_s": 0.959}}, {"name": "sfx_parry", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_parry.wav", "title": "", "desc": "패리: 강철끼리 '캉!'+짧은 높은 칼날 울림(2.1kHz)+스링", "loop": false, "dur": 1.29, "tp": -10.47, "lufs_i": -21.03, "lufs_m": -16.01, "ch": 1, "peak_ms": 24, "ev": {}}, {"name": "sfx_parry_slide", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_parry_slide.wav", "title": "", "desc": "패리 직후 뒤로 미끄러짐: 칼끝이 돌바닥을 긁는 '끼이익'(2.3–3.6kHz)+낮은 미끄러짐 → 0.30초 칼 꽂는 '팅'(2.6kHz)", "loop": false, "dur": 0.6, "tp": -14.83, "lufs_i": -21.57, "lufs_m": -21.04, "ch": 1, "peak_ms": 59, "ev": {"ting_s": 0.3}}, {"name": "sfx_perfect_dodge", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_perfect_dodge.wav", "title": "", "desc": "퍼펙트 회피: 빨려드는 숨+느려지며 떨어지는 휘익+음이 처지는 강철 울림(시간이 느려짐)", "loop": false, "dur": 2.2, "tp": -9.76, "lufs_i": -22.33, "lufs_m": -19.0, "ch": 1, "peak_ms": 57, "ev": {}}, {"name": "sfx_pillar_crumble", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_pillar_crumble.wav", "title": "", "desc": "쇠기둥 무너짐: 휘는 쇠 신음+돌·녹 부스러짐+덩어리 떨어짐+먼지", "loop": false, "dur": 2.187, "tp": -8.24, "lufs_i": -22.49, "lufs_m": -18.0, "ch": 1, "peak_ms": 319, "ev": {}}, {"name": "sfx_pillar_rise", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_pillar_rise.wav", "title": "", "desc": "고립의 벽 쇠기둥: 바닥 균열+올라가는 쇠 긁힘+울림 → 0.40초(24f) '쿵' 고정", "loop": false, "dur": 1.435, "tp": -5.94, "lufs_i": -19.57, "lufs_m": -17.0, "ch": 1, "peak_ms": 396, "ev": {"lock_s": 0.4}}, {"name": "sfx_player_hurt_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_player_hurt_01.wav", "title": "", "desc": "주인공 피격: 몸 퍽+천 찰싹+짧은 날숨(목소리 없음)", "loop": false, "dur": 0.383, "tp": -6.68, "lufs_i": -18.51, "lufs_m": -18.51, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_player_hurt_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_player_hurt_02.wav", "title": "", "desc": "주인공 피격: 몸 퍽+천 찰싹+짧은 날숨(목소리 없음)", "loop": false, "dur": 0.389, "tp": -6.12, "lufs_i": -18.51, "lufs_m": -18.51, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_plunge_land", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_plunge_land.wav", "title": "", "desc": "베기3 내려꽂기 착지(v1.3): 돌이 깨지는 중역 '콰직'+낮은 땅 쿵+돌덩이·자갈 비+먼지. 55Hz 아래·강철 울림 없음 → finisher와 겹쳐도 깨끗", "loop": false, "dur": 1.887, "tp": -3.19, "lufs_i": -21.27, "lufs_m": -16.0, "ch": 1, "peak_ms": 3, "ev": {}}, {"name": "sfx_poise_break", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_poise_break.wav", "title": "", "desc": "자세 붕괴: 낮은 충격+갑옷 우그러짐+삐걱 금 가는 소리+균열 알갱이+가라앉는 저음", "loop": false, "dur": 1.604, "tp": -8.02, "lufs_i": -21.2, "lufs_m": -17.01, "ch": 1, "peak_ms": 50, "ev": {}}, {"name": "sfx_relic_get", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_relic_get.wav", "title": "", "desc": "서약 유물 획득: 합창 '아'+저음 금관+오르간이 D장조로 부풂+종 두 번", "loop": false, "dur": 4.0, "tp": -10.03, "lufs_i": -18.81, "lufs_m": -17.0, "ch": 1, "peak_ms": 416, "ev": {}}, {"name": "sfx_riposte_blast", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_riposte_blast.wav", "title": "", "desc": "반격 마지막 '쾅': 묵직한 붐+강철·갑옷이 터지는 굉음과 파편(수정 대신)+짧은 홀", "loop": false, "dur": 1.2, "tp": -3.53, "lufs_i": -18.57, "lufs_m": -14.02, "ch": 1, "peak_ms": 71, "ev": {}}, {"name": "sfx_riposte_slash_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_riposte_slash_01.wav", "title": "", "desc": "반격 참격(67ms 간격 9연타용): 아주 빠르고 가벼운 높은 '샥', 꼬리 0.1초 미만", "loop": false, "dur": 0.107, "tp": -7.17, "lufs_i": -24.01, "lufs_m": -24.01, "ch": 1, "peak_ms": 2, "ev": {}}, {"name": "sfx_riposte_slash_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_riposte_slash_02.wav", "title": "", "desc": "반격 참격(67ms 간격 9연타용): 아주 빠르고 가벼운 높은 '샥', 꼬리 0.1초 미만", "loop": false, "dur": 0.105, "tp": -9.16, "lufs_i": -24.0, "lufs_m": -24.0, "ch": 1, "peak_ms": 1, "ev": {}}, {"name": "sfx_riposte_slash_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_riposte_slash_03.wav", "title": "", "desc": "반격 참격(67ms 간격 9연타용): 아주 빠르고 가벼운 높은 '샥', 꼬리 0.1초 미만", "loop": false, "dur": 0.105, "tp": -8.18, "lufs_i": -24.0, "lufs_m": -24.0, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_shield_block_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_shield_block_01.wav", "title": "", "desc": "방패에 막힘: 울림을 죽인 판금 '퉁'+나무 심+짧은 불꽃 치익. 살·울림 없음 → '안 들어갔다'", "loop": false, "dur": 0.336, "tp": -4.9, "lufs_i": -20.06, "lufs_m": -20.06, "ch": 1, "peak_ms": 3, "ev": {}}, {"name": "sfx_shield_block_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_shield_block_02.wav", "title": "", "desc": "방패에 막힘: 울림을 죽인 판금 '퉁'+나무 심+짧은 불꽃 치익. 살·울림 없음 → '안 들어갔다'", "loop": false, "dur": 0.372, "tp": -4.85, "lufs_i": -20.06, "lufs_m": -20.06, "ch": 1, "peak_ms": 2, "ev": {}}, {"name": "sfx_shield_block_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_shield_block_03.wav", "title": "", "desc": "방패에 막힘: 울림을 죽인 판금 '퉁'+나무 심+짧은 불꽃 치익. 살·울림 없음 → '안 들어갔다'", "loop": false, "dur": 0.389, "tp": -6.87, "lufs_i": -20.0, "lufs_m": -20.0, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_step_stone_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_step_stone_01.wav", "title": "", "desc": "돌바닥 발소리(뒤꿈치+앞코, 작게)", "loop": false, "dur": 0.306, "tp": -13.19, "lufs_i": -32.03, "lufs_m": -32.03, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_step_stone_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_step_stone_02.wav", "title": "", "desc": "돌바닥 발소리(뒤꿈치+앞코, 작게)", "loop": false, "dur": 0.315, "tp": -14.97, "lufs_i": -32.05, "lufs_m": -32.05, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_step_stone_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_step_stone_03.wav", "title": "", "desc": "돌바닥 발소리(뒤꿈치+앞코, 작게)", "loop": false, "dur": 0.33, "tp": -13.59, "lufs_i": -32.02, "lufs_m": -32.02, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_step_stone_04", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_step_stone_04.wav", "title": "", "desc": "돌바닥 발소리(뒤꿈치+앞코, 작게)", "loop": false, "dur": 0.317, "tp": -14.71, "lufs_i": -32.03, "lufs_m": -32.03, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_swing_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_swing_01.wav", "title": "", "desc": "검 휘두르기: 공기 가르는 휘익(울림 없음)", "loop": false, "dur": 0.394, "tp": -9.41, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 69, "ev": {}}, {"name": "sfx_swing_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_swing_02.wav", "title": "", "desc": "검 휘두르기: 공기 가르는 휘익(울림 없음)", "loop": false, "dur": 0.403, "tp": -9.29, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 54, "ev": {}}, {"name": "sfx_swing_03", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_swing_03.wav", "title": "", "desc": "검 휘두르기: 공기 가르는 휘익(울림 없음)", "loop": false, "dur": 0.418, "tp": -10.69, "lufs_i": -25.0, "lufs_m": -25.0, "ch": 1, "peak_ms": 88, "ev": {}}, {"name": "sfx_swing_heavy_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_swing_heavy_01.wav", "title": "", "desc": "큰 휘두르기(slash3·heavy·charge): 더 낮고 긴 호+저음 '부웅'", "loop": false, "dur": 0.729, "tp": -10.03, "lufs_i": -23.17, "lufs_m": -22.0, "ch": 1, "peak_ms": 188, "ev": {}}, {"name": "sfx_swing_heavy_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_swing_heavy_02.wav", "title": "", "desc": "큰 휘두르기(slash3·heavy·charge): 더 낮고 긴 호+저음 '부웅'", "loop": false, "dur": 0.775, "tp": -9.76, "lufs_i": -23.9, "lufs_m": -22.0, "ch": 1, "peak_ms": 199, "ev": {}}, {"name": "sfx_sword_draw_01", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_sword_draw_01.wav", "title": "", "desc": "검 뽑기(v1.1): 칼집 쓸림(위로 올라가는 긁힘)+짧고 작은 강철 울림. 발도 베기 땐 swing이 겹치니 가볍게", "loop": false, "dur": 0.35, "tp": -15.82, "lufs_i": -27.02, "lufs_m": -27.02, "ch": 1, "peak_ms": 98, "ev": {}}, {"name": "sfx_sword_draw_02", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_sword_draw_02.wav", "title": "", "desc": "검 뽑기(v1.1): 칼집 쓸림(위로 올라가는 긁힘)+짧고 작은 강철 울림. 발도 베기 땐 swing이 겹치니 가볍게", "loop": false, "dur": 0.35, "tp": -16.24, "lufs_i": -27.01, "lufs_m": -27.01, "ch": 1, "peak_ms": 129, "ev": {}}, {"name": "sfx_sword_sheathe", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_sword_sheathe.wav", "title": "", "desc": "검 넣기(v1.1): 칼집으로 미끄러져 들어가는 긁힘 → 0.35초에 부드러운 '딸깍'", "loop": false, "dur": 0.514, "tp": -17.8, "lufs_i": -31.44, "lufs_m": -31.0, "ch": 1, "peak_ms": 347, "ev": {"click_s": 0.35}}, {"name": "sfx_time_resume", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_time_resume.wav", "title": "", "desc": "시간 재개: 짧게 풀리는 쉭(대역 하강)+테이프처럼 도는 상승음", "loop": false, "dur": 0.481, "tp": -9.77, "lufs_i": -23.0, "lufs_m": -23.0, "ch": 1, "peak_ms": 24, "ev": {}}, {"name": "sfx_time_stop", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_time_stop.wav", "title": "", "desc": "시간 정지: 거꾸로 빨려드는 쉭 → 0.12초 맑은 금속 '팅'+서브 드롭 → 조용한 웅웅 (유리 대신 금속)", "loop": false, "dur": 0.8, "tp": -11.08, "lufs_i": -21.27, "lufs_m": -19.0, "ch": 1, "peak_ms": 121, "ev": {"ting_s": 0.12}}, {"name": "sfx_ui_click", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_ui_click.wav", "title": "", "desc": "UI 클릭: 낮은 톡", "loop": false, "dur": 0.093, "tp": -6.02, "lufs_i": -27.06, "lufs_m": -27.06, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_ui_equip", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_ui_equip.wav", "title": "", "desc": "장착: 금속 걸쇠 '철컥'+작고 부드러운 종", "loop": false, "dur": 1.099, "tp": -8.58, "lufs_i": -30.17, "lufs_m": -24.03, "ch": 1, "peak_ms": 0, "ev": {}}, {"name": "sfx_ui_open", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_ui_open.wav", "title": "", "desc": "UI 열기: 수정 2음(D5→A5)+패널 슬라이드", "loop": false, "dur": 0.716, "tp": -16.31, "lufs_i": -27.93, "lufs_m": -25.0, "ch": 1, "peak_ms": 97, "ev": {}}, {"name": "sfx_wave_clear", "cat": "SFX", "src": "../Assets/Audio/SFX/sfx_wave_clear.wav", "title": "", "desc": "웨이브 클리어 스팅어: 저음 금관+합창이 D장조로 부풂+종+팀파니", "loop": false, "dur": 2.4, "tp": -10.03, "lufs_i": -20.16, "lufs_m": -18.0, "ch": 1, "peak_ms": 295, "ev": {}}];
+const GROUPS = {"BGM": -8, "SFX": 0, "Ambient": -6};
+const SECTIONS = [{"title": "타격", "sub": "약 < 강 < 마무리 순서. 처형·자세 붕괴 포함", "prefixes": ["sfx_hit_light", "sfx_hit_heavy", "sfx_hit_finisher", "sfx_plunge", "sfx_execute", "sfx_poise_break"]}, {"title": "휘두르기 · 대쉬 · 회피 · 이동 · 검 뽑기/넣기", "sub": "", "prefixes": ["sfx_sword", "sfx_swing_0", "sfx_swing_heavy", "sfx_dash", "sfx_dodge", "sfx_glide", "sfx_perfect_dodge", "sfx_step", "sfx_jump", "sfx_land"]}, {"title": "차지", "sub": "", "prefixes": ["sfx_charge"]}, {"title": "적 · 허수아비 · 피격", "sub": "", "prefixes": ["sfx_enemy", "sfx_dummy", "sfx_player_hurt"]}, {"title": "1지역 잿빛 성벽 (v1.2)", "sub": "방패병·석궁병·제단·전투방", "prefixes": ["sfx_shield_block", "sfx_bolt", "sfx_kick", "sfx_altar", "sfx_gate", "sfx_wave_clear"]}, {"title": "보스 철벽 · 유물 (v1.2)", "sub": "", "prefixes": ["sfx_boss", "sfx_pillar", "sfx_parry", "sfx_relic", "sfx_ui_equip"]}, {"title": "패리 반격 · 서약 계승", "sub": "시간 정지 → 9연 참격 → 폭발 / 클리어 배너", "prefixes": ["sfx_time", "sfx_riposte", "sfx_oath"]}, {"title": "UI", "sub": "", "prefixes": ["sfx_ui"]}];
+const REPORTS = ["import_bgm_boss.png", "long_amb_cloister.png", "long_amb_rampart.png", "long_bgm_boss.png", "long_bgm_region1.png", "long_bgm_training.png", "ltas_frequent_sfx.png", "ltas_hits.png", "ltas_music_amb.png", "seam_amb_cloister.png", "seam_amb_rampart.png", "seam_bgm_boss.png", "seam_bgm_region1.png", "seam_bgm_training.png", "spec_amb_cloister.png", "spec_amb_rampart.png", "spec_bgm_boss.png", "spec_bgm_region1.png", "spec_bgm_training.png", "spec_sfx_1.png", "spec_sfx_2.png", "spec_sfx_3.png", "spec_sfx_4.png", "spec_sfx_5.png", "spec_sfx_6.png", "spec_sfx_7.png", "wave_banner.png", "wave_bosscharge.png", "wave_charge.png", "wave_dash.png", "wave_glint.png", "wave_hits.png", "wave_slide.png", "wave_sword.png", "wave_time.png"];
+const GROUP_OF = {SFX:"SFX", BGM:"BGM", Ambient:"Ambient"};
+const gainDb = Object.assign({}, GROUPS);
+const live = new Set();
+const lin = db => Math.pow(10, db/20);
+const vol = (cat, extraDb=0) => Math.min(1, lin(gainDb[GROUP_OF[cat]] + extraDb));
+const byName = Object.fromEntries(DATA.map(d => [d.name, d]));
+const F = 1000/60;  // one frame in ms
+function fmt(v, d=1){ return (v===null||v===undefined) ? "–" : Number(v).toFixed(d); }
+
+// preload every clip once so simulation timing is tight
+const tmpl = {};
+for (const d of DATA){ const a = new Audio(); a.preload = d.cat === "SFX" ? "auto" : "none"; a.src = d.src; tmpl[d.name] = a; }
+
+function playOnce(name, extraDb=0, rate=1){
+  const d = byName[name]; if(!d) return null;
+  const a = tmpl[name].cloneNode(); a.volume = vol(d.cat, extraDb); a.playbackRate = rate;
+  a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false;
+  a.dataset.cat = d.cat; a.dataset.extra = extraDb; live.add(a); a.onended = () => live.delete(a); a.play().catch(()=>{}); return a;
+}
+const timers = new Set();
+function later(ms, fn){ const t = setTimeout(() => { timers.delete(t); fn(); }, ms); timers.add(t); return t; }
+function stopAll(){
+  timers.forEach(clearTimeout); timers.clear();
+  live.forEach(a => { a.pause(); }); live.clear();
+  document.querySelectorAll(".card.playing").forEach(c => c.classList.remove("playing"));
+  document.querySelectorAll("button.on").forEach(b => { b.classList.remove("on"); if(b.dataset.label) b.textContent = b.dataset.label; });
+  Object.values(TESTS).forEach(t => t.running = false);
+}
+document.getElementById("stopAll").onclick = stopAll;
+document.querySelectorAll(".bar input[type=range]").forEach(r => {
+  const g = r.dataset.g; r.value = gainDb[g]; const o = r.nextElementSibling; o.textContent = r.value + " dB";
+  r.oninput = () => { gainDb[g] = +r.value; o.textContent = r.value + " dB";
+    live.forEach(a => { if (GROUP_OF[a.dataset.cat] === g) a.volume = vol(a.dataset.cat, +(a.dataset.extra||0)); }); };
+});
+
+// ---------- feedback (kept in this browser only)
+const FB_KEY = "sevenoaths.sound.fb";
+let fb = {}; try { fb = JSON.parse(localStorage.getItem(FB_KEY) || "{}"); } catch(e) { fb = {}; }
+function saveFb(){ try { localStorage.setItem(FB_KEY, JSON.stringify(fb)); } catch(e) {} }
+document.getElementById("fbCopy").onclick = () => {
+  const lines = Object.entries(fb).filter(([n, v]) => v.verdict || v.note)
+    .map(([n, v]) => `- ${n}: ${v.verdict === "good" ? "좋음" : v.verdict === "fix" ? "고쳐줘" : "메모"}${v.note ? " — " + v.note : ""}`);
+  const text = "[사운드 피드백]\n" + (lines.length ? lines.join("\n") : "(아직 표시한 소리가 없음)");
+  const out = document.getElementById("fbOut"); out.style.display = "block"; out.value = text; out.select();
+  try { navigator.clipboard.writeText(text); } catch(e) { try { document.execCommand("copy"); } catch(e2) {} }
+};
+
+// ---------- cards
+const lists = document.getElementById("lists");
+function card(d){
+  const c = document.createElement("div"); c.className = "card";
+  const loud = d.cat === "SFX" ? `LUFS-M ${fmt(d.lufs_m)}` : `LUFS-I ${fmt(d.lufs_i)}`;
+  const ev = Object.entries(d.ev||{}).map(([k,v]) => `${k.replace("_s","")} @${Math.round(v*1000)}ms`).join(" · ");
+  const pk = (d.cat === "SFX" && d.name.match(/swing|dodge|dash/)) ? ` · 휘익 정점 ${d.peak_ms}ms` : "";
+  c.innerHTML = `<div class="row"><span class="name">${d.name}</span>${d.title?`<span class="tag">${d.title}</span>`:""}${d.loop?'<span class="tag loop">루프</span>':""}</div>
+    <div class="desc">${d.desc||""}</div>
+    <div class="meta">${fmt(d.dur,2)} s · ${d.ch===2?"스테레오":"모노"} · ${loud} · TP ${fmt(d.tp)} dBTP${pk}${ev?" · "+ev:""}</div>`;
+  const ctr = document.createElement("div"); ctr.className = "row";
+  const audio = new Audio(); audio.preload = "none"; audio.src = d.src; audio.dataset.cat = d.cat;
+  const prog = document.createElement("progress"); prog.max = 1; prog.value = 0;
+  const b = document.createElement("button"); b.textContent = "▶ 재생"; b.dataset.label = "▶ 재생";
+  const reset = () => { b.classList.remove("on"); b.textContent = b.dataset.label; c.classList.remove("playing"); live.delete(audio); };
+  b.onclick = () => {
+    if (!audio.paused){ audio.pause(); audio.currentTime = 0; reset(); return; }
+    audio.loop = d.loop; audio.volume = vol(d.cat); live.add(audio); audio.currentTime = 0; audio.play().catch(()=>{});
+    b.classList.add("on"); b.textContent = "■ 정지"; c.classList.add("playing");
+  };
+  audio.onended = reset; audio.onpause = () => { if (!audio.ended && audio.currentTime === 0) reset(); };
+  audio.ontimeupdate = () => { if (audio.duration) prog.value = audio.currentTime / audio.duration; };
+  ctr.appendChild(b);
+  if (d.loop){
+    const s = document.createElement("button"); s.textContent = "↻ 이음새 듣기";
+    s.title = "끝 직전부터 재생 → 루프 지점을 넘어 처음으로 이어지는지 확인";
+    s.onclick = () => { audio.loop = true; audio.volume = vol(d.cat); live.add(audio);
+      const go = () => { audio.currentTime = Math.max(0, audio.duration - Math.min(4, audio.duration*0.5)); audio.play().catch(()=>{}); };
+      if (isNaN(audio.duration)) { audio.preload = "auto"; audio.addEventListener("loadedmetadata", go, {once:true}); audio.load(); } else go();
+      b.classList.add("on"); b.textContent = "■ 정지"; c.classList.add("playing"); };
+    ctr.appendChild(s);
+  }
+  c.appendChild(ctr); c.appendChild(prog);
+  // feedback row
+  const f = fb[d.name] || {}; const row = document.createElement("div"); row.className = "fb";
+  const g = document.createElement("button"); g.className = "good" + (f.verdict === "good" ? " sel" : ""); g.textContent = "좋음";
+  const x = document.createElement("button"); x.className = "fix" + (f.verdict === "fix" ? " sel" : ""); x.textContent = "고쳐줘";
+  const note = document.createElement("input"); note.placeholder = "메모 (예: 더 둔탁하게)"; note.value = f.note || "";
+  const set = v => { const cur = fb[d.name] || {}; cur.verdict = cur.verdict === v ? "" : v; fb[d.name] = cur; saveFb();
+    g.classList.toggle("sel", cur.verdict === "good"); x.classList.toggle("sel", cur.verdict === "fix"); };
+  g.onclick = () => set("good"); x.onclick = () => set("fix");
+  note.oninput = () => { const cur = fb[d.name] || {}; cur.note = note.value; fb[d.name] = cur; saveFb(); };
+  row.append(g, x, note); c.appendChild(row);
+  return c;
+}
+function section(title, sub, rows, folder){
+  if (!rows.length) return;
+  const h = document.createElement("h2"); h.innerHTML = `${title} <span>${rows.length}개 · ${folder}${sub ? " · " + sub : ""}</span>`; lists.appendChild(h);
+  const grid = document.createElement("div"); grid.className = "grid"; lists.appendChild(grid);
+  rows.forEach(d => grid.appendChild(card(d)));
+}
+const used = new Set();
+for (const s of SECTIONS){
+  const rows = [];
+  for (const p of s.prefixes) DATA.filter(d => d.cat === "SFX" && d.name.startsWith(p) && !used.has(d.name)).forEach(d => { rows.push(d); used.add(d.name); });
+  section(s.title, s.sub, rows, "Assets/Audio/SFX/");
+}
+section("기타 효과음", "", DATA.filter(d => d.cat === "SFX" && !used.has(d.name)), "Assets/Audio/SFX/");
+section("배경음악", "", DATA.filter(d => d.cat === "BGM"), "Assets/Audio/BGM/");
+section("앰비언스", "", DATA.filter(d => d.cat === "Ambient"), "Assets/Audio/Ambient/");
+
+// ---------- combat simulations (times in ms, GDD frames at 60 fps)
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const names = p => DATA.filter(d => d.name.startsWith(p)).map(d => d.name);
+const has = n => !!byName[n];
+const rate = () => 0.97 + Math.random()*0.06;           // code plays SFX at pitch +-3 %
+const sfx = (n, extra=0) => playOnce(n, extra, rate());
+// swing so that its whoosh peak lands 25 ms before the hit frame (never before the move starts)
+function swingAt(start, hitT, n){ const pk = (byName[n]||{}).peak_ms || 0; later(Math.max(start, hitT - pk - 25), () => sfx(n)); }
+const HS = {light: 4*F, heavy: 8*F, fin: 14*F};
+function attack(t, wind, grade, swingName, hitName, extra){
+  const hit = t + wind*F; swingAt(t, hit, swingName); later(hit, () => { sfx(hitName); if (extra) extra(); });
+  return hit + HS[grade];                              // hit-stop freezes the timeline
+}
+const L = () => pick(names("sfx_hit_light")), H = () => pick(names("sfx_hit_heavy"));
+const SW = () => pick(names("sfx_swing_0")), SWH = () => pick(names("sfx_swing_heavy"));
+let bedEls = [];
+function bed(list){ bedEls = list.filter(([n]) => has(n)).map(([n, extra]) => { const a = playOnce(n, extra||0); if (a) a.loop = true; return a; }); }
+const TESTS = {
+  ladder: {t:"타격 등급 비교", p:"약 → 강 → 마무리(차지 2단). 히트스톱 4f / 8f / 14f.", period: 4200, run(){
+    let t = 0; t = attack(t, 7, "light", SW(), L()); t += 900;
+    t = attack(t, 16, "heavy", SWH(), H()); t += 1100;
+    attack(t, 6, "fin", SWH(), "sfx_hit_finisher"); }},
+  combo: {t:"3연 베기", p:"베기1(7f) → 16f에 베기2(8f) → 베기3 내려꽂기(v1.3: 큰 휘익 → 착지 땅 충격 + 마무리 타격음). 검 소리는 전부 강철.", period: 2600, run(){
+    let s = 0, h;
+    h = attack(s, 7, "light", SW(), L()); s = s + 16*F + HS.light;
+    h = attack(s, 8, "light", SW(), L()); s = s + 17*F + HS.light;
+    later(s + 80, () => sfx(SWH())); later(s + 300, () => { sfx("sfx_plunge_land"); sfx("sfx_hit_finisher"); }); }},
+  rhythm: {t:"베고 회피로 끊기", p:"베기1 → 10f 회피 캔슬 → 11f 회피 베기(4f) → 13f 베기2. '한 방 → 회피 → 한 방' 박자.", period: 2400, run(){
+    let s = 0;
+    attack(s, 7, "light", SW(), L()); s = s + 10*F + HS.light;
+    later(s, () => sfx(pick(names("sfx_dodge_"))));  s += 11*F;
+    attack(s, 4, "light", SW(), L()); s = s + 13*F + HS.light;
+    attack(s, 8, "light", SW(), L()); }},
+  execute: {t:"자세 붕괴 → 처형", p:"강공으로 자세 붕괴 → 1초 뒤 처형(파일 시작 = 처형 시작, 0.3초에 꽂힘) → 병사 소멸.", period: 5200, run(){
+    let s = 0; s = attack(s, 16, "heavy", SWH(), H(), () => sfx("sfx_poise_break"));
+    s += 1000; later(s, () => sfx("sfx_execute"));
+    later(s + 300 + 650, () => sfx("sfx_enemy_death")); }},
+  charge: {t:"차지 2단 (v0.3 좌클릭 홀드)", p:"베기1(헛스윙) → 18f에 차지 자세(웅웅 시작) → +24f 1단 '칭' → +60f 2단 '칭' → +75f 해방(6f) → 마무리 타격.", period: 4200, run(){
+    swingAt(0, 7*F, SW()); const c0 = 18*F; let loop = null;
+    later(c0, () => { loop = playOnce("sfx_charge_loop"); if (loop) loop.loop = true; });
+    later(c0 + 24*F, () => sfx("sfx_charge_ready_01")); later(c0 + 60*F, () => sfx("sfx_charge_ready_02"));
+    const rel = c0 + 75*F; later(rel, () => { if (loop){ loop.pause(); live.delete(loop); } });
+    attack(rel, 6, "fin", SWH(), "sfx_hit_finisher"); }},
+  dash: {t:"대쉬 공격 (v0.3)", p:"우클릭 대쉬: 5f 예비 → 9f 돌진 중 적 2명 관통(강 타격, 각 8f 히트스톱) → 20f에 베기2 연결.", period: 2600, run(){
+    const d = pick(names("sfx_dash")); if (!d) return; sfx(d);
+    let s = 5*F + 3*F; later(s, () => sfx(H())); s += HS.heavy + 3*F; later(s, () => sfx(H(), -2)); s += HS.heavy;
+    attack(20*F + 2*HS.heavy, 8, "light", SW(), L()); }},
+  enemy: {t:"병사와 교전", p:"붉은 번뜩임(예고) → 18f 뒤 내려베기 → 퍼펙트 회피 → 1.5배 반격(강공). 3번째마다 피격.", period: 2600, n:0, run(){
+    this.n = (this.n||0) + 1; const hurt = this.n % 3 === 0;
+    sfx("sfx_enemy_glint"); const hit = 18*F;
+    later(Math.max(0, hit - ((byName["sfx_enemy_swing"]||{}).peak_ms||0)), () => sfx("sfx_enemy_swing"));
+    if (hurt){ later(hit, () => sfx(pick(names("sfx_player_hurt")))); return; }
+    later(hit - 3*F, () => sfx("sfx_perfect_dodge"));
+    attack(hit + 500, 16, "heavy", SWH(), H()); }},
+  dummy: {t:"허수아비 연습", p:"허수아비에 베기 1·2와 강공. 나무+짚 소리(타격음 대신).", period: 2200, run(){
+    const D = () => pick(names("sfx_dummy_hit"));
+    let s = 0; attack(s, 7, "light", SW(), D()); s += 16*F + HS.light;
+    attack(s, 8, "light", SW(), D()); s += 26*F + HS.light;
+    attack(s, 16, "heavy", SWH(), D(), () => sfx(H(), -8)); }},
+  move: {t:"질주 · 점프 · 착지 (v1.3)", p:"낮게 미끄러지는 질주(보폭 0.25초마다 '쉭') → 점프 → 0.65초 체공 → 착지 → 다시 질주.", period: 3600, run(){
+    const st = names("sfx_glide"); let s = 0;
+    for (let k = 0; k < 6; k++){ later(s, () => sfx(pick(st))); s += 250; }
+    later(s, () => sfx("sfx_jump")); s += 650; later(s, () => sfx("sfx_land")); s += 250;
+    for (let k = 0; k < 5; k++){ later(s, () => sfx(pick(st))); s += 250; } }},
+  sword: {t:"검 뽑기 · 넣기 (v1.1)", p:"검을 넣은 채 → 발도 베기(뽑기 + 바로 베기1) → 2초 가만히 → 넣기(동작 시작 0.12초 뒤 재생, 0.35초에 딸깍).", period: 4200, run(){
+    const dr = pick(names("sfx_sword_draw")); if (dr) sfx(dr);
+    attack(40, 7, "light", SW(), L());
+    later(2600 + 120, () => sfx("sfx_sword_sheathe")); }},
+  plunge: {t:"베기3 내려꽂기 (v1.3)", p:"빛의 구로 떠올랐다가 수직 낙하: 착지 0.22초 전 큰 휘익 → 착지(땅·돌). 첫 번째는 헛침, 두 번째는 적중(+마무리 타격음 겹침).", period: 4200, run(){
+    const W = SWH(); sfx(W); later(220, () => sfx("sfx_plunge_land"));
+    later(2100, () => sfx(SWH())); later(2320, () => { sfx("sfx_plunge_land"); sfx("sfx_hit_finisher"); }); }},
+  shield: {t:"방패병 (1지역)", p:"정면 베기 2번은 방패에 막힘(쿵+불꽃, 3f 히트스톱) → 대쉬로 꿰뚫어 등 뒤 → 강 타격.", period: 3000, run(){
+    const B = () => pick(names("sfx_shield_block")); let s = 0;
+    attack(s, 7, "light", SW(), B()); s += 16*F + 3*F;
+    attack(s, 8, "light", SW(), B()); s += 26*F + 3*F;
+    later(s, () => sfx(pick(names("sfx_dash")))); later(s + 8*F, () => sfx(H())); }},
+  crossbow: {t:"석궁병 (1지역)", p:"붉은 조준 30f(삐걱+떨림) → 발사 '퉁' → 화살 비행 → 박힘. 두 번째는 근접해서 발차기.", period: 3600, n:0, run(){
+    this.n = (this.n||0) + 1;
+    if (this.n % 2){ sfx("sfx_bolt_aim"); later(500, () => sfx("sfx_bolt_shoot")); later(500 + 420, () => { sfx("sfx_bolt_hit"); sfx(pick(names("sfx_player_hurt")), -4); }); }
+    else { sfx("sfx_kick"); later(30, () => sfx(pick(names("sfx_player_hurt")), -4)); } }},
+  arena: {t:"전투방 (1지역)", p:"입장 → 창살 쾅(0.18초) → 싸움 → 웨이브 클리어 스팅어 → 창살 올라감(2.1초에 철컥) → 제단.", period: 9000, run(){
+    sfx("sfx_gate_drop"); let s = 1600;
+    for (let k = 0; k < 3; k++){ attack(s, 7, "light", SW(), L()); s += 600; }
+    later(s + 300, () => sfx("sfx_enemy_death")); later(s + 1400, () => sfx("sfx_wave_clear"));
+    later(s + 3200, () => sfx("sfx_gate_rise")); later(s + 6000, () => sfx("sfx_altar")); }},
+  boss: {t:"철벽 보스 패턴", p:"번뜩임(12f) → 장검 내려베기(판정 36f, 소리는 판정 0.30초 전에) → 방패 밀치기 → 패리 '캉' → 돌진 3단계(차징 0.5초 → 붉은 줄 '치잉' → 돌진 루프) → 벽 충돌.", period: 7000, run(){
+    later(12*F, () => sfx("sfx_enemy_glint")); later(36*F - 300, () => sfx("sfx_boss_slam"));
+    later(2200, () => sfx("sfx_boss_bash"));
+    later(3300, () => sfx("sfx_parry"));
+    later(3800, () => sfx("sfx_boss_charge_up")); later(4300, () => sfx("sfx_boss_charge_line"));
+    let loop = null; later(4650, () => { loop = playOnce("sfx_boss_charge_loop"); if (loop) loop.loop = true; });
+    later(5900, () => { if (loop){ loop.pause(); live.delete(loop); } sfx("sfx_boss_wall_hit"); }); }},
+  boss2: {t:"철벽 2페이즈 · 최후", p:"포효 → 쇠기둥(24f에 쿵) → 기둥 무너짐 → 마지막 처형 → 쓰러짐 → 유물 획득 → 장착.", period: 14000, run(){
+    sfx("sfx_boss_roar"); later(2600, () => sfx("sfx_pillar_rise")); later(5000, () => sfx("sfx_pillar_crumble"));
+    later(6600, () => sfx("sfx_execute")); later(7300, () => sfx("sfx_boss_death"));
+    later(10600, () => sfx("sfx_relic_get")); later(13000, () => sfx("sfx_ui_equip")); }},
+  riposte: {t:"패리 반격", p:"패리 '캉' + 뒤로 미끄러지며 칼끝 긁힘(0.3초 '팅') → 시간 정지(0.12초 '팅') → 0.6초 뒤 좌클릭 → 참격 9번 67ms 간격 '샤샤샤샥' → '쾅' → 시간 재개.", period: 4200, run(){
+    sfx("sfx_parry"); sfx("sfx_parry_slide"); later(60, () => sfx("sfx_time_stop"));
+    const R = names("sfx_riposte_slash"); const t0 = 700;
+    for (let k = 0; k < 9; k++) later(t0 + k*67, () => sfx(pick(R)));
+    later(t0 + 9*67, () => sfx("sfx_riposte_blast")); later(t0 + 9*67 + 700, () => sfx("sfx_time_resume")); }},
+  bossintro: {t:"보스 첫 대면 · 클리어", p:"철벽 함성(0.95초에 방패 쿵) → 붉은 이름 배너 / … 쓰러짐 → '서약을 이었다' 배너 → 글자가 빨려 듦('칭') → 유물.", period: 13000, run(){
+    sfx("sfx_boss_intro_shout"); later(1150, () => sfx("sfx_boss_banner"));
+    later(3600, () => sfx("sfx_boss_death")); later(7000, () => sfx("sfx_oath_inherit"));
+    later(9400, () => sfx("sfx_oath_absorb")); later(10600, () => sfx("sfx_relic_get")); }},
+  region: {t:"1지역 인게임 믹스", p:"bgm_region1 + amb_rampart 위에 콤보·방패·석궁이 무작위로. 권장 그룹 볼륨 적용.", period: 3200, needs:["bgm_region1"], bedList:[["bgm_region1"],["amb_rampart"]], run(){
+    pick([TESTS.combo, TESTS.shield, TESTS.crossbow, TESTS.rhythm, TESTS.dash]).run(); }},
+  mix: {t:"수련장 인게임 믹스", p:"bgm_training + amb_cloister 위에 콤보·회피·처형이 무작위로. 권장 그룹 볼륨 적용.", period: 3000, needs:["bgm_training"], bedList:[["bgm_training"],["amb_cloister"]], run(){
+    pick([TESTS.combo, TESTS.rhythm, TESTS.combo, TESTS.dash, TESTS.ladder, TESTS.enemy]).run(); }},
+  boss: {t:"보스전 인게임 믹스", p:"bgm_boss 위에 콤보·대쉬·차지 마무리·처형이 무작위로. 권장 그룹 볼륨 적용.", period: 2800, needs:["bgm_boss"], bedList:[["bgm_boss"]], run(){
+    pick([TESTS.combo, TESTS.dash, TESTS.rhythm, TESTS.ladder, TESTS.enemy, TESTS.combo]).run(); }},
+};
+const testsEl = document.getElementById("tests");
+for (const [key, T] of Object.entries(TESTS)){
+  const ok = !T.needs || T.needs.every(has);
+  const div = document.createElement("div"); div.className = "test" + (ok ? "" : " disabled");
+  div.innerHTML = `<b>${T.t}</b><p>${T.p}${ok ? "" : " (BGM이 아직 없음)"}</p>`;
+  const b = document.createElement("button"); b.textContent = "▶ 반복 재생"; b.dataset.label = b.textContent; b.disabled = !ok;
+  b.onclick = () => {
+    if (b.classList.contains("on")){ stopAll(); return; }
+    stopAll(); T.running = true; b.classList.add("on"); b.textContent = "■ 정지";
+    if (T.bedList) bed(T.bedList);
+    const loop = () => { if (!T.running) return; T.run(); later(T.period, loop); };
+    loop();
+  };
+  div.appendChild(b); testsEl.appendChild(div);
+}
+
+// ---------- reports
+const rep = document.getElementById("reports");
+for (const r of REPORTS){
+  const a = document.createElement("a"); a.href = "report/" + r; a.target = "_blank";
+  a.innerHTML = `<img loading="lazy" src="report/${r}" alt="${r}">${r}`; rep.appendChild(a);
+}
+</script>
+</body>
+</html>

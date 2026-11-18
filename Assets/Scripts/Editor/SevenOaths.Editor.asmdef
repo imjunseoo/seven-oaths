@@ -1,0 +1,22 @@
+{
+    "name": "SevenOaths.Editor",
+    "rootNamespace": "SevenOaths.EditorTools",
+    "references": [
+        "SevenOaths",
+        "SevenOaths.Model",
+        "Unity.TextMeshPro",
+        "Unity.2D.Aseprite.Editor",
+        "Unity.2D.Aseprite.Common"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

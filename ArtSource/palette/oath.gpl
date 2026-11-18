@@ -1,0 +1,52 @@
+GIMP Palette
+Name: oath
+Columns: 8
+#
+  7   6  11	dark_0 #07060b
+ 17  14  24	dark_1 #110e18
+ 28  24  38	dark_2 #1c1826
+ 42  37  54	dark_3 #2a2536
+ 58  52  72	stone_a #3a3448
+ 77  71  92	stone_b #4d475c
+100  94 115	stone_c #645e73
+127 121 140	stone_d #7f798c
+157 151 168	stone_e #9d97a8
+191 186 200	stone_f #bfbac8
+222 218 228	stone_g #dedae4
+244 242 248	white_w #f4f2f8
+255 255 255	white_W #ffffff
+ 93 102 128	hair_h #5d6680
+138 147 173	hair_i #8a93ad
+184 192 214	hair_j #b8c0d6
+223 229 242	hair_k #dfe5f2
+ 11  31  61	crystal_A #0b1f3d
+ 19  58 110	crystal_B #133a6e
+ 29  91 168	crystal_C #1d5ba8
+ 43 132 224	crystal_D #2b84e0
+ 86 176 255	crystal_E #56b0ff
+149 214 255	crystal_F #95d6ff
+210 240 255	crystal_G #d2f0ff
+ 61  42  18	gold_l #3d2a12
+110  76  29	gold_m #6e4c1d
+168 120  44	gold_n #a8782c
+220 170  72	gold_o #dcaa48
+255 224 138	gold_p #ffe08a
+122  46  20	torch_H #7a2e14
+196  86  31	torch_I #c4561f
+255 143  51	torch_J #ff8f33
+255 195 107	torch_K #ffc36b
+ 74  42  46	skin_s #4a2a2e
+143  86  81	skin_t #8f5651
+212 151 127	skin_u #d4977f
+242 201 176	skin_v #f2c9b0
+ 38  57  45	moss_x #26392d
+ 63  90  63	moss_y #3f5a3f
+ 28   5  12	crimson_L #1c050c
+ 63  10  25	crimson_M #3f0a19
+115  16  42	crimson_N #73102a
+176  24  47	crimson_O #b0182f
+232  52  63	crimson_P #e8343f
+255 122 102	crimson_Q #ff7a66
+ 46  15  69	purple_R #2e0f45
+ 90  31 128	purple_S #5a1f80
+142  61 191	purple_T #8e3dbf
