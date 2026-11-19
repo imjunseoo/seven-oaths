@@ -10,10 +10,10 @@ namespace SevenOaths
     /// </summary>
     public sealed class InputReader
     {
-        readonly InputAction _move, _jump, _down, _attack, _dash, _dodge, _debug, _stickAim;
+        readonly InputAction _move, _jump, _down, _attack, _dash, _dodge, _debug, _stickAim, _heal;
         readonly InputAction _pause, _navUp, _navDown, _navLeft, _navRight, _confirm, _back, _relics;
         public bool PausePressed, MenuUp, MenuDown, MenuLeft, MenuRight, MenuConfirm, MenuBack, RelicsPressed;
-        bool _jumpP, _attackP, _dashP, _dodgeP, _debugP;
+        bool _jumpP, _attackP, _dashP, _dodgeP, _debugP, _healP;
         bool _usingMouse = true;
         Vector2 _lastMouse;
         float _rumbleUntil;
@@ -56,6 +56,10 @@ namespace SevenOaths
             _dodge.AddBinding("<Keyboard>/l");
             _dodge.AddBinding("<Gamepad>/buttonEast");
 
+            _heal = new InputAction("Heal", InputActionType.Button);   // 성수병
+            _heal.AddBinding("<Keyboard>/q");
+            _heal.AddBinding("<Gamepad>/leftShoulder");
+
             _debug = new InputAction("Debug", InputActionType.Button);
             _debug.AddBinding("<Keyboard>/f1");
             _debug.AddBinding("<Gamepad>/select");
@@ -72,7 +76,7 @@ namespace SevenOaths
             _back = Btn("Back", "<Keyboard>/backspace", "<Gamepad>/buttonEast");
             _relics = Btn("Relics", "<Keyboard>/tab", "<Gamepad>/buttonNorth");   // 서약 유물 장착 창
 
-            foreach (var a in new[] { _move, _jump, _down, _attack, _dash, _dodge, _debug, _stickAim }) a.Enable();
+            foreach (var a in new[] { _move, _jump, _down, _attack, _dash, _dodge, _debug, _stickAim, _heal }) a.Enable();
         }
 
         static InputAction Btn(string name, params string[] paths)
@@ -84,7 +88,7 @@ namespace SevenOaths
         }
 
         /// <summary>메뉴를 닫을 때: 메뉴에서 누른 키가 게임 입력으로 새지 않게 쌓인 눌림을 비운다.</summary>
-        public void ClearPresses() { _jumpP = _attackP = _dashP = _dodgeP = false; }
+        public void ClearPresses() { _jumpP = _attackP = _dashP = _dodgeP = _healP = false; }
 
         bool OverUi => PointerOverUi != null && PointerOverUi() && Mouse.current != null && _usingMouse;
 
@@ -95,6 +99,7 @@ namespace SevenOaths
             if (_attack.WasPressedThisFrame() && !(OverUi && Mouse.current.leftButton.wasPressedThisFrame)) _attackP = true;
             if (_dash.WasPressedThisFrame() && !(OverUi && Mouse.current.rightButton.wasPressedThisFrame)) _dashP = true;
             if (_dodge.WasPressedThisFrame()) _dodgeP = true;
+            if (_heal.WasPressedThisFrame()) _healP = true;
             if (_debug.WasPressedThisFrame()) _debugP = true;
             PausePressed = _pause.WasPressedThisFrame();
             RelicsPressed = _relics.WasPressedThisFrame();
@@ -136,6 +141,7 @@ namespace SevenOaths
                 AttackHeld = _attack.IsPressed() && !(OverUi && Mouse.current.leftButton.isPressed),
                 DashPressed = _dashP,
                 DodgePressed = _dodgeP,
+                HealPressed = _healP,
             };
             var stick = _stickAim.ReadValue<Vector2>();
             if (!_usingMouse && stick.sqrMagnitude > 0.2f)
@@ -147,7 +153,7 @@ namespace SevenOaths
                 var d = Mouse.current.position.ReadValue() - playerScreenPos;
                 if (d.sqrMagnitude > 9f) { f.HasAim = true; f.AimX = d.x; f.AimY = d.y; }
             }
-            _jumpP = _attackP = _dashP = _dodgeP = false;
+            _jumpP = _attackP = _dashP = _dodgeP = _healP = false;
             return f;
         }
 
@@ -164,7 +170,7 @@ namespace SevenOaths
         public void Dispose()
         {
             Gamepad.current?.SetMotorSpeeds(0f, 0f);
-            foreach (var a in new[] { _move, _jump, _down, _attack, _dash, _dodge, _debug, _stickAim, _pause, _navUp, _navDown, _navLeft, _navRight, _confirm, _back, _relics }) a.Dispose();
+            foreach (var a in new[] { _move, _jump, _down, _attack, _dash, _dodge, _debug, _stickAim, _heal, _pause, _navUp, _navDown, _navLeft, _navRight, _confirm, _back, _relics }) a.Dispose();
         }
     }
 }

@@ -126,7 +126,7 @@ namespace SevenOaths
 
         void OpenTitle()
         {
-            bool hasSave = System.IO.File.Exists(SaveSystem.PathFile) && (_save.checkpoint >= 0 || _save.level != "training" || _save.relics.Count > 0 || _save.bossesDefeated.Count > 0);
+            bool hasSave = System.IO.File.Exists(SaveSystem.PathFile) && (_save.checkpoint >= 0 || _save.level != "training" || _save.relics.Count > 0 || _save.bossesDefeated.Count > 0 || _save.lumen > 0);
             var items = new List<(string, System.Action)>();
             if (hasSave) items.Add(("이어하기", StartFromTitle));
             items.Add(("새 게임", () => { if (!hasSave || _title.AskConfirmNew()) NewGame(); }));
@@ -167,6 +167,9 @@ namespace SevenOaths
             _save.relics.Clear();
             _save.equipped.Clear();
             _save.bossesDefeated.Clear();
+            _save.lumen = 0;
+            _save.soulLevel = "";
+            _save.soulLumen = 0;
             SaveSystem.Save(_save);
             LoadLevel("training");
             StartFromTitle();
@@ -187,6 +190,7 @@ namespace SevenOaths
         /// <summary>모델 → 저장(얻거나 장착을 바꿀 때마다).</summary>
         void SaveRelics()
         {
+            WriteEconomy();
             var p = _w.Player;
             _save.relics.Clear();
             foreach (var id in p.Owned) _save.relics.Add(Relics.Get(id).Key);
@@ -229,7 +233,27 @@ namespace SevenOaths
         {
             _save.level = _levelName;
             _save.checkpoint = _w.Checkpoint;
+            WriteEconomy();
             SaveSystem.Save(_save);
+        }
+
+        bool _economyDirty;
+        float _economySaveAt;
+
+        /// <summary>루멘·영혼의 수정 → 저장 내용(파일 쓰기는 부른 쪽이).</summary>
+        void WriteEconomy()
+        {
+            if (_w == null) return;
+            _save.lumen = _w.Player.Lumen;
+            if (_w.Soul != null)
+            {
+                _save.soulLevel = _levelName;
+                _save.soulX = _w.Soul.Pos.X;
+                _save.soulY = _w.Soul.Pos.Y;
+                _save.soulLumen = _w.Soul.Lumen;
+            }
+            else if (_save.soulLevel == _levelName) { _save.soulLevel = ""; _save.soulLumen = 0; }
+            _economyDirty = false;
         }
 
         void SaveAndQuit()
@@ -277,6 +301,9 @@ namespace SevenOaths
             _w = new World(level, _feelTuning, 12345);
             LoadRelics();
             if (_save.bossesDefeated.Contains(name)) _w.ApplyBossDefeated(_w.Player.Owned.Contains(RelicId.Endurance));
+            _w.Player.Lumen = _save.lumen;
+            if (_save.soulLevel == name && _save.soulLumen > 0)
+                _w.Soul = new SoulCrystal { Pos = new Vec2(_save.soulX, _save.soulY), Lumen = _save.soulLumen };
 
             _worldRoot = new GameObject("World").transform;
             _level = LevelView.Create(_w, _worldRoot);
@@ -329,6 +356,7 @@ namespace SevenOaths
                     _level.LightAltar(e.Value);
                     _save.level = _levelName;
                     _save.checkpoint = e.Value;
+                    WriteEconomy();
                     SaveSystem.Save(_save);
                     _audio.Play("sfx_altar");
                     _hud.ShowMessage("성수 제단", "기운이 돌아왔다 · 쓰러지면 여기서 다시 일어선다");
@@ -345,10 +373,26 @@ namespace SevenOaths
                 case EventType.RoomWave:
                     if (e.Value > 1) _hud.ShowMessage($"웨이브 {e.Value}", "", 1.5f);
                     break;
+                case EventType.LumenGain:
+                    _economyDirty = true;   // 자주 생기니 몇 초에 한 번 저장
+                    break;
+                case EventType.Death when e.Who is Player:
+                    // 죽으면 이전 영혼의 수정은 어디 있든 사라짐(바로 뒤 SoulCrystalPlaced가 새 수정을 박음)
+                    _save.soulLevel = "";
+                    _save.soulLumen = 0;
+                    WriteEconomy();
+                    SaveSystem.Save(_save);
+                    break;
+                case EventType.SoulCrystalPlaced:
+                case EventType.SoulRecovered:
+                    WriteEconomy();
+                    SaveSystem.Save(_save);
+                    break;
                 case EventType.BossDefeated:
                     // 다시 실행해도 쓰러진 채로(유물을 줍기 전에 꺼도 다음엔 그 자리에 다시 떠 있음)
                     if (!_save.bossesDefeated.Contains(_levelName)) _save.bossesDefeated.Add(_levelName);
                     _save.level = _levelName;
+                    WriteEconomy();
                     SaveSystem.Save(_save);
                     break;
                 case EventType.RelicGet:
@@ -395,6 +439,12 @@ namespace SevenOaths
             if (_input.PausePressed) { OpenPause(); _justOpened = false; RenderWorld(0f); return; }
             if (_input.RelicsPressed) { OpenRelics(); _justOpened = false; RenderWorld(0f); return; }
 
+            if (_economyDirty && Time.unscaledTime >= _economySaveAt)   // 루멘은 몇 초에 한 번만 파일에
+            {
+                _economySaveAt = Time.unscaledTime + 3f;
+                WriteEconomy();
+                SaveSystem.Save(_save);
+            }
             _acc += Mathf.Min(Time.unscaledDeltaTime, 0.1f);
             float simDt = 0f;
             while (_acc >= Tick)

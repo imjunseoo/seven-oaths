@@ -322,6 +322,11 @@ namespace SevenOaths
                     }
                     break;
                 }
+                case FState.Drink:
+                    // 성수병: drink 태그(회복 프레임 3 = FlaskHealAt), 없으면 칼 든 대기 자세
+                    if (_set.Get("drink") != null) { tag = "drink"; frame = DrinkFrame(f.StateFrame); }
+                    else tag = _set.Get("idle_drawn") != null ? "idle_drawn" : "idle";
+                    break;
                 case FState.Recover:
                 {
                     // 반격 오의 뒤: 칼을 짚고 무릎 꿇은 채(parry_slide 2~3) → 칼을 뽑으며 일어섬(parry_rise)
@@ -345,6 +350,16 @@ namespace SevenOaths
             if (c == null || c.frames.Length == 0) { Body.sprite = _set.defaultSprite; return; }
             if (frame < 0) frame = c.FrameAt(t, loop);
             Body.sprite = c.frames[Mathf.Clamp(frame, 0, c.frames.Length - 1)];
+        }
+
+        /// <summary>성수병 drink 6프레임: 0~2는 회복 전(FlaskHealAt까지 고르게), 3 = 회복 순간, 4~5 = 내림.</summary>
+        int DrinkFrame(int f)
+        {
+            int n = _set.Get("drink").frames.Length;
+            if (f < Stats.FlaskHealAt) return Mathf.Min(2, f * 3 / Mathf.Max(1, Stats.FlaskHealAt));
+            if (f < Stats.FlaskHealAt + 6) return Mathf.Min(3, n - 1);
+            int rest = Mathf.Max(1, Stats.FlaskFrames - Stats.FlaskHealAt - 6);
+            return Mathf.Min(n - 1, 4 + (f - Stats.FlaskHealAt - 6) * 2 / rest);
         }
 
         /// <summary>대쉬 공격: 조준이 위·아래 사선(±20° 넘음)이면 사선 전용 태그(없으면 수평 태그).</summary>

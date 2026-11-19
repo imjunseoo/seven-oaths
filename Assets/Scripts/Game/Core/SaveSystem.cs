@@ -15,6 +15,10 @@ namespace SevenOaths
         public List<string> relics = new List<string>();
         public List<string> equipped = new List<string>();
         public List<string> bossesDefeated = new List<string>();   // 쓰러뜨린 보스가 있는 레벨 이름(예: boss_ironwall)
+        public int lumen;                       // 재화 「루멘」
+        public string soulLevel = "";           // 영혼의 수정이 박힌 레벨(없으면 "")
+        public float soulX, soulY;
+        public int soulLumen;
         public float bgmVolume = 0.4f, sfxVolume = 1f, ambVolume = 0.5f;
         public bool fullscreen = true;
         public bool rumble = true;

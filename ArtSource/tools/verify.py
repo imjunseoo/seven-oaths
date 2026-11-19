@@ -20,7 +20,7 @@ SPEC = {
         "slash1": (6, None), "slash2": (6, None), "slash3": (14, None), "heavy": (8, None),
         "charge": (4, 80), "charge_slash": (8, None), "dodge": (5, None), "dodge_slash": (6, None),
         "air_slash": (5, None), "execute": (10, None), "dash_attack": (7, None), "dash_attack_up": (7, None),
-        "dash_attack_down": (7, None), "parry": (4, None), "parry_counter": (4, None), "parry_slide": (4, None), "parry_rise": (3, None), "hurt": (3, 70),
+        "dash_attack_down": (7, None), "parry": (4, None), "parry_counter": (4, None), "parry_slide": (4, None), "parry_rise": (3, None), "drink": (6, None), "hurt": (3, 70),
         "death": (8, 100)}),
     "Enemies/soldier.aseprite": (96, 64, {
         "idle": (4, 150), "walk": (6, 110), "attack": (9, None), "hurt": (2, 80), "broken": (4, 120),
@@ -89,6 +89,9 @@ SPEC = {
     "UI/title_logo.aseprite": (240, 84, None),                          # title lettering, 1 frame
     "UI/title_portrait.aseprite": (158, 100, {"loop": (24, 120)}),       # looping portrait (GPT art via Chunckxel 12px, extended L36/T8), shown x2
     "UI/ui_cursor.aseprite": (12, 15, {"normal": (1, None), "press": (1, None)}),   # hotspot (0,0)
+    "UI/ui_lumen.aseprite": (10, 10, None),                             # currency icon
+    "UI/ui_flask.aseprite": (8, 12, {"full": (1, None), "empty": (1, None)}),
+    "FX/soul_crystal.aseprite": (24, 40, {"idle": (4, 150), "shatter": (6, 50)}),
     "UI/ui_boss_banner.aseprite": (64, 32, None),
     "UI/ui_boss_banner_mark.aseprite": (32, 32, None),
     "UI/ui_oath_banner.aseprite": (64, 32, None),
@@ -100,7 +103,7 @@ SPEC = {
 PROPS_LAYERS = {"torch_stand", "knight_statue", "banner", "weapon_rack", "broken_pillar"}
 R1_PROPS_LAYERS = {"crenel", "broken_banner", "corrupt_vein", "barricade", "crate_pile", "gate_sealed"}
 # (file, tag) -> impact frame index (0-based). The frame must exist inside the tag.
-IMPACT = {("FX/fx_riposte_blast.aseprite", "play"): 4, (H, "slash1"): 2, (H, "slash2"): 2, (H, "slash3"): 8, (H, "heavy"): 4, (H, "charge_slash"): 3,
+IMPACT = {("FX/fx_riposte_blast.aseprite", "play"): 4, (H, "drink"): 3, (H, "slash1"): 2, (H, "slash2"): 2, (H, "slash3"): 8, (H, "heavy"): 4, (H, "charge_slash"): 3,
           (H, "dodge_slash"): 2, (H, "air_slash"): 2, (H, "execute"): 5, (H, "dash_attack"): 2, (H, "draw_slash"): 2, (H, "dash_attack_up"): 2, (H, "dash_attack_down"): 2,
           ("Enemies/soldier.aseprite", "attack"): 5,
           ("Enemies/shieldman.aseprite", "bash"): 3, ("Enemies/shieldman.aseprite", "poke"): 3,

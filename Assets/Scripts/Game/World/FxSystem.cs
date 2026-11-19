@@ -21,6 +21,38 @@ namespace SevenOaths
         }
         class Ghost { public SpriteRenderer r; public float life, max; public bool alive; public float a0; }
         class Flash { public Light2D l; public float life, max, intensity; public bool alive; }
+        class Homer
+        {
+            public SpriteRenderer r; public Vector2 pos, burst, vel; public System.Func<Vector2> target;
+            public float t, delay, dur; public Color c; public bool alive; public System.Action arrive;
+        }
+        readonly List<Homer> _homers = new List<Homer>();
+
+        /// <summary>
+        /// 빨려 드는 빛 알갱이(루멘): delay초 동안 터져 나가듯 퍼졌다가 dur초에 걸쳐 target으로 빨려 들어감(끝에 가속).
+        /// 닿으면 onArrive. 시뮬레이션 시간으로 진행(히트스톱엔 잠깐 멈춤).
+        /// </summary>
+        public void Homing(Sprite sprite, Vector2 fromPx, System.Func<Vector2> target, float delay, float dur, Color c, System.Action onArrive = null)
+        {
+            Homer h = null;
+            foreach (var x in _homers) if (!x.alive) { h = x; break; }
+            if (h == null)
+            {
+                var go = new GameObject("Homer");
+                go.transform.SetParent(transform, false);
+                var r = go.AddComponent<SpriteRenderer>();
+                r.sharedMaterial = _addHot;
+                r.sortingOrder = 44;
+                h = new Homer { r = r };
+                _homers.Add(h);
+            }
+            float a = Random.Range(0f, Mathf.PI * 2f);
+            h.r.sprite = sprite;
+            h.r.gameObject.SetActive(true);
+            h.pos = h.burst = fromPx;
+            h.vel = new Vector2(Mathf.Cos(a), Mathf.Abs(Mathf.Sin(a)) + 0.2f) * Random.Range(40f, 90f);
+            h.target = target; h.t = 0f; h.delay = delay; h.dur = dur; h.c = c; h.alive = true; h.arrive = onArrive;
+        }
 
         readonly List<AnimFx> _anims = new List<AnimFx>();
         readonly List<Particle> _parts = new List<Particle>();
@@ -232,6 +264,22 @@ namespace SevenOaths
         {
             if (simDt <= 0f) return;
             float steps = simDt * 60f;
+
+            foreach (var h in _homers)
+            {
+                if (!h.alive) continue;
+                h.t += simDt;
+                if (h.t < h.delay) { h.pos += h.vel * simDt; h.vel *= Mathf.Pow(0.02f, simDt); h.burst = h.pos; }
+                else
+                {
+                    float u = Mathf.Clamp01((h.t - h.delay) / Mathf.Max(0.01f, h.dur));
+                    var to = h.target != null ? h.target() : h.burst;
+                    h.pos = Vector2.Lerp(h.burst, to, u * u);
+                    if (u >= 1f) { h.alive = false; h.r.gameObject.SetActive(false); h.arrive?.Invoke(); continue; }
+                }
+                h.r.color = h.c;
+                h.r.transform.position = new Vector3(Mathf.Round(h.pos.x) / PPU, Mathf.Round(h.pos.y) / PPU, 0f);
+            }
 
             foreach (var a in _anims)
             {

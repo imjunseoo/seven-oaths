@@ -12,6 +12,7 @@ namespace SevenOaths.Model
         Dodge,
         Parry,     // 주인공: 검을 세워 받아냄(성공하면 반격 자세)
         Recover,   // 주인공: 반격 오의 뒤 칼을 짚고 무릎 꿇었다가 일어섬
+        Drink,     // 주인공: 성수병을 마시는 중(무방비, 걸음 느림)
         Hurt,      // 경직
         Broken,    // 자세 붕괴(처형 가능)
         Held,      // 처형당하는 중(고정)

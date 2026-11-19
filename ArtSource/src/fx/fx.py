@@ -155,6 +155,7 @@ from fx_region1 import fx_block, fx_bolt  # noqa: E402
 from fx_boss1 import fx_shockwave, fx_pillar, fx_parry  # noqa: E402
 from fx_riposte import fx_riposte_slash, fx_riposte_blast, fx_riposte_barrage  # noqa: E402
 from fx_corrupt import fx_corrupt_spike  # noqa: E402
+from fx_soul import fx_soul_crystal  # noqa: E402
 
 
 def fx_slash_heavy():
@@ -591,7 +592,7 @@ def fx_light_sword():
     return a
 
 
-ALL = [fx_corrupt_spike, fx_riposte_slash, fx_riposte_barrage, fx_riposte_blast, fx_shockwave, fx_pillar, fx_parry, fx_block, fx_bolt, fx_rubble, fx_light_orb, fx_light_sword, fx_dash, fx_slash_1, fx_slash_2, fx_slash_3, fx_slash_heavy, fx_slash_charge, fx_slash_air, fx_hit_spark,
+ALL = [fx_soul_crystal, fx_corrupt_spike, fx_riposte_slash, fx_riposte_barrage, fx_riposte_blast, fx_shockwave, fx_pillar, fx_parry, fx_block, fx_bolt, fx_rubble, fx_light_orb, fx_light_sword, fx_dash, fx_slash_1, fx_slash_2, fx_slash_3, fx_slash_heavy, fx_slash_charge, fx_slash_air, fx_hit_spark,
        fx_hit_heavy, fx_hit_ring, fx_crystal_shard, fx_corrupt_burst, fx_dust, fx_glint, fx_charge]
 
 if __name__ == "__main__":

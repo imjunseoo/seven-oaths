@@ -12,6 +12,7 @@ namespace SevenOaths.Model
         public bool AttackPressed, AttackHeld;
         public bool DashPressed;
         public bool DodgePressed;
+        public bool HealPressed;    // 성수병(Q / 패드 LB)
         public bool HasAim;
         public float AimX, AimY;
     }

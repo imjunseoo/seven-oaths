@@ -639,6 +639,63 @@ def anim_parry_rise():
     return render([brace] + rise, loop=False)[1:], [90, 90, 110]
 
 
+FLASK_UP = ["..A..", ".AnA.", "AkGFA", "AFFEA", ".AAA."]          # small crystal flask, upright (navy rim)
+FLASK_TIP = ["...A.", "..AGA", ".AFFA", "AnAA.", ".A..."]          # tipped to the lips (neck lower-left)
+
+
+def _stamp(img, x0, y0, rows):
+    for j, r in enumerate(rows):
+        for i, c in enumerate(r):
+            x, y = x0 + i, y0 + j
+            if c != "." and 0 <= x < W and 0 <= y < H:
+                img[y, x] = K[c]
+
+
+def _glow(img):
+    """1 px blue ring outside the silhouette + a few crystal glints (holy water taking effect)."""
+    m = img >= 0
+    p = np.pad(m, 1)
+    ring = (p[1:-1, 2:] | p[1:-1, :-2] | p[2:, 1:-1] | p[:-2, 1:-1]) & ~m
+    yy, xx = np.mgrid[0:H, 0:W]
+    body = ((yy < 47) & (xx < 58)) | ((yy >= 47) & (xx >= 38) & (xx <= 54))    # not around the sword / sheath
+    out = img.copy()
+    ys, xs = np.where(ring & body & ((xx + yy) % 2 == 0))
+    for y, x in zip(ys, xs):
+        out[y, x] = K["E"]
+    return out
+
+
+def anim_drink():
+    """6 frames, heal = 3 (main session 2026-11-19): standing and unguarded. 0-1 the far hand takes a small
+    crystal flask from the waist and lifts it -> 2 to the lips -> 3 drinks (eyes closed, head back a little,
+    flask and body glow blue) -> 4-5 lower it and settle back into the drawn stance."""
+    base = dict(hip=(46.0, 45.0), foot_n=(43.0, 61.0), foot_f=(50.0, 61.0), hand_n=(52.0, 47.0), sword=62)
+    probe = P(**base, lean=-2)
+    hd = skeleton(probe)["head"]
+    hx, hy = int(round(hd[0] - 7)), int(round(hd[1] - 16))
+    lips = (hx + 12, hy + 13)
+    seq = [
+        P(**base, lean=3, hand_f=(43.0, 50.0), hair_add=1),
+        P(**base, lean=1, hand_f=(51.0, 41.0)),
+        P(**base, lean=-2, hand_f=(lips[0] - 1.0, lips[1] + 2.0), elbow_f=-1),
+        P(**base, lean=-4, hand_f=(lips[0] - 1.0, lips[1] + 1.5), elbow_f=-1, head="blink", hair_add=-3,
+          sparks=[(40, 30, 1), (56, 38, 1), (44, 52, 0), (54, 26, 0)]),
+        P(**base, lean=-1, hand_f=(50.0, 43.0), sparks=[(42, 34, 0), (55, 44, 0)]),
+        P(hip=(46.0, 45.0), breathe=0, hand_n=(52.0, 46.0), hand_f=(49.0, 45.0), sword=40,
+          foot_n=(43.0, 61.0), foot_f=(50.0, 61.0)),
+    ]
+    frames = render(seq, loop=False)
+    for i, (f, q) in enumerate(zip(frames, seq)):
+        wr = skeleton(q)["wr_f"]
+        wx, wy = int(round(wr[0])), int(round(wr[1])) + 1          # render() drops everything 1 px
+        if i in (0, 1, 4):
+            _stamp(f, wx - 2, wy - 4, FLASK_UP)
+        elif i in (2, 3):
+            _stamp(f, lips[0] - 1, lips[1] - 3 + 1, FLASK_TIP)
+    frames[3] = _glow(frames[3])
+    return frames, [90, 100, 110, 240, 110, 120]
+
+
 def anim_dash_attack_up():
     """7 frames, impact = 2: dash up 45 deg (aim >= +20 deg). 0-1 coil low, blade back-down, eyes and body
     turned up the diagonal; 2-4 stretched along the up-right diagonal, blade leading (code hides the body
@@ -733,7 +790,7 @@ RAW = {
     "dodge_slash": anim_dodge_slash, "air_slash": anim_air_slash, "execute": anim_execute,
     "dash_attack": anim_dash_attack, "dash_attack_up": anim_dash_attack_up,
     "dash_attack_down": anim_dash_attack_down, "parry": anim_parry, "parry_counter": anim_parry_counter,
-    "parry_slide": anim_parry_slide, "parry_rise": anim_parry_rise, "hurt": anim_hurt, "death": anim_death,
+    "parry_slide": anim_parry_slide, "parry_rise": anim_parry_rise, "drink": anim_drink, "hurt": anim_hurt, "death": anim_death,
 }
 
 

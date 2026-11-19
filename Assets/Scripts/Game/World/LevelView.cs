@@ -39,6 +39,7 @@ namespace SevenOaths
         readonly List<SpriteRenderer> _relics = new List<SpriteRenderer>();
         SpriteRenderer _sphere, _sphereGround;
         SpriteRenderer _leapMark, _leapRing, _leapBeam;
+        SpriteRenderer _soul, _soulHalo;
         readonly List<SpriteRenderer> _spikeR = new List<SpriteRenderer>();
         static Sprite _sphereSprite;
 
@@ -289,6 +290,7 @@ namespace SevenOaths
             RenderRelics(w, time);
             RenderSphere(w, time);
             RenderLeapMark(w, time);
+            RenderSoul(w, time);
             RenderSpikes(w, time);
         }
 
@@ -544,6 +546,45 @@ namespace SevenOaths
             _leapBeam.transform.position = new Vector3(x / PPU, (y + bh * 0.5f) / PPU, 0f);
             _leapBeam.transform.localScale = new Vector3(Mathf.Lerp(6f, 22f, grow) * (falling ? 1.6f : 1f) / 4f, bh / 4f, 1f);
             _leapBeam.color = new Color(red.r, red.g, red.b, (locked ? 0.22f : 0.12f) * blink);
+        }
+
+        /// <summary>영혼의 수정: 죽은 자리에 박힌 수정(soul_crystal idle 루프, 없으면 코드 그림) + 뒤의 푸른 후광 맥동.</summary>
+        void RenderSoul(World w, float time)
+        {
+            var s = w.Soul;
+            if (_soul == null)
+            {
+                _soulHalo = Sr("SoulHalo", SphereSprite(), transform, 5, lit: false);
+                _soulHalo.sharedMaterial = _laserMat;
+                _soul = Sr("SoulCrystal", Placeholder.White(), transform, 6, lit: false);
+            }
+            _soul.gameObject.SetActive(s != null);
+            _soulHalo.gameObject.SetActive(s != null);
+            if (s == null) return;
+            var idle = GameAssets.Instance.Anim("soul_crystal")?.Get("idle");
+            float x = Mathf.Round(s.Pos.X), y = Mathf.Round(s.Pos.Y);
+            if (idle != null)
+            {
+                _soul.sprite = idle.frames[idle.FrameAt(time, true)];
+                _soul.color = Color.white;
+                _soul.transform.localScale = Vector3.one;
+                _soul.transform.rotation = Quaternion.identity;
+                _soul.transform.position = new Vector3(x / PPU, y / PPU, 0f);
+            }
+            else
+            {
+                // 임시: 비스듬히 박힌 얼음빛 마름모(진홍으로 맥동)
+                float k = 0.5f + 0.5f * Mathf.Sin(time * 3f);
+                _soul.sprite = Placeholder.White();
+                _soul.color = Color.Lerp(new Color(0.65f, 0.85f, 1f), new Color(0.9f, 0.3f, 0.4f), k * 0.35f);
+                _soul.transform.rotation = Quaternion.Euler(0f, 0f, 45f);
+                _soul.transform.localScale = new Vector3(4f, 4f, 1f);
+                _soul.transform.position = new Vector3(x / PPU, (y + 12f) / PPU, 0f);
+            }
+            float hk = 0.32f + 0.06f * Mathf.Sin(time * 2.4f);
+            _soulHalo.transform.position = new Vector3(x / PPU, (y + 18f) / PPU, 0f);
+            _soulHalo.transform.localScale = new Vector3(hk, hk, 1f);
+            _soulHalo.color = new Color(0.45f, 0.75f, 1f, 0.55f);
         }
 
         /// <summary>침식 가시: 솟기 전엔 바닥에 붉은 균열(솟을 때가 가까울수록 밝게), 솟으면 진홍 가시가 3틱 만에 올라왔다 가라앉음.</summary>

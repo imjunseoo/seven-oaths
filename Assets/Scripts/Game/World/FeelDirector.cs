@@ -314,6 +314,52 @@ namespace SevenOaths
                     _hud.ShowOathClear(1.3f);
                     _vignette = 0.35f;
                     break;
+                case EventType.LumenGain:
+                {
+                    // 루멘: 쓰러진 자리에서 빛 알갱이가 터져 나왔다가 주인공에게 빨려 듦(닿을 때마다 작게 '칭')
+                    int n = Mathf.Clamp(e.Value / 3, 4, 24);
+                    var from = V(e.Pos);
+                    var spr = Placeholder.Dot2();
+                    for (int i = 0; i < n; i++)
+                        _fx.Homing(spr, from, () => Center(_w.Player), Random.Range(0.12f, 0.3f), Random.Range(0.35f, 0.6f),
+                                   new Color(0.75f, 0.92f, 1f), () => { _audio.Play(GameAssets.Instance.Audio("sfx_lumen_gain") != null ? "sfx_lumen_gain" : "sfx_ui_click", 0.35f, 0.1f, 0.06f); _hud.LumenPulse(); });
+                    break;
+                }
+                case EventType.SoulCrystalPlaced:
+                    _fx.Corruption(V(e.Pos) + new Vector2(0f, 14f), 30, 10f);
+                    _fx.LightFlash(V(e.Pos) + new Vector2(0f, 16f), new Color(0.55f, 0.8f, 1f), 2.5f, 90f, 0.6f);
+                    PlayOr("sfx_soul_crystal_form", "sfx_altar", 0.8f);
+                    break;
+                case EventType.SoulRecovered:
+                {
+                    var at = V(e.Pos) + new Vector2(0f, 16f);
+                    if (GameAssets.Instance.Anim("soul_crystal")?.Get("shatter") != null) _fx.Play("soul_crystal", V(e.Pos), 1, 0f, hot: true, order: 42, tag: "shatter");
+                    _fx.Shards(at, 1, 10, 3f);
+                    _fx.Shards(at, -1, 10, 3f);
+                    _fx.LightFlash(at, new Color(0.7f, 0.9f, 1f), 4f, 140f, 0.5f);
+                    _screen.Shake(2f, 8, Vector2.up);
+                    PlayOr("sfx_soul_crystal_break", "sfx_relic_get");
+                    _hud.ShowMessage("영혼을 되찾았다", $"+{e.Value} 루멘", 2f);
+                    for (int i = 0; i < Mathf.Clamp(e.Value / 5, 6, 30); i++)
+                        _fx.Homing(Placeholder.Dot2(), at, () => Center(_w.Player), Random.Range(0.1f, 0.35f), Random.Range(0.4f, 0.7f),
+                                   new Color(0.8f, 0.95f, 1f), () => _hud.LumenPulse());
+                    break;
+                }
+                case EventType.FlaskStart:
+                    PlayOr("sfx_flask_drink", "sfx_altar", 0.9f);
+                    break;
+                case EventType.FlaskHeal:
+                    if (v != null) { v.Flash(4, new Color(0.6f, 0.9f, 1f)); _fx.Afterimage(v, FxSystem.GhostColor.Blue, 0.3f, 0.5f); }
+                    _fx.LightFlash(Center(who), new Color(0.5f, 0.85f, 1f), 2.5f, 90f, 0.4f);
+                    for (int i = 0; i < 14; i++)
+                        _fx.Emit(Placeholder.Dot2(), V(who.Body.Pos) + new Vector2(Random.Range(-10f, 10f), Random.Range(2f, 30f)),
+                                 new Vector2(Random.Range(-0.2f, 0.2f), Random.Range(0.6f, 1.4f)), Random.Range(0.4f, 0.8f),
+                                 Color.white, new Color(0.4f, 0.8f, 1f, 0f), gravity: -0.01f, bounce: false);
+                    break;
+                case EventType.FlaskEmpty:
+                    PlayOr("sfx_flask_empty", "sfx_ui_click", 0.8f);
+                    _hud.ShowMessage("성수병이 비었다", "성수 제단에서 다시 채워진다", 1.5f);
+                    break;
                 case EventType.CorruptionBurst:
                 {
                     // 침식이 터짐(HP 절반): 진홍 폭발 + 붉은 화면 번쩍 + 크게 흔들림(이어서 BossPhase2 포효 연출)

@@ -54,7 +54,7 @@ namespace SevenOaths.Model
         public const int HurtInvuln = 45;
         public const float HurtKnock = 2.5f;
         public const int PlayerRespawnFrames = 90;
-        public const float ExecuteHeal = 10f;
+        public const float ExecuteHeal = 0f;      // (사용자 결정) 처형 회복 없앰 — 회복은 성수병으로
         public const float ExecuteRange = 40f;
         public const float ExecuteStandOff = 22f;
         public const int CounterWindow = 60;
@@ -71,6 +71,15 @@ namespace SevenOaths.Model
         public const float ParryBossPoise = 0.25f; // 보스 자세 피해(최대치 대비)
         public const float ReflectSpeedMul = 1.4f; // 되받아친 화살 속도
         public const int RelicSlots = 3;
+
+        // ── 바탕 시스템(사용자 결정): 재화 「루멘」 · 영혼의 수정 · 성수병 ──
+        public const int LumenSoldier = 15, LumenShieldman = 20, LumenCrossbow = 12, LumenBoss = 600;
+        public const int FlaskMax = 3;
+        public const float FlaskHeal = 0.4f;        // 최대 HP 대비
+        public const int FlaskFrames = 40;          // 마시는 동안 무방비(걸음 느림)
+        public const int FlaskHealAt = 24;          // 이 프레임에 회복(그 전에 맞으면 병은 안 쓴 것)
+        public const float FlaskWalk = 0.8f;
+        public const float SoulCrystalW = 20f, SoulCrystalH = 36f;
 
         // ── 패리 반격 오의(사용자 요청): 패리 성공 → 시간 정지(크로노스피어) → 좌클릭 → 주인공이 사라지고 구체 안에 참격 9번 → 폭발 → 복귀 ──
         public const int ParryTimeStop = 54;          // 시간 정지(실시간 틱) — 이 안에 좌클릭

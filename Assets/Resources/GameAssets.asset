@@ -400,22 +400,22 @@ MonoBehaviour:
       - 0.00999999
     - tag: death
       frames:
-      - {fileID: 5400410385733257253, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: -7045220651538186021, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: -5257939904574958897, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: -8090494384605855415, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: -8388660964749890384, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: -3318635344013396816, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
       - {fileID: 6635413206777244139, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
       - {fileID: -8740307586984759357, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: -8740307586984759357, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: 8862970950639642328, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: 4199950542856517587, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -7518495073956024967, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -2840830382163650093, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: 7900345870945930126, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -65532445388011203, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -65532445388011203, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
       durations:
-      - 0.09999943
       - 0.10000038
       - 0.10000038
       - 0.09999943
       - 0.10000038
       - 0.09999943
+      - 0.10000038
       - 0.10000038
       - 0.09000003
       - 0.00999999
@@ -479,6 +479,23 @@ MonoBehaviour:
       - 0.09000003
       - 0.09
       - 0.00999999
+    - tag: drink
+      frames:
+      - {fileID: -7014850002350436025, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: 173389493484076758, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: 3107633609452002672, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: 5400410385733257253, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -7045220651538186021, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -5257939904574958897, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -5257939904574958897, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      durations:
+      - 0.09000015
+      - 0.09999943
+      - 0.11000061
+      - 0.23999977
+      - 0.10999966
+      - 0.110000014
+      - 0.00999999
     - tag: execute
       frames:
       - {fileID: 6262642711283711285, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
@@ -536,13 +553,13 @@ MonoBehaviour:
       - 0.00999999
     - tag: hurt
       frames:
-      - {fileID: -7014850002350436025, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: 173389493484076758, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: 3107633609452002672, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-      - {fileID: 3107633609452002672, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -8090494384605855415, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -8388660964749890384, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -3318635344013396816, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+      - {fileID: -3318635344013396816, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
       durations:
-      - 0.069999695
       - 0.07000065
+      - 0.069999695
       - 0.059999987
       - 0.010000005
     - tag: idle
@@ -1813,6 +1830,39 @@ MonoBehaviour:
       - 0.04
       - 0.029999986
       - 0.010000005
+  - name: soul_crystal
+    defaultSprite: {fileID: 9203507882827789792, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+    clips:
+    - tag: idle
+      frames:
+      - {fileID: 9203507882827789792, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: 4014078557069621341, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: 6498730153150543236, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: 8733790959886876941, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: 8733790959886876941, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      durations:
+      - 0.15
+      - 0.15
+      - 0.14999998
+      - 0.14000005
+      - 0.00999999
+    - tag: shatter
+      frames:
+      - {fileID: -1830605114554051721, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: -5054922229420614349, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: -7518756635283981292, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: 3518731025562463193, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: 4254744509464675427, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: -1863633081178808337, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      - {fileID: -1863633081178808337, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+      durations:
+      - 0.049999952
+      - 0.050000012
+      - 0.050000012
+      - 0.050000012
+      - 0.050000012
+      - 0.04000002
+      - 0.00999999
   - name: title_portrait
     defaultSprite: {fileID: 6274449598044975790, guid: bdaa8d9a3229a4c41bf4eab2bcc13648, type: 3}
     clips:
@@ -1883,6 +1933,23 @@ MonoBehaviour:
       frames:
       - {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
       - {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
+  - name: ui_flask
+    defaultSprite: {fileID: 2902316868587936234, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+    clips:
+    - tag: empty
+      frames:
+      - {fileID: 2902316868587936234, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+      - {fileID: 2902316868587936234, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
+    - tag: full
+      frames:
+      - {fileID: 6738822397740363164, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+      - {fileID: 6738822397740363164, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
       durations:
       - 0.09
       - 0.009999998
@@ -2419,7 +2486,7 @@ MonoBehaviour:
   - name: heroine/dash_attack_up
     sprite: {fileID: 2641964395040647094, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/death
-    sprite: {fileID: 5400410385733257253, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+    sprite: {fileID: 6635413206777244139, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/dodge
     sprite: {fileID: -8753910349487849789, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/dodge_slash
@@ -2428,6 +2495,8 @@ MonoBehaviour:
     sprite: {fileID: 3593062055587896629, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/draw_slash
     sprite: {fileID: 7308884510755165495, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/drink
+    sprite: {fileID: -7014850002350436025, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/execute
     sprite: {fileID: 6262642711283711285, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/fall
@@ -2435,7 +2504,7 @@ MonoBehaviour:
   - name: heroine/heavy
     sprite: {fileID: -3224648909109333504, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/hurt
-    sprite: {fileID: -7014850002350436025, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+    sprite: {fileID: -8090494384605855415, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/idle
     sprite: {fileID: 3434369325832457008, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/idle_drawn
@@ -2722,6 +2791,30 @@ MonoBehaviour:
     sprite: {fileID: -8740307586984759357, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_16
     sprite: {fileID: 5606121880354156071, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/Frame_160
+    sprite: {fileID: 8862970950639642328, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: Frame_160
+    sprite: {fileID: 8862970950639642328, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/Frame_161
+    sprite: {fileID: 4199950542856517587, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: Frame_161
+    sprite: {fileID: 4199950542856517587, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/Frame_162
+    sprite: {fileID: -7518495073956024967, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: Frame_162
+    sprite: {fileID: -7518495073956024967, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/Frame_163
+    sprite: {fileID: -2840830382163650093, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: Frame_163
+    sprite: {fileID: -2840830382163650093, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/Frame_164
+    sprite: {fileID: 7900345870945930126, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: Frame_164
+    sprite: {fileID: 7900345870945930126, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: heroine/Frame_165
+    sprite: {fileID: -65532445388011203, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
+  - name: Frame_165
+    sprite: {fileID: -65532445388011203, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_17
     sprite: {fileID: -6366100988667504759, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_18
@@ -3804,6 +3897,32 @@ MonoBehaviour:
     sprite: {fileID: -1815150486231544686, guid: 943bab5075e16134884f384fe0b98723, type: 3}
   - name: fx_slash_heavy/Frame_4
     sprite: {fileID: -4323164642684094725, guid: 943bab5075e16134884f384fe0b98723, type: 3}
+  - name: soul_crystal/idle
+    sprite: {fileID: 9203507882827789792, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/shatter
+    sprite: {fileID: -1830605114554051721, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal
+    sprite: {fileID: 9203507882827789792, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_0
+    sprite: {fileID: 9203507882827789792, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_1
+    sprite: {fileID: 4014078557069621341, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_2
+    sprite: {fileID: 6498730153150543236, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_3
+    sprite: {fileID: 8733790959886876941, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_4
+    sprite: {fileID: -1830605114554051721, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_5
+    sprite: {fileID: -5054922229420614349, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_6
+    sprite: {fileID: -7518756635283981292, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_7
+    sprite: {fileID: 3518731025562463193, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_8
+    sprite: {fileID: 4254744509464675427, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
+  - name: soul_crystal/Frame_9
+    sprite: {fileID: -1863633081178808337, guid: 8e7340761c66f76438eb14c6ddbc60b6, type: 3}
   - name: relic_endurance
     sprite: {fileID: 8903971247531921727, guid: b77b0186ea54b8b4a8ca6d18ac6c4851, type: 3}
   - name: title_logo
@@ -3922,6 +4041,16 @@ MonoBehaviour:
     sprite: {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
   - name: ui_cursor/Frame_1
     sprite: {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+  - name: ui_flask/empty
+    sprite: {fileID: 2902316868587936234, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+  - name: ui_flask/full
+    sprite: {fileID: 6738822397740363164, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+  - name: ui_flask
+    sprite: {fileID: 2902316868587936234, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+  - name: ui_flask/Frame_0
+    sprite: {fileID: 6738822397740363164, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
+  - name: ui_flask/Frame_1
+    sprite: {fileID: 2902316868587936234, guid: 28ee6cd2f9a699948b36832329b66f04, type: 3}
   - name: ui_hp/fill
     sprite: {fileID: 4896592003576973236, guid: 4907e7f617c523142ab44918ff7d509c, type: 3}
   - name: ui_hp/frame
@@ -3932,6 +4061,8 @@ MonoBehaviour:
     sprite: {fileID: -8634974861502045646, guid: 4907e7f617c523142ab44918ff7d509c, type: 3}
   - name: ui_hp/Frame_1
     sprite: {fileID: 4896592003576973236, guid: 4907e7f617c523142ab44918ff7d509c, type: 3}
+  - name: ui_lumen
+    sprite: {fileID: 1827722841234139312, guid: a4114ec19aabfe74f8fd28327b60059d, type: 3}
   - name: ui_menu_button/hover
     sprite: {fileID: -7935770536606209887, guid: ccaacf14149b4fc4ba0dcdd60da32cbf, type: 3}
   - name: ui_menu_button/normal
@@ -4067,6 +4198,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 3372922254dab1f4598efaec0d7a5da7, type: 3}
   - name: sfx_execute
     clip: {fileID: 8300000, guid: 215aab4b007eee9439f4ff5e73579e1e, type: 3}
+  - name: sfx_flask_drink
+    clip: {fileID: 8300000, guid: 2ef75c61171f7574bb18160297985279, type: 3}
+  - name: sfx_flask_empty
+    clip: {fileID: 8300000, guid: 9efe766ef54d4b840a6a3bcd7cf7fed0, type: 3}
   - name: sfx_gate_drop
     clip: {fileID: 8300000, guid: 3fde648be6a404f4791abad06f2088bd, type: 3}
   - name: sfx_gate_rise
@@ -4101,6 +4236,12 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 0fa810d12a0bd014d83d246678cc5f58, type: 3}
   - name: sfx_land
     clip: {fileID: 8300000, guid: 63d6fadf0cd8c3f41be7b3c8ae0a20aa, type: 3}
+  - name: sfx_lumen_gain_01
+    clip: {fileID: 8300000, guid: 1f5a716f96c46b643921c71a88fbb0c3, type: 3}
+  - name: sfx_lumen_gain_02
+    clip: {fileID: 8300000, guid: 7a0b534b4f943c14ebba79e5fcc209a6, type: 3}
+  - name: sfx_lumen_gain_03
+    clip: {fileID: 8300000, guid: 0beffada7c33b7d4cb1bdb60f4b87b97, type: 3}
   - name: sfx_oath_absorb
     clip: {fileID: 8300000, guid: bab476d2637a42b43be3708c96d25cf2, type: 3}
   - name: sfx_oath_inherit
@@ -4139,6 +4280,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 0d51cfb93a8ca8247aeda7aa4da5cf4a, type: 3}
   - name: sfx_shield_block_03
     clip: {fileID: 8300000, guid: 0cb7e373aa9ff9d4ea2762b6688a4533, type: 3}
+  - name: sfx_soul_crystal_break
+    clip: {fileID: 8300000, guid: cf46280cdd06a4044b662c8bdad9d249, type: 3}
+  - name: sfx_soul_crystal_form
+    clip: {fileID: 8300000, guid: b990cda127ad5ff48b249059275fd64e, type: 3}
   - name: sfx_spike_crack
     clip: {fileID: 8300000, guid: 309fce02b2fb32e4d8678c950b8a4285, type: 3}
   - name: sfx_spike_erupt_01

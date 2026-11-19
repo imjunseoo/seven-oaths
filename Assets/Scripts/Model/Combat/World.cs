@@ -32,6 +32,14 @@ namespace SevenOaths.Model
         public bool Warning => Age < Erupt;
     }
 
+    /// <summary>영혼의 수정: 죽은 자리에 박혀 잃은 루멘을 가둔다. 베어 부수면 되찾는다.</summary>
+    public sealed class SoulCrystal
+    {
+        public Vec2 Pos;
+        public int Lumen;
+        public Box Box => new Box(Pos.X - Stats.SoulCrystalW * 0.5f, Pos.Y, Stats.SoulCrystalW, Stats.SoulCrystalH);
+    }
+
     /// <summary>패리 반격 오의 진행(시간이 멈춘 크로노스피어 안).</summary>
     public sealed class RiposteState
     {
@@ -67,6 +75,8 @@ namespace SevenOaths.Model
         public readonly List<Pillar> Pillars = new List<Pillar>();
         public readonly List<RelicDrop> Drops = new List<RelicDrop>();
         public readonly List<Spike> Spikes = new List<Spike>();
+        /// <summary>이 레벨에 박힌 영혼의 수정(없으면 null). GameRoot가 저장과 맞춘다.</summary>
+        public SoulCrystal Soul;
         int _spikeLine;
         readonly HashSet<int> _spikeDone = new HashSet<int>();
         int _relicTimer;
@@ -162,6 +172,7 @@ namespace SevenOaths.Model
             for (int i = 0; i < Enemies.Count; i++) Enemies[i].Step(this);
             StepProjectiles();
             StepSpikes();
+            StepSoul();
             SeparateBodies();
             ResolveHits();
             StepRooms();
@@ -496,7 +507,7 @@ namespace SevenOaths.Model
         {
             var hurt = t.Hurtbox;
             HitEnemy(p, t, Moves.Execute, new Vec2(hurt.CenterX, hurt.CenterY), true);
-            p.Hp = Math.Min(p.MaxHp, p.Hp + Stats.ExecuteHeal);
+            if (Stats.ExecuteHeal > 0f) p.Hp = Math.Min(p.MaxHp, p.Hp + Stats.ExecuteHeal);   // (사용자 결정) 지금은 0 — 회복은 성수병
         }
 
         void HitEnemy(Player p, Enemy e, MoveData m, Vec2 point, bool execute)
@@ -543,6 +554,7 @@ namespace SevenOaths.Model
             });
             if (broke) Emit(EventType.PoiseBreak, e);
             if (killed) Emit(EventType.Death, e);
+            if (killed) GiveLumen(e);
             if (killed && e.IsBoss)
             {
                 BossDefeated = true;
@@ -574,6 +586,56 @@ namespace SevenOaths.Model
             if (broke) Emit(EventType.PoiseBreak, e);
         }
 
+        /// <summary>쓰러뜨린 적의 루멘(허수아비·수련장 제외).</summary>
+        void GiveLumen(Enemy e)
+        {
+            int n = e.Kind == EnemyKind.Soldier ? Stats.LumenSoldier : e.Kind == EnemyKind.Shieldman ? Stats.LumenShieldman
+                  : e.Kind == EnemyKind.Crossbow ? Stats.LumenCrossbow : e.IsBoss ? Stats.LumenBoss : 0;
+            if (n <= 0 || (e.Respawns && Checkpoint < 0 && Level.EnemiesRespawn)) return;   // 수련장 적은 루멘 없음
+            Player.Lumen += n;
+            Emit(EventType.LumenGain, Player, e, value: n, pos: new Vec2(e.Body.Pos.X, e.Body.Pos.Y + e.Body.H * 0.5f));
+        }
+
+        /// <summary>죽음: 가진 루멘을 모두 잃고, 마지막으로 서 있던 자리에 영혼의 수정(이전 수정은 사라짐).</summary>
+        void OnPlayerDied()
+        {
+            var p = Player;
+            Soul = null;
+            if (p.Lumen > 0)
+            {
+                Soul = new SoulCrystal { Pos = p.LastGround, Lumen = p.Lumen };
+                p.Lumen = 0;
+                Emit(EventType.SoulCrystalPlaced, p, value: Soul.Lumen, pos: Soul.Pos);
+            }
+            else p.Lumen = 0;
+        }
+
+        /// <summary>테스트·자동 검증: 보통 죽음과 같은 길로 쓰러짐(영혼의 수정이 박힘).</summary>
+        public void DebugKillPlayer()
+        {
+            var p = Player;
+            if (!p.Alive) return;
+            p.Invuln = 0;
+            p.OnHurt(this, null, p.Hp + 1f, -p.Body.Facing);
+            Emit(EventType.Death, p);
+            OnPlayerDied();
+        }
+
+        /// <summary>영혼의 수정을 베면 부서지며 루멘을 되찾는다(대쉬로 지나가도).</summary>
+        void StepSoul()
+        {
+            var p = Player;
+            if (Soul == null || !p.Alive) return;
+            var hb = p.ActiveHitbox;
+            if (!hb.HasValue || !hb.Value.Overlaps(Soul.Box)) return;
+            int n = Soul.Lumen;
+            var at = Soul.Pos;
+            Soul = null;
+            p.Lumen += n;
+            HitStop = Math.Max(HitStop, 6);
+            Emit(EventType.SoulRecovered, p, value: n, pos: at);
+        }
+
         void HitPlayer(Enemy e, MoveData m, Vec2 point, int dir)
         {
             var p = Player;
@@ -587,7 +649,7 @@ namespace SevenOaths.Model
                 Damage = m.Damage, Killed = !p.Alive, Index = HitCount,
             });
             Emit(EventType.PlayerHurt, p, e);
-            if (!p.Alive) Emit(EventType.Death, p);
+            if (!p.Alive) { Emit(EventType.Death, p); OnPlayerDied(); }
         }
 
         void Impact(HitLevel level)
@@ -823,6 +885,7 @@ namespace SevenOaths.Model
                 Checkpoint = inside;
                 p.Spawn = Level.Checkpoints[inside];
                 p.Hp = p.MaxHp;
+                p.Flasks = p.FlasksMax;   // 제단에서 성수병도 다시 채워짐
                 Emit(EventType.CheckpointLit, p, value: inside, pos: Level.Checkpoints[inside]);
             }
             _insideCheckpoint = inside;

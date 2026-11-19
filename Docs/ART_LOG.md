@@ -393,6 +393,33 @@
 - heroine.aseprite 재출력(28태그), verify 62/62. 손으로 덮어쓴 프레임이 없어서 모든 동작에 반영됨.
 - 비교: `previews/characters/face_v2_review.png`, `face_v2_in_motion.png`.
 
+## 바탕 시스템 3종: 루멘·성수병·영혼의 수정 + drink (메인 요청 2026-11-19, 손 도트, PixelLab 안 씀)
+- `UI/ui_lumen.aseprite` 10×10, 1프레임. 루멘 아이콘: 얼음 파랑과 흰 빛의 4갈래 수정 별(가운데 W, 위·왼쪽 G/F, 아래·오른쪽 E/D), 남색 외곽 A. 내용은 9×9이고 오른쪽·아래 1px 여백.
+- `UI/ui_flask.aseprite` 8×12, 태그 `full`·`empty`. 금 테 수정 마개 + 깎은 유리병, 남색 외곽.
+  - `full`: 하늘색 성수(G/F/E/D) + 왼쪽 유리 광택(w/k).
+  - `empty`: 어두운 빈 유리(3/2) + 광택만.
+  - 미리보기 `previews/ui/ui_lumen_flask_x4.png`(밤·회색·흰 배경).
+- `FX/soul_crystal.aseprite` 24×40, 피벗 바닥 가운데(바닥 줄 y 39). 소스 `ArtSource/src/fx/fx_soul.py`.
+  - `idle` 4×150ms: 바닥에 14° 기울어 박힌 은빛·얼음 파랑 수정(왼쪽 가장자리 은색 k, 오른쪽 B, 끝 능선 W).
+    - 안에 무릎을 끌어안고 웅크린 주인공 실루엣(C/B)과 은발(j/i)이 비침.
+    - 진홍 침식 맥 3줄이 표면을 감싸며 M→N→O→N으로 맥동하고, 2번 프레임에 뜨거운 마디 P.
+    - 밑동에 흙.
+  - `shatter` 6×50ms:
+    - 0: 흰 금 + 맥 섬광.
+    - 1: 금이 번지고 빛이 새며 1px 흔들림.
+    - 2: 네 조각으로 쪼개지고 가운데 흰 빛.
+    - 3~5: 파편 14개와 빛줄기가 위로 흩어지며 사라짐.
+  - 미리보기 `previews/fx/soul_crystal_x6.png`.
+- heroine `drink` 6프레임, **회복 프레임 3**, ms `90,100,110,240,110,120`. 서 있는 무방비 자세, 검은 오른손에 낮게 든 채.
+  - 0: 먼 쪽 손이 허리에서 작은 수정병을 꺼냄.
+  - 1: 가슴 높이로 듦.
+  - 2: 입가로 기울임.
+  - **3: 마심.** 눈을 감고 고개를 살짝 젖힘. 몸 둘레(칼·칼집 제외)에 성긴 푸른 빛 테두리와 반짝임.
+  - 4: 내림.
+  - 5: 칼 든 대기 자세로 복귀.
+  - 병은 남색 테를 두른 5×5. heroine 29태그, verify IMPACT (heroine, drink)=3. 미리보기 `previews/characters/drink_x5.png`.
+- verify 65/65.
+
 ## 남은 것 / 다음
 - 주인공 사용자 최종 승인.
 - 손 보정 2차: 나머지 공격 태그의 타격 프레임(slash2·3, heavy, charge_slash, dodge_slash, air_slash, execute) + run 다리 모양 → `frames/heroine/*.txt`.

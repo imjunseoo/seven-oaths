@@ -1431,6 +1431,105 @@ def spike_erupt(i):
     return x * env_points(n, [(0, 1), (0.09, 0.5), (0.13, 0)])
 
 
+# ============================================================ 8. core systems: lumen / flask / soul crystal
+# (not the sword: the flask is real glass, the soul crystal is an object -> glass / crystal timbre allowed here;
+#  lumen motes use the same soft metal chime as sfx_oath_absorb)
+LUMEN_NOTES = [1174.66, 1479.98, 1760.0]   # D6 F#6 A6 - several pickups in a row make a soft arpeggio
+
+
+def lumen_gain(i):
+    """a mote of light reaching the body: small, soft, clear 'ching' (metal chime, soft attack, short)"""
+    n = N(0.35)
+    f = LUMEN_NOTES[i]
+    c = chime(n, f, 0.14, seed=4200 + i)
+    c = c * env_points(n, [(0, 0), (0.003, 1), (1, 1)])
+    air = bp(white(n, 4203 + i), 2500, 6000) * env_points(n, [(0, 0), (0.005, 1), (0.06, 0)])
+    x = mixdb((c, 0), (air, -24))
+    return room(lp(x, 6000, 4), rt=0.5, wet=0.12, seed=101)
+
+
+FLASK_HEAL_T = 0.40
+
+
+def flask_drink():
+    """holy-water flask: glass 'click' of the stopper -> a short gulp -> holy light swelling 'shiing' that peaks with a
+    soft chime at 0.40 s (the heal moment)"""
+    n = N(1.3)
+    t = T(n)
+    click = add(glass_ping(2600, 0.04, N(0.3), seed=4210, amps=(1, 0.25, 0.05), attack=0.0005),
+                0.6 * bp(white(N(0.3), 4211), 1500, 5000) * env_exp(N(0.3), 0.002, 0.0002))
+    m = N(0.25)
+    tm = T(m)
+    gulp = sine(320 - 170 * np.clip(tm / 0.08, 0, 1), m) * env_points(m, [(0, 0), (0.01, 1), (0.06, 0.6), (0.1, 0)])
+    gulp += 0.4 * lp(white(m, 4212), 600, 2) * env_points(m, [(0, 0), (0.01, 1), (0.05, 0)])
+    rise = svf(bp(white(n, 4213), 400, 6000), 600 + 2600 * np.clip((t - 0.12) / (FLASK_HEAL_T - 0.12), 0, 1) ** 1.4,
+               3.0, "bp")
+    rise *= env_points(n, [(0, 0), (0.15, 0), (FLASK_HEAL_T - 0.02, 1), (FLASK_HEAL_T + 0.25, 0)])
+    pad = sum(sine(f, n) * a for f, a in ((587.33, 1.0), (880.0, 0.6), (1174.66, 0.35)))
+    pad *= env_points(n, [(0, 0), (0.2, 0), (FLASK_HEAL_T, 1), (0.9, 0.3), (1.2, 0)])
+    heal = add(chime(N(1.0), 1174.66, 0.45, seed=4214), 0.6 * chime(N(1.0), 1760.0, 0.35, seed=4215))
+    x = mixdb((click, -4), (at(n, gulp, 0.14), -6), (rise, -9), (pad, -12), (at(n, heal, FLASK_HEAL_T), 0))
+    return room(lp(x, 6500, 4), rt=1.0, wet=0.2, seed=102)
+
+
+def flask_empty():
+    """empty flask: a hollow glass 'tok' (bottle body ~320 Hz + glass partials) and a small falling sigh-blip"""
+    n = N(0.45)
+    t = T(n)
+    body = modes(n, [320, 690, 1780, 2950], [1.0, 0.35, 0.3, 0.12], [0.06, 0.04, 0.03, 0.015], seed=4220)
+    tok = bp(white(n, 4221), 800, 3500) * env_exp(n, 0.002, 0.0002)
+    blip = sine(440 * (1 - 0.25 * np.clip((t - 0.06) / 0.12, 0, 1)), n) * env_points(n, [(0, 0), (0.06, 0),
+                                                                                        (0.07, 1), (0.2, 0)])
+    x = mixdb((body, 0), (tok, -8), (blip, -14))
+    return room(lp(x, 5000, 2), rt=0.4, wet=0.1, seed=103)
+
+
+def soul_crystal_form():
+    """the soul crystal freezes where you fell: ice-like crackle growing and settling, a glassy chord ringing in,
+    a low corruption hum"""
+    n = N(1.6)
+    t = T(n)
+    r = rng(4230)
+    crk = np.zeros(n)
+    tt = 0.0
+    k = 0
+    while tt < 0.7:
+        f = r.uniform(1800, 4200)
+        g = glass_ping(f, r.uniform(0.01, 0.03), N(0.15), seed=4231 + k, amps=(1, 0.3, 0.05), attack=0.0005)
+        mix_into(crk, g, N(tt), r.uniform(0.2, 1.0) * np.sin(np.pi * min(tt / 0.7, 1)) ** 0.5)
+        tt += r.exponential(0.006 + 0.03 * tt)
+        k += 1
+    ring = np.zeros(n)
+    for j, (f, t0) in enumerate([(587.33, 0.05), (880.0, 0.15), (1174.66, 0.25), (1396.9, 0.35)]):
+        mix_into(ring, glass_ping(f, 0.5, seed=4300 + j, amps=(1, 0.25, 0.06), attack=0.02), N(t0), 0.85 ** j)
+    hum = fm(n, 48, 1.5, 1.2) * env_points(n, [(0, 0), (0.15, 1), (0.8, 0.6), (1.4, 0)])
+    x = mixdb((crk, -6), (ring, 0), (hum, -7))
+    return room(lp(x, 6000, 4), rt=1.2, wet=0.24, seed=104)
+
+
+SOUL_RESOLVE_T = 0.60
+
+
+def soul_crystal_break():
+    """cut the crystal: glass shatter -> the soul rising back (gliding tone + shimmer) -> a clear resolving chord at
+    0.60 s"""
+    n = N(1.8)
+    t = T(n)
+    sh = shards(n, 4240, 90, 0.06, 1200, 4500, tau=(0.02, 0.1), t_max=0.4, decay=0.15)
+    hit = add(clash_click(n, 4241, tau=0.001), 0.6 * thump(300, 160, 0.004, 0.015, n))
+    st = SOUL_RESOLVE_T
+    f_up = 300 * (1174.66 / 300) ** np.clip((t - 0.08) / (st - 0.08), 0, 1)
+    rise = (sine(f_up, n) + 0.3 * sine(2 * f_up, n)) * env_points(n, [(0, 0), (0.08, 0), (0.2, 0.6), (st - 0.01, 1),
+                                                                      (st + 0.05, 0)])
+    shimmer = svf(bp(white(n, 4242), 1000, 6000), 1500 + 2500 * np.clip(t / st, 0, 1), 4.0, "bp")
+    shimmer *= env_points(n, [(0, 0), (0.1, 0), (st, 1), (st + 0.1, 0)])
+    chord = np.zeros(n)
+    for j, f in enumerate((587.33, 739.99, 880.0, 1174.66)):
+        mix_into(chord, chime(N(1.4), f, 0.7, seed=4243 + j), N(st + 0.012 * j), 0.9 ** j)
+    x = mixdb((sh, -4), (hit, -6), (rise, -9), (shimmer, -16), (chord, 0))
+    return room(lp(x, 6500, 4), rt=1.3, wet=0.24, seed=105)
+
+
 # ============================================================ registry
 # name: (render fn, target momentary-max LUFS (dual mono), description)
 SFX = {}
@@ -1530,6 +1629,14 @@ SFX["sfx_spike_crack"] = (spike_crack, -19.0, "검을 땅에 꽂고 균열이 �
 for i in range(3):
     SFX[f"sfx_spike_erupt_{i + 1:02d}"] = (lambda i=i: spike_erupt(i), -22.0,
                                           "침식 가시 솟음 '퍽': 어두운 결정·돌 바스러짐+작은 쿵. 50ms 간격 연타용, 꼬리 0.12초 미만")
+# ---- core systems (main session request, 2026-11-19)
+for i in range(3):
+    SFX[f"sfx_lumen_gain_{i + 1:02d}"] = (lambda i=i: lumen_gain(i), -30.0,
+                                         "루멘 획득: 빛 알갱이가 몸에 닿는 작고 부드러운 금속 차임 '칭'(01 D6 · 02 F#6 · 03 A6 — 연달아 먹으면 D장조 아르페지오)")
+SFX["sfx_flask_drink"] = (flask_drink, -21.0, f"성수병: 마개 유리 '딸깍' → 짧게 꿀꺽 → 성스러운 빛이 차오르는 '쉬잉' → {FLASK_HEAL_T:.2f}초 회복 차임")
+SFX["sfx_flask_empty"] = (flask_empty, -25.0, "빈 병: 텅 빈 유리병 '톡'+작게 처지는 한숨 같은 블립")
+SFX["sfx_soul_crystal_form"] = (soul_crystal_form, -21.0, "영혼의 수정 맺힘: 얼음처럼 자라는 결정 잔금+맑게 울려 오는 결정 화음+낮은 침식 웅웅")
+SFX["sfx_soul_crystal_break"] = (soul_crystal_break, -18.0, f"영혼의 수정 깨짐: 유리 산산조각 → 영혼이 돌아오는 상승음+반짝임 → {SOUL_RESOLVE_T:.2f}초 맑은 D장조 해결 차임")
 
 LOOP_SFX = {"sfx_charge_loop", "sfx_boss_charge_loop"}
 MAXDUR = {**{f"sfx_hit_heavy_{i + 1:02d}": 1.5 for i in range(3)}, "sfx_dash_01": 1.0, "sfx_dash_02": 1.0,
@@ -1538,7 +1645,9 @@ MAXDUR = {**{f"sfx_hit_heavy_{i + 1:02d}": 1.5 for i in range(3)}, "sfx_dash_01"
           "sfx_boss_charge_line": 0.45, "sfx_time_stop": 0.8, "sfx_riposte_blast": 1.2, "sfx_boss_banner": 1.4,
           "sfx_oath_inherit": 3.0, "sfx_oath_absorb": 1.3,
           "sfx_boss_intro_shout": 2.2, "sfx_parry_slide": 0.6, "sfx_corrupt_burst": 1.6, "sfx_boss_leap": 0.8,
-          "sfx_boss_leap_lock": 0.7, "sfx_boss_leap_impact": 1.8, "sfx_spike_crack": 0.7}
+          "sfx_boss_leap_lock": 0.7, "sfx_boss_leap_impact": 1.8, "sfx_spike_crack": 0.7, "sfx_flask_drink": 1.1,
+          "sfx_soul_crystal_form": 1.4, "sfx_soul_crystal_break": 1.5,
+          "sfx_lumen_gain_01": 0.3, "sfx_lumen_gain_02": 0.3, "sfx_lumen_gain_03": 0.3}
 FADEOUT = {"sfx_boss_charge_up": 0.004, "sfx_boss_leap_fall": 0.004}   # hard stop on purpose
 
 
@@ -1581,7 +1690,8 @@ def main(filt=None):
         for nm, key, val in (("sfx_gate_drop", "slam_s", GATE_SLAM_T), ("sfx_gate_rise", "lock_s", GATE_RISE_S),
                              ("sfx_boss_slam", "impact_s", SLAM_IMPACT_T), ("sfx_pillar_rise", "lock_s", PILLAR_UP_T),
                              ("sfx_time_stop", "ting_s", TIME_TING_T), ("sfx_parry_slide", "ting_s", SLIDE_TING_T), ("sfx_boss_intro_shout", "slam_s", SHOUT_SLAM_T),
-                             ("sfx_oath_inherit", "resolve_s", OATH_RESOLVE_T), ("sfx_oath_absorb", "ching_s", ABSORB_CHING_T)):
+                             ("sfx_oath_inherit", "resolve_s", OATH_RESOLVE_T), ("sfx_oath_absorb", "ching_s", ABSORB_CHING_T),
+                             ("sfx_flask_drink", "heal_s", FLASK_HEAL_T), ("sfx_soul_crystal_break", "resolve_s", SOUL_RESOLVE_T)):
             if name == nm:
                 events[key] = round(val - trim, 3)
         if name == "sfx_sword_sheathe":

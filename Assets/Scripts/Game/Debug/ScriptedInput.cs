@@ -149,6 +149,8 @@ namespace SevenOaths
                     case "dodgeL": f.DodgePressed = true; f.MoveX = -1f; Next(); return f;
                     case "dodgeR": f.DodgePressed = true; f.MoveX = 1f; Next(); return f;
                     case "jump": f.JumpPressed = true; f.JumpHeld = true; Next(); return f;
+                    case "heal": f.HealPressed = true; Next(); return f;
+                    case "die": w.DebugKillPlayer(); Next(); return f;
                     case "boss":   // 자동 검증: 보스가 싸울 준비가 되면 기술 강제 — leap·spikes·thrust·charge·burst(2페이즈 기술은 2페이즈로 바꿔서)
                     {
                         var b = w.Boss;

@@ -184,7 +184,7 @@ namespace SevenOaths.Tests
         }
 
         [Test]
-        public void PoiseBreak_ThenExecute_KillsSoldierAndHeals()
+        public void PoiseBreak_ThenExecute_KillsSoldier_NoHeal()
         {
             var w = NewWorld(100, new EnemySpawn(EnemyKind.Soldier, 130, 40));
             var log = new Log(w);
@@ -199,7 +199,7 @@ namespace SevenOaths.Tests
             Run(w, 80);
             Assert.AreEqual(1, log.Count(EventType.ExecuteStart));
             Assert.AreEqual(FState.Dead, s.State);
-            Assert.AreEqual(50f + Stats.ExecuteHeal, w.Player.Hp, 0.01f);
+            Assert.AreEqual(50f, w.Player.Hp, 0.01f, "(사용자 결정) 처형 회복 없음 — 회복은 성수병");
             var last = log.Hits[log.Hits.Count - 1];
             Assert.IsTrue(last.Execute && last.Killed);
             Assert.AreEqual(HitLevel.Finisher, last.Level);

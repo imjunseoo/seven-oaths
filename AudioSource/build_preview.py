@@ -35,6 +35,7 @@ SECTIONS = [
                                                      "sfx_gate", "sfx_wave_clear"]),
     ("보스 철벽 · 유물 (v1.2)", "", ["sfx_boss", "sfx_corrupt", "sfx_spike", "sfx_pillar", "sfx_parry", "sfx_relic", "sfx_ui_equip"]),
     ("패리 반격 · 서약 계승", "시간 정지 → 9연 참격 → 폭발 / 클리어 배너", ["sfx_time", "sfx_riposte", "sfx_oath"]),
+    ("바탕 시스템", "루멘 · 성수병 · 영혼의 수정", ["sfx_lumen", "sfx_flask", "sfx_soul"]),
     ("UI", "", ["sfx_ui"]),
 ]
 
@@ -383,6 +384,11 @@ const TESTS = {
     later(s + 1500, () => sfx("sfx_boss_leap_fall")); later(s + 1500 + 335, () => sfx("sfx_boss_leap_impact"));
     s = 8400; later(s, () => sfx("sfx_spike_crack"));
     const E = names("sfx_spike_erupt"); for (let k = 0; k < 6; k++) later(s + 500 + k*50, () => sfx(pick(E))); }},
+  system: {t:"루멘 · 성수병 · 영혼의 수정", p:"적 소멸 → 루멘 6알 60ms 간격(최대 4개 동시) → 성수병 마시기(0.4초 회복) → 빈 병 → 사망 자리에 수정 맺힘 → 베어 부숨(0.6초 해결음).", period: 9000, run(){
+    sfx("sfx_enemy_death"); const Lm = names("sfx_lumen_gain");
+    for (let k = 0; k < 6; k++) later(500 + k*60, () => sfx(Lm[k % 3]));
+    later(1800, () => sfx("sfx_flask_drink")); later(3000, () => sfx("sfx_flask_empty"));
+    later(4200, () => sfx("sfx_soul_crystal_form")); later(6300, () => sfx(pick(names("sfx_swing_0")))); later(6400, () => sfx("sfx_soul_crystal_break")); }},
   region: {t:"1지역 인게임 믹스", p:"bgm_region1 + amb_rampart 위에 콤보·방패·석궁이 무작위로. 권장 그룹 볼륨 적용.", period: 3200, needs:["bgm_region1"], bedList:[["bgm_region1"],["amb_rampart"]], run(){
     pick([TESTS.combo, TESTS.shield, TESTS.crossbow, TESTS.rhythm, TESTS.dash]).run(); }},
   mix: {t:"수련장 인게임 믹스", p:"bgm_training + amb_cloister 위에 콤보·회피·처형이 무작위로. 권장 그룹 볼륨 적용.", period: 3000, needs:["bgm_training"], bedList:[["bgm_training"],["amb_cloister"]], run(){

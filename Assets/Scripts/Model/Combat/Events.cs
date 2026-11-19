@@ -42,6 +42,12 @@ namespace SevenOaths.Model
         BossIntro,      // Who = 보스: 첫 대면 연출 시작(주인공 조작 잠금)
         BossShout,      // Who = 보스: 첫 함성(붉은 이름 배너)
         CorruptionBurst, // Who = 보스: HP 절반 — 침식이 터짐(2페이즈)
+        LumenGain,      // Who = 주인공, Other = 쓰러진 적(없으면 수정), Value = 얻은 루멘, Pos = 나온 곳
+        SoulCrystalPlaced, // Pos = 수정 자리, Value = 갇힌 루멘
+        SoulRecovered,  // Pos = 수정 자리, Value = 되찾은 루멘
+        FlaskStart,     // Who = 주인공(병을 꺼냄)
+        FlaskHeal,      // Who = 주인공, Value = 회복량
+        FlaskEmpty,     // Who = 주인공(빈 병)
         LeapRise,       // Who = 보스: 하늘 높이 뛰어오름
         LeapLock,       // Who = 보스: 떨어질 자리 고정(Pos)
         LeapFall,       // Who = 보스: 떨어지기 시작(Pos = 떨어질 자리)

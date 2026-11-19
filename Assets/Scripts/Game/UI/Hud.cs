@@ -19,6 +19,13 @@ namespace SevenOaths
         TextMeshProUGUI _hint;
         int _hintParry = -1;
         Banner _banner;
+        TextMeshProUGUI _lumenText;
+        Image _lumenIcon;
+        float _lumenShown, _lumenPulse;
+        readonly List<Image> _flaskIcons = new List<Image>();
+
+        /// <summary>루멘 알갱이가 닿을 때 아이콘이 잠깐 밝아짐.</summary>
+        public void LumenPulse() { _lumenPulse = 1f; }
         TextMeshProUGUI _tsPrompt;
         Image _tsBar;
 
@@ -82,6 +89,23 @@ namespace SevenOaths
             dashBack.rectTransform.Place(8, 247, 40, 3);
             _dashFill = Ui.Image(dashBack.rectTransform, "Fill", (Color)Palette.Holy);
             _dashFill.rectTransform.Place(0, 0, 40, 3);
+
+            // 루멘(오른쪽 위): 아이콘 + 숫자
+            _lumenIcon = Ui.Image(_view, "LumenIcon", Color.white, GameAssets.Instance.Sprite("ui_lumen"));
+            _lumenIcon.rectTransform.Place(PixelScreen.ViewW - 18, 252, 10, 10);
+            if (GameAssets.Instance.Sprite("ui_lumen") == null) { _lumenIcon.color = (Color)Palette.Cry5; _lumenIcon.rectTransform.sizeDelta = new Vector2(6f, 6f); _lumenIcon.rectTransform.anchoredPosition = new Vector2(PixelScreen.ViewW - 16, 254); }
+            _lumenText = Ui.Text(_view, "Lumen", "0", 10, (Color)Palette.Holy, TextAlignmentOptions.MidlineRight);
+            _lumenText.rectTransform.Place(PixelScreen.ViewW - 110, 251, 88, 12);
+            _lumenShown = w.Player.Lumen;
+            // 성수병(HP 아래): 남은 병 수만큼
+            var fFull = GameAssets.Instance.Sprite("ui_flask/full", "ui_flask");
+            for (int i = 0; i < Stats.FlaskMax; i++)
+            {
+                var img = Ui.Image(_view, "Flask" + i, Color.white, fFull);
+                if (fFull == null) { img.color = (Color)Palette.Cry4; img.rectTransform.Place(8 + i * 9, 236, 6, 8); }
+                else img.rectTransform.Place(8 + i * 10, 234, 8, 12);
+                _flaskIcons.Add(img);
+            }
 
             _hint = Ui.Text(_view, "Hint", "", 8, Palette.WithA(Palette.Stone5, 0.85f));
             _hint.rectTransform.Place(6, 4, 470, 9);
@@ -206,8 +230,25 @@ namespace SevenOaths
             {
                 _hintParry = parry;
                 _hint.text = parry == 1
-                    ? "A/D 이동  W 점프  좌클릭 베기(누르면 차지)  우클릭 대쉬  Shift 회피 · 제자리 Shift 패리  Tab 유물  F1 튜닝"
-                    : "A/D 이동  W 점프  마우스 조준  좌클릭 베기(누르면 차지)  우클릭 대쉬 공격  Shift 회피  Tab 유물  F1 튜닝";
+                    ? "A/D 이동  W 점프  좌클릭 베기  우클릭 대쉬  Shift 회피 · 제자리 Shift 패리  Q 성수병  Tab 유물  F1 튜닝"
+                    : "A/D 이동  W 점프  좌클릭 베기(누르면 차지)  우클릭 대쉬 공격  Shift 회피  Q 성수병  Tab 유물  F1 튜닝";
+            }
+            // 루멘: 숫자가 따라 올라감 + 알갱이가 닿으면 아이콘 반짝
+            float tgt = p.Lumen;
+            _lumenShown = Mathf.MoveTowards(_lumenShown, tgt, Mathf.Max(1f, Mathf.Abs(tgt - _lumenShown) * 6f) * Time.unscaledDeltaTime);
+            _lumenText.text = Mathf.RoundToInt(_lumenShown).ToString();
+            _lumenPulse = Mathf.MoveTowards(_lumenPulse, 0f, Time.unscaledDeltaTime * 4f);
+            float lp = 1f + _lumenPulse * 0.6f;
+            _lumenIcon.color = GameAssets.Instance.Sprite("ui_lumen") != null ? new Color(lp, lp, lp) : Color.Lerp((Color)Palette.Cry5, Color.white, _lumenPulse);
+            // 성수병: 남은 병 = 가득, 쓴 병 = 빈 병
+            var fFull = GameAssets.Instance.Sprite("ui_flask/full", "ui_flask");
+            var fEmpty = GameAssets.Instance.Sprite("ui_flask/empty");
+            for (int i = 0; i < _flaskIcons.Count; i++)
+            {
+                bool full = i < p.Flasks;
+                if (fFull != null) { _flaskIcons[i].sprite = full ? fFull : (fEmpty ?? fFull); _flaskIcons[i].color = full || fEmpty != null ? Color.white : new Color(1f, 1f, 1f, 0.3f); }
+                else _flaskIcons[i].color = full ? (Color)Palette.Cry4 : Palette.WithA(Palette.Stone2, 0.6f);
+                _flaskIcons[i].gameObject.SetActive(i < p.FlasksMax);
             }
             float hp = Mathf.Clamp01(p.Hp / p.MaxHp);
             _hpFill.rectTransform.sizeDelta = new Vector2(Mathf.Round(98 * hp), 6);

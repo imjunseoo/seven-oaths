@@ -59,7 +59,8 @@ namespace SevenOaths
             d._w = w;
             if (Flag("-soMute")) AudioListener.volume = 0f;   // 자동 실행은 소리 없이(사용자가 다른 걸 하는 중)
             if (Flag("-soPanel")) panel.Toggle();
-            if (Flag("-soRelic")) w.Player.Equip(RelicId.Endurance);   // 패리 검증용: 철벽의 문장 장착 상태로 시작
+            if (Flag("-soRelic")) w.Player.Equip(RelicId.Endurance);
+            if (int.TryParse(Arg("-soLumen"), out int lumen)) w.Player.Lumen = lumen;   // 자동 검증: 시작 루멘   // 패리 검증용: 철벽의 문장 장착 상태로 시작
             var di = Screen.mainWindowDisplayInfo;
             Debug.Log($"[DebugAutomation] 화면: {di.name} {di.width}x{di.height} 창 {Screen.width}x{Screen.height}");
             if (Flag("-soTrace"))   // 이벤트·상태를 로그로(사람 없이 버그 추적)

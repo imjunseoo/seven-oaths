@@ -37,6 +37,13 @@ namespace SevenOaths.Model
         public Enemy ExecTarget;
         public Vec2 Spawn;   // 부활 지점(성수 제단을 밝히면 바뀜)
 
+        /// <summary>재화 「루멘」. 죽으면 영혼의 수정에 갇힌다.</summary>
+        public int Lumen;
+        public int Flasks = Stats.FlaskMax, FlasksMax = Stats.FlaskMax;
+        /// <summary>마지막으로 땅에 서 있던 곳(영혼의 수정이 박힐 자리).</summary>
+        public Vec2 LastGround;
+        int _bufHeal;
+
         // 서약 유물: 가진 것 / 장착한 것(최대 Stats.RelicSlots). GameRoot가 저장과 맞춘다.
         public readonly List<RelicId> Owned = new List<RelicId>();
         public readonly List<RelicId> Equipped = new List<RelicId>();
@@ -80,6 +87,7 @@ namespace SevenOaths.Model
             Body.OnGround = true;
             Body.Facing = 1;
             MaxHp = Hp = Stats.PlayerMaxHp;
+            Flasks = FlasksMax;
             SuperArmor = false;
             ChargeFrames = 0;
             DashCooldown = 0;
@@ -123,6 +131,7 @@ namespace SevenOaths.Model
             if (f.DashPressed) _bufDash = Stats.Buffer;
             if (f.DodgePressed) { _bufDodge = Stats.Buffer; _dodgeNeutral = Math.Abs(f.MoveX) < 0.3f; }
             if (f.JumpPressed) _bufJump = Stats.Buffer;
+            if (f.HealPressed) _bufHeal = Stats.Buffer;
         }
 
         /// <summary>적을 대쉬로 맞히면 공중 대쉬·공중 베기 회복.</summary>
@@ -141,7 +150,7 @@ namespace SevenOaths.Model
             _attackHeldFrames = AttackHeld ? _attackHeldFrames + 1 : 0;
             var b = Body;
             bool wasGround = b.OnGround;
-            if (b.OnGround) { _coyote = Stats.Coyote; _airSlashUsed = false; _airDodgeUsed = false; _airDashUsed = false; }
+            if (b.OnGround) { _coyote = Stats.Coyote; _airSlashUsed = false; _airDodgeUsed = false; _airDashUsed = false; LastGround = b.Pos; }
             else if (_coyote > 0) _coyote--;
 
             switch (State)
@@ -152,6 +161,7 @@ namespace SevenOaths.Model
                 case FState.Dodge: TransDodge(w); break;
                 case FState.Parry: TransParry(w); break;
                 case FState.Recover: TransRecover(w); break;
+                case FState.Drink: TransDrink(w); break;
                 case FState.Hurt: if (StateFrame >= Stats.HurtFrames) SetState(FState.Free); break;
                 case FState.Dead:
                     if (StateFrame >= Stats.PlayerRespawnFrames) { Respawn(); Invuln = 60; w.OnPlayerRespawned(); w.Emit(EventType.Respawn, this); }
@@ -171,6 +181,7 @@ namespace SevenOaths.Model
             if (_bufDash > 0) _bufDash--;
             if (_bufDodge > 0) _bufDodge--;
             if (_bufJump > 0) _bufJump--;
+            if (_bufHeal > 0) _bufHeal--;
         }
 
         bool WantsCharge => AttackHeld && _attackHeldFrames >= Stats.ChargeHoldStart && Body.OnGround;
@@ -180,6 +191,7 @@ namespace SevenOaths.Model
         void TransFree(World w)
         {
             var b = Body;
+            if (_bufHeal > 0 && b.OnGround) { StartDrink(w); return; }
             if (_bufDodge > 0 && CanParry) { StartParry(w); return; }
             if (_bufDodge > 0 && CanDodge) { StartDodge(w, false); return; }
             if (_bufDash > 0 && CanDash) { StartDash(w); return; }
@@ -396,6 +408,30 @@ namespace SevenOaths.Model
             w.Emit(EventType.Dodge, this, value: cancel ? 1 : 0);
         }
 
+        /// <summary>성수병: 땅에서 Q. 병이 없으면 빈 병 소리만.</summary>
+        void StartDrink(World w)
+        {
+            _bufHeal = 0;
+            if (Flasks <= 0) { w.Emit(EventType.FlaskEmpty, this); return; }
+            _queuedAttack = _queuedDodge = _queuedDash = false;
+            SuperArmor = false;
+            ChargeFrames = 0;
+            SetState(FState.Drink);
+            w.Emit(EventType.FlaskStart, this);
+        }
+
+        void TransDrink(World w)
+        {
+            if (StateFrame == Stats.FlaskHealAt)
+            {
+                Flasks--;
+                float heal = Math.Min(MaxHp - Hp, MaxHp * Stats.FlaskHeal);
+                Hp += heal;
+                w.Emit(EventType.FlaskHeal, this, value: (int)Math.Round(heal));
+            }
+            if (StateFrame >= Stats.FlaskFrames) SetState(FState.Free);
+        }
+
         void StartParry(World w)
         {
             _bufDodge = 0;
@@ -568,6 +604,11 @@ namespace SevenOaths.Model
                     b.ApplyGravity(m.GravityScale);
                     break;
                 }
+                case FState.Drink:
+                    b.Vel.X = MathX.Approach(b.Vel.X, MoveX * Stats.FlaskWalk, Stats.GroundAccel);
+                    if (MoveX != 0f) b.Facing = (int)MoveX;
+                    b.ApplyGravity();
+                    break;
                 case FState.Charge:
                 case FState.Parry:
                 case FState.Recover:
