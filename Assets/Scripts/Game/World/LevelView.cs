@@ -38,6 +38,8 @@ namespace SevenOaths
         readonly List<SpriteRenderer> _chargeFx = new List<SpriteRenderer>();
         readonly List<SpriteRenderer> _relics = new List<SpriteRenderer>();
         SpriteRenderer _sphere, _sphereGround;
+        SpriteRenderer _leapMark, _leapRing, _leapBeam;
+        readonly List<SpriteRenderer> _spikeR = new List<SpriteRenderer>();
         static Sprite _sphereSprite;
 
         // 판정 상자 표시
@@ -286,6 +288,8 @@ namespace SevenOaths
             RenderChargeLines(w, time);
             RenderRelics(w, time);
             RenderSphere(w, time);
+            RenderLeapMark(w, time);
+            RenderSpikes(w, time);
         }
 
         void RenderGates(World w, float dt)
@@ -496,6 +500,90 @@ namespace SevenOaths
             _sphereGround.transform.position = new Vector3(Mathf.Round(c.X) / PPU, Mathf.Round(c.Y + 1f) / PPU, 0f);
             _sphereGround.transform.localScale = new Vector3(s, s * 0.14f, 1f);
             _sphereGround.color = new Color(0.4f, 0.7f, 1f, a);
+        }
+
+        /// <summary>
+        /// 낙하 내려찍기: 떨어질 자리 바닥에 붉은 원(납작한 타원) + 하늘로 뻗는 옅은 빛기둥.
+        /// 주인공을 따라오는 동안은 천천히 맥동, 고정되면 빠르게 깜빡이고, 떨어지는 동안 원이 줄어들며 진해짐.
+        /// </summary>
+        void RenderLeapMark(World w, float time)
+        {
+            var b = w.Boss;
+            bool on = b != null && b.LeapMarkOn;
+            if (_leapMark == null)
+            {
+                _leapRing = Sr("LeapRing", SphereSprite(), transform, 3, lit: false);
+                _leapRing.sharedMaterial = _laserMat;
+                _leapMark = Sr("LeapMark", SphereSprite(), transform, 3, lit: false);
+                _leapMark.sharedMaterial = _laserMat;
+                _leapBeam = Sr("LeapBeam", Placeholder.White(), transform, 32, lit: false);
+                _leapBeam.sharedMaterial = _laserMat;
+            }
+            _leapMark.gameObject.SetActive(on);
+            _leapRing.gameObject.SetActive(on);
+            _leapBeam.gameObject.SetActive(on);
+            if (!on) return;
+            int age = b.LeapMarkAge;
+            bool locked = b.LeapLocked;
+            bool falling = b.StateFrame >= Stats.LeapFallAt;
+            float grow = Mathf.Clamp01(age / 10f);
+            float x = Mathf.Round(b.LeapTargetX), y = w.Player.Body.Pos.Y + 1f;
+            float blink = locked ? ((age / 3) % 2 == 0 ? 1f : 0.35f) : 0.7f + 0.3f * Mathf.Sin(time * 8f);
+            float r = (falling ? Mathf.Lerp(0.9f, 0.55f, Mathf.Clamp01((b.StateFrame - Stats.LeapFallAt) / 16f)) : 0.9f) * grow;
+            var red = new Color(1f, 0.12f, 0.16f);
+            _leapMark.transform.position = new Vector3(x / PPU, y / PPU, 0f);
+            _leapMark.transform.localScale = new Vector3(r, r * 0.16f, 1f);
+            _leapMark.color = new Color(red.r, red.g, red.b, 0.95f * blink);
+            // 바깥 고리: 고정 전엔 크게 돌며 좁혀 들어옴
+            float rr = locked ? r * 1.15f : r * (1.4f - 0.25f * ((time * 2f) % 1f));
+            _leapRing.transform.position = new Vector3(x / PPU, y / PPU, 0f);
+            _leapRing.transform.localScale = new Vector3(rr, rr * 0.16f, 1f);
+            _leapRing.color = new Color(red.r, red.g + 0.2f, red.b, 0.45f * blink);
+            // 빛기둥(하늘에서 떨어질 길)
+            float bh = 300f;
+            _leapBeam.transform.position = new Vector3(x / PPU, (y + bh * 0.5f) / PPU, 0f);
+            _leapBeam.transform.localScale = new Vector3(Mathf.Lerp(6f, 22f, grow) * (falling ? 1.6f : 1f) / 4f, bh / 4f, 1f);
+            _leapBeam.color = new Color(red.r, red.g, red.b, (locked ? 0.22f : 0.12f) * blink);
+        }
+
+        /// <summary>침식 가시: 솟기 전엔 바닥에 붉은 균열(솟을 때가 가까울수록 밝게), 솟으면 진홍 가시가 3틱 만에 올라왔다 가라앉음.</summary>
+        void RenderSpikes(World w, float time)
+        {
+            var art = GameAssets.Instance.Anim("fx_corrupt_spike")?.Get("play");
+            int n = 0;
+            foreach (var s in w.Spikes)
+            {
+                if (n + 1 >= _spikeR.Count) { _spikeR.Add(Sr("SpikeCrack", Placeholder.White(), transform, 3, lit: false)); _spikeR.Add(Sr("Spike", Placeholder.White(), transform, 33, lit: false)); }
+                var crack = _spikeR[n++];
+                var spike = _spikeR[n++];
+                crack.gameObject.SetActive(true);
+                crack.sharedMaterial = _laserMat;
+                float warn = s.Warning ? Mathf.Clamp01(1f - (s.Erupt - s.Age) / (float)Stats.SpikeWarn) : 1f;
+                crack.transform.position = new Vector3(Mathf.Round(s.X) / PPU, (s.Y + 1f) / PPU, 0f);
+                crack.transform.localScale = new Vector3(Stats.SpikeStep * Mathf.Clamp01(s.Age / 4f) / 4f, 2f / 4f, 1f);
+                crack.color = new Color(1f, 0.1f, 0.15f, s.Warning ? 0.25f + 0.6f * warn : Mathf.Clamp01(1f - (s.Age - s.Erupt - Stats.SpikeLife) / 8f) * 0.6f);
+                int since = s.Age - s.Erupt;
+                bool up = since >= 0 && since < Stats.SpikeLife + 6;
+                spike.gameObject.SetActive(up);
+                if (!up) continue;
+                if (art != null)
+                {
+                    spike.sprite = art.frames[art.FrameAt(since / 60f, false)];
+                    spike.color = Color.white;
+                    spike.transform.localScale = Vector3.one;
+                    spike.transform.position = new Vector3(Mathf.Round(s.X) / PPU, s.Y / PPU, 0f);
+                }
+                else
+                {
+                    // 임시: 진홍 기둥이 솟았다 가라앉음(도트 fx_corrupt_spike가 오면 교체)
+                    float hgt = since < 3 ? 40f * (since + 1) / 3f : since < Stats.SpikeLife ? 40f : 40f * (1f - (since - Stats.SpikeLife) / 6f);
+                    spike.sprite = Placeholder.White();
+                    spike.color = new Color(0.62f, 0.05f, 0.12f, 0.95f);
+                    spike.transform.localScale = new Vector3(6f / 4f, Mathf.Max(1f, hgt) / 4f, 1f);
+                    spike.transform.position = new Vector3(Mathf.Round(s.X) / PPU, (s.Y + hgt * 0.5f) / PPU, 0f);
+                }
+            }
+            for (int i = n; i < _spikeR.Count; i++) _spikeR[i].gameObject.SetActive(false);
         }
 
         /// <summary>x0에서 dx만큼(음수면 왼쪽), 가운데 높이 cy, 두께 h인 띠.</summary>

@@ -22,6 +22,16 @@ namespace SevenOaths.Model
         public int Age;
     }
 
+    /// <summary>침식 가시(보스 2페이즈 가시 줄의 한 개): Erupt 틱에 솟아 SpikeLife 동안 판정.</summary>
+    public sealed class Spike
+    {
+        public float X, Y;
+        public int Age, Erupt, Line;
+        public Enemy Owner;
+        public bool Active => Age >= Erupt && Age < Erupt + Stats.SpikeLife;
+        public bool Warning => Age < Erupt;
+    }
+
     /// <summary>패리 반격 오의 진행(시간이 멈춘 크로노스피어 안).</summary>
     public sealed class RiposteState
     {
@@ -56,6 +66,9 @@ namespace SevenOaths.Model
         public readonly List<RoomState> Rooms = new List<RoomState>();
         public readonly List<Pillar> Pillars = new List<Pillar>();
         public readonly List<RelicDrop> Drops = new List<RelicDrop>();
+        public readonly List<Spike> Spikes = new List<Spike>();
+        int _spikeLine;
+        readonly HashSet<int> _spikeDone = new HashSet<int>();
         int _relicTimer;
         Vec2 _relicAt;
 
@@ -148,6 +161,7 @@ namespace SevenOaths.Model
             Player.Step(this);
             for (int i = 0; i < Enemies.Count; i++) Enemies[i].Step(this);
             StepProjectiles();
+            StepSpikes();
             SeparateBodies();
             ResolveHits();
             StepRooms();
@@ -198,6 +212,20 @@ namespace SevenOaths.Model
             return best;
         }
 
+        /// <summary>
+        /// 불러오기: 이 레벨의 보스는 이미 쓰러뜨렸다 — 보스를 아예 빼고(창살도 안 닫힘), 유물을 아직 못 주웠으면
+        /// (줍기 전에 끄거나 죽은 경우) 보스가 서 있던 자리에 유물을 다시 띄운다.
+        /// </summary>
+        public void ApplyBossDefeated(bool relicOwned)
+        {
+            if (Boss == null) return;
+            var at = Boss.Spawn;
+            Enemies.Remove(Boss);
+            Boss = null;
+            BossDefeated = true;
+            if (!relicOwned) Drops.Add(new RelicDrop { Id = RelicId.Endurance, Pos = at, Age = 40 });
+        }
+
         /// <summary>저장된 성수 제단에서 시작(불러오기).</summary>
         public void ApplyCheckpoint(int i)
         {
@@ -217,6 +245,7 @@ namespace SevenOaths.Model
         internal void OnPlayerRespawned()
         {
             Projectiles.Clear();
+            Spikes.Clear();
             TimeStop = 0;
             Player.SlideFrame = -1;
             Riposte = null;
@@ -481,11 +510,15 @@ namespace SevenOaths.Model
             if (counter && level < HitLevel.Finisher) level++;
 
             float dmg = m.Damage * mult;
-            bool killed = false, broke = false;
+            bool killed = false, broke = false, burst = false;
             if (!e.IsDummy)
             {
+                // 보스 1페이즈: HP가 절반 아래로 내려가지 않고, 절반에 닿는 순간 침식 폭발(사용자 v3 — 한 방에 2페이즈를 건너뛰지 못하게)
+                float floor = e.IsBoss && e.Phase == 1 ? e.MaxHp * Stats.BossPhase2At : 0f;
+                float before = e.Hp;
                 e.Hp -= dmg;
-                if (e.Hp <= 0f) { e.Hp = 0f; killed = true; }
+                if (floor > 0f && before > floor && e.Hp <= floor) { e.Hp = floor; burst = true; }
+                else if (e.Hp <= 0f) { e.Hp = 0f; killed = true; }
             }
             if (!killed && !execute && e.State != FState.Broken && e.MaxPoise > 0f)
             {
@@ -497,7 +530,8 @@ namespace SevenOaths.Model
 
             if (execute && !killed) e.KnockDown();
             else e.ReactToHit(level, p.Body.Facing, broke, killed);
-            e.CheckPhase();
+            if (burst) e.CorruptionBurst(this);
+            else e.CheckPhase();
             if (m == Moves.DashAttack) p.RefreshAir();
 
             Impact(level);
@@ -666,12 +700,67 @@ namespace SevenOaths.Model
         /// <summary>포효: 가까이 있는 주인공을 밀어낸다(피해 없음).</summary>
         internal void RoarPush(Enemy boss)
         {
+            // 침식 폭발: 가까이 있으면 피해 + 크게 밀려남(회피 무적·무적이면 밀려나기만)
             var p = Player;
             float dx = p.Body.Pos.X - boss.Body.Pos.X;
-            if (Math.Abs(dx) > Stats.RoarPush || !p.Alive) return;
-            p.Body.Vel = new Vec2((dx >= 0f ? 1f : -1f) * 4.5f, 3f);
-            p.Body.OnGround = false;
+            if (Math.Abs(dx) > Stats.BossBurstRadius || !p.Alive) return;
+            int dir = dx >= 0f ? 1 : -1;
+            if (!p.Untouchable && !p.IFrames) HitPlayer(boss, Moves.BossBurst, new Vec2(p.Body.Pos.X, p.Body.Pos.Y + 20f), dir);
+            if (p.Alive) { p.Body.Vel = new Vec2(dir * 4.5f, 3f); p.Body.OnGround = false; }
             HitStop = Math.Max(HitStop, 6);
+        }
+
+        /// <summary>바닥 높이에서 x 양옆의 벽(입구 창살·기둥·벽) 사이로 x를 가둔다(몸 폭 w).</summary>
+        internal float ClampToArena(float x, float w)
+        {
+            float lo = 0f, hi = Level.Width;
+            float y = Player.Body.Pos.Y + 8f;
+            foreach (var s in Level.Solids)
+            {
+                if (y < s.Y || y > s.Top) continue;
+                if (s.Right <= x) lo = Math.Max(lo, s.Right);
+                else if (s.X >= x) hi = Math.Min(hi, s.X);
+            }
+            return MathX.Clamp(x, lo + w * 0.5f + 2f, hi - w * 0.5f - 2f);
+        }
+
+        // ───────────────────────── 침식 가시 줄 ─────────────────────────
+
+        /// <summary>보스가 검을 땅에 꽂음 → 앞쪽으로 가시 자리를 늘어놓는다(벽에서 끊김). 균열 예고 뒤 가까운 곳부터 차례로 솟음.</summary>
+        internal void StartSpikeLine(Enemy boss)
+        {
+            _spikeLine++;
+            int dir = boss.Body.Facing;
+            float x0 = boss.Body.Pos.X + dir * (boss.Body.W * 0.5f + 16f);
+
+            for (int i = 0; i < Stats.SpikeCount; i++)
+            {
+                float x = x0 + dir * i * Stats.SpikeStep;
+                if (Math.Abs(ClampToArena(x, 16f) - x) > 0.5f) break;   // 벽 너머로는 안 솟음
+                Spikes.Add(new Spike { X = x, Y = boss.Body.Pos.Y, Erupt = Stats.SpikeWarn + i * Stats.SpikeEvery, Line = _spikeLine, Owner = boss });
+            }
+            Emit(EventType.SpikeCrack, boss);
+        }
+
+        void StepSpikes()
+        {
+            var p = Player;
+            for (int i = Spikes.Count - 1; i >= 0; i--)
+            {
+                var s = Spikes[i];
+                s.Age++;
+                if (s.Age == s.Erupt) Emit(EventType.SpikeErupt, null, value: i, pos: new Vec2(s.X, s.Y));
+                if (s.Active && p.Alive && !_spikeDone.Contains(s.Line))
+                {
+                    var box = new Box(s.X - 8f, s.Y, 16f, 44f);
+                    if (box.Overlaps(p.Hurtbox))
+                    {
+                        if (p.IFrames) { _spikeDone.Add(s.Line); if (p.InPerfectWindow) PerfectDodge(s.Owner); }
+                        else if (!p.Untouchable) { _spikeDone.Add(s.Line); HitPlayer(s.Owner, Moves.BossSpikes, new Vec2(s.X, s.Y + 20f), s.X > p.Body.Pos.X ? -1 : 1); }
+                    }
+                }
+                if (s.Age >= s.Erupt + Stats.SpikeLife + 8) Spikes.RemoveAt(i);
+            }
         }
 
         /// <summary>고립의 벽: 주인공 양옆과 보스 사이에 쇠기둥(주인공·보스 자리는 피함).</summary>

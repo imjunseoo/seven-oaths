@@ -195,3 +195,15 @@ def tamtam(vel=0.7, seed=0, dur=5.0):
         hit = lp(white(n, seed + c), 600, 2) * env_exp(n, 0.04, 0.002)
         out.append(lp(x / 20 * bloom + 0.6 * hit, 4000, 2))
     return np.stack(out) * vel * 0.5
+
+
+# ------------------------------------------------------------------ title theme additions
+def celesta(freq, vel=0.6, seed=0, tau=None):
+    """celesta: struck metal bars over resonators - near-harmonic partials, soft hammer, bell-like decay.
+    clear and 'icy' but metal, not glass. mono"""
+    n = N(3.0)
+    tau = tau or 1.4 * (523.25 / freq) ** 0.5
+    x = modes(n, [freq, 2.0 * freq, 3.0 * freq, 4.02 * freq], [1.0, 0.45, 0.12, 0.05],
+              [tau, tau * 0.45, tau * 0.25, tau * 0.15], seed=seed, attack=0.001)
+    ham = bp(white(n, seed + 1), freq, min(freq * 6, 8000)) * env_exp(n, 0.004, 0.0005) * 0.15
+    return lp(x + ham, 6500, 2) * vel * 0.3

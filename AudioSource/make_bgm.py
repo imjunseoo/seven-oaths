@@ -475,6 +475,100 @@ def bgm_region1():
     return y
 
 
+# ============================================================================ TITLE (64 BPM, D minor, 20 bars)
+# main menu: night, moonlit ruined walls, a distant castle. majestic but lonely, an oath / prayer - not a battle.
+# organ drone on a D pedal + low string pad + celesta arpeggios (icy, metal - not glass) + a far choir pad,
+# a solo cello prayer, two crimson low-cluster shadows (D+Eb) that pass and resolve. bar 1 holds only the drone
+# so the first ~3 s enter quietly (title fade-in); the last bars thin out back into that state -> seamless loop.
+T_PROG = ["Dm", "Dm", "Bb", "Dm", "Dm", "Bb", "Gm", "A", "Bb", "F", "Gm", "Dm",
+          "Bb", "C", "Dm", "A", "Dm", "Bb", "Dm", "Dm"]
+T_CEL = {"Dm": [74, 77, 81, 86], "Bb": [74, 77, 82, 86], "Gm": [74, 79, 82, 86], "A": [73, 76, 81, 85],
+         "F": [72, 77, 81, 84], "C": [72, 76, 79, 84]}
+T_PAD = {"Dm": [57, 62, 65], "Bb": [58, 62, 65], "Gm": [55, 58, 62], "A": [57, 61, 64], "F": [57, 60, 65],
+         "C": [55, 60, 64]}
+T_MEL = {8: [(0, 2, 62), (2, 1, 60), (3, 1, 58)], 9: [(0, 3, 57), (3, 1, 60)], 10: [(0, 2, 62), (2, 1, 65), (3, 1, 62)],
+         11: [(0, 4, 57)], 12: [(0, 2, 65), (2, 1, 67), (3, 1, 65)], 13: [(0, 2, 64), (2, 2, 60)],
+         14: [(0, 4, 62)], 15: [(0, 2, 61), (2, 2, 64)], 16: [(0, 4, 62)]}
+
+
+def bgm_title():
+    from nb.orch import organ, celesta, church_bell
+    A = Arr(64, 20, tail=10.0, seed=64)
+    bar_s = A.sec(4)
+    dyn = [0.35, 0.45, 0.5, 0.55, 0.6, 0.62, 0.65, 0.65, 0.75, 0.78, 0.8, 0.8, 0.85, 0.88, 0.9, 0.85,
+           0.7, 0.55, 0.42, 0.35]
+    for bar, ch in enumerate(T_PROG):
+        b0 = A.pos(bar)
+        v = dyn[bar]
+        # ---- organ drone (D pedal; Bb / C pedal for a lift in bars 13-14)
+        ped = {12: 34, 13: 36}.get(bar, 38)
+        for k, m in enumerate((ped, ped + 7 if bar in (12, 13) else 45)):
+            ov = {0: 0.12, 18: 0.24, 19: 0.12}.get(bar, 0.35 + 0.25 * v)   # bar 1 / loop end: quiet drone only
+            A.add("organ", organ(float(mtof(m)), bar_s * 1.02, ov, seed=15000 + bar * 3 + k,
+                                 ranks=((0.5, 0.4), (1.0, 1.0), (2.0, 0.2)), attack=0.6, release=1.2, chiff=0.0),
+                  b0, 1.0, send={"hall": 0.55})
+        # ---- low string pad from bar 3 to bar 19
+        if 2 <= bar <= 18:
+            for k, m in enumerate(T_PAD[ch]):
+                A.add("pad", section(float(mtof(m)), bar_s * 1.03, 0.3 + 0.4 * v, seed=15100 + bar * 4 + k, players=4,
+                                     attack=1.2, release=1.4, bright=0.3, vib_cents=6, spread=0.6), b0, 1.0,
+                      send={"hall": 0.5})
+        # ---- far choir pad (bars 9-16)
+        if 8 <= bar <= 15:
+            for k, m in enumerate(T_PAD[ch]):
+                A.add("choir", choir(float(mtof(m + 12)), bar_s * 1.02, "u" if bar < 12 else "o", 0.5,
+                                     seed=15200 + bar * 4 + k, attack=1.0, release=1.4), b0, 1.0, send={"hall": 0.8})
+        # ---- celesta: none in bar 1 (quiet entry), quarters early/late, eighths in the middle, sparse at the end
+        cel = T_CEL[ch]
+        if 1 <= bar <= 3 or 16 <= bar <= 17:
+            steps = [(q, cel[i]) for q, i in zip((0, 1, 2, 3), (0, 2, 1, 3))]
+        elif 4 <= bar <= 15:
+            steps = [(e * 0.5, cel[i]) for e, i in enumerate((0, 1, 2, 3, 2, 1, 2, 1))]
+        elif bar == 18:
+            steps = [(0, cel[0]), (2, cel[2])]
+        else:
+            steps = []
+        for bt, m in steps:
+            A.add("cel", celesta(float(mtof(m)), (0.45 + 0.35 * v) * (1.0 if bt % 1 == 0 else 0.8),
+                                 seed=15300 + bar * 16 + int(bt * 2)), b0 + bt, 1.0, 0.3 - 0.2 * (m % 3), jitter_ms=6,
+                  send={"hall": 0.55})
+        # ---- small metal chimes on phrase starts, one far church bell
+        if bar in (4, 8, 12, 16):
+            for k, m in enumerate((86, 93)):
+                A.add("cel", celesta(float(mtof(m)), 0.5, seed=15400 + bar * 2 + k, tau=2.5), b0 + 0.02 * k, 1.0,
+                      -0.3 + 0.6 * k, send={"hall": 0.7})
+        if bar in (8, 16):
+            A.add("bell", church_bell(float(mtof(50)), 0.7, tau=6.0, seed=bar), b0, 1.0, -0.25, send={"hall": 0.9})
+    # ---- solo cello prayer (bars 9-17)
+    for bar, notes in T_MEL.items():
+        for (bt, d, m) in notes:
+            A.add("solo", bowed(float(mtof(m)), A.sec(d) * 1.02, 0.75, seed=15500 + bar * 8 + int(bt * 2), attack=0.25,
+                                release=0.7, vib_cents=14, vib_rate=5.0, vib_delay=0.3, bright=0.5, noise=0.04,
+                                swell=0.2), A.pos(bar, bt), 1.0, -0.1, jitter_ms=5, send={"hall": 0.45})
+    # ---- crimson shadows: a D+Eb low cluster that swells and resolves (bars 7 and 15)
+    for bar, depth in ((6, 0.45), (14, 0.8)):
+        m = N(bar_s * 1.6)
+        sw = np.interp(np.arange(m) / SR, [0, bar_s * 0.7, bar_s * 1.1, bar_s * 1.6], [0, 1, 0.6, 0])
+        eb = section(float(mtof(39)), bar_s * 1.4, 0.6 * depth, seed=15600 + bar, players=4, attack=0.8, release=0.6,
+                     bright=0.5, vib_cents=3, body=(110, 400, 1500), spread=0.4)
+        eb = np.pad(eb, ((0, 0), (0, max(0, m - eb.shape[1]))))[:, :m] * sw
+        rum = lp(rng(15700 + bar).standard_normal(m), 90, 4)
+        rum = rum / (np.max(np.abs(rum)) + 1e-9) * sw * 0.25 * depth
+        A.add("crimson", eb + np.stack([rum, rum]), A.pos(bar), 1.0, send={"hall": 0.4})
+    levels = {"organ": -25.5, "pad": -25.5, "choir": -28.5, "cel": -24, "bell": -28, "solo": -22.5, "crimson": -29}
+    fx = {"organ": lambda x: hp(x, 30, 2), "choir": lambda x: hp(lp(x, 2800, 2), 120, 2),
+          "cel": lambda x: hp(lp(x, 6000, 2), 250, 2), "bell": lambda x: hp(lp(x, 3500, 2), 60, 2),
+          "pad": lambda x: hp(x, 70, 2)}
+    effects = {"hall": (CATHEDRAL, 0.65)}
+    pre = A.mixdown(fx, effects, levels)
+    y = finalize_loop(pre, A.L, target_lufs=-18.0, wow_ms=0.08, flutter_ms=0.0, drive=1.05, comp_thr=-24.0,
+                      ratio=1.6, hshelf=-1.5, lpf=9500.0)
+    OUT.mkdir(parents=True, exist_ok=True)
+    write_wav(OUT / "bgm_title.wav", y, seed=10)
+    print(f"bgm_title: {A.L / SR:.3f}s ({A.L} samples) {A.bars} bars @ {A.bpm} BPM")
+    return y
+
+
 DESC = {"bgm_training": "72 BPM · D단조 · 24마디 80초 루프. A: 낮은 현(베이스·첼로)+합창 '우'+먼 종, 첼로 솔로가 주제를 예고 → "
                         "B: 첼로 솔로 주제+하프 아르페지오+합창 '오'+약한 팀파니 → C: 바이올린이 한 옥타브 위로 주제, 합창 '아', "
                         "마지막 마디에서 잦아들며 처음으로. 성당 잔향(RT 3.6초).",
@@ -485,18 +579,24 @@ DESC = {"bgm_training": "72 BPM · D단조 · 24마디 80초 루프. A: 낮은 �
                     "D: 낮은 합창 '우'+오르간 → 팀파니·스네어 롤과 역심벌로 서주의 '빵!'에 착지.",
         "bgm_region1": "100 BPM · D단조 · 32마디 76.8초 루프, 1지역 '잿빛 성벽' 길. 저음 현 당김음 마르카토(다 · 다다 · 다다다)+큰북·팀파니·작은북 "
                        "행진+성벽을 스치는 바람(루프 주기 노이즈) → B: 멀리서 부르는 호른(D-F-A) → C: 높은 현 단2도 트레몰로 긴장+저음 금관 "
-                       "펄스+낮은 합창 '우' → D: 숨 고르고 작은북 롤로 처음으로. 수련장·보스와 같은 D단조라 전환 자연스러움."}
+                       "펄스+낮은 합창 '우' → D: 숨 고르고 작은북 롤로 처음으로. 수련장·보스와 같은 D단조라 전환 자연스러움.",
+        "bgm_title": "64 BPM · D단조 · 20마디 75초 루프, 타이틀(메인 화면). 장엄하지만 쓸쓸한 서약·기도: D 페달 오르간 드론+낮은 현 패드+"
+                     "첼레스타 아르페지오(얼음 파랑, 금속 음판)+먼 합창 우/오+첼로 솔로 기도 선율(9–17마디)+작은 금속 종·먼 교회 종. "
+                     "7·15마디에 진홍 그림자(D+Eb 저음 클러스터)가 부풀었다 풀림. 1마디는 드론만 → 시작 약 3초 고요하게, "
+                     "끝 마디들이 같은 상태로 잦아들어 끊김 없이 이어짐."}
 
 
 if __name__ == "__main__":
     import sys
-    which = sys.argv[1:] or ["training", "region1"]   # "boss" = old synthesized boss theme, kept for reference
+    which = sys.argv[1:] or ["training", "region1", "title"]   # "boss" = old synthesized boss theme, kept for reference
     if "training" in which:
         bgm_training()
     if "boss" in which:
         bgm_boss()
     if "region1" in which:
         bgm_region1()
+    if "title" in which:
+        bgm_title()
     mp = HERE / "build" / "long_meta.json"
     old = json.loads(mp.read_text(encoding="utf-8")) if mp.exists() else {}
     for k, v in DESC.items():

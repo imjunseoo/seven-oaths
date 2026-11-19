@@ -26,7 +26,7 @@ namespace SevenOaths.EditorTools
         {
             string file = System.IO.Path.GetFileNameWithoutExtension(path);
             if (path.StartsWith("Assets/Art/Characters/") || path.StartsWith("Assets/Art/Enemies/") || path.StartsWith("Assets/Art/Bosses/")) return SpriteAlignment.BottomCenter;
-            if (file.StartsWith("fx_slash") || file == "fx_dust" || file == "fx_shockwave" || file == "fx_pillar") return SpriteAlignment.BottomCenter;
+            if (file.StartsWith("fx_slash") || file == "fx_dust" || file == "fx_shockwave" || file == "fx_pillar" || file == "fx_corrupt_spike") return SpriteAlignment.BottomCenter;   // 땅에서 솟는 것들(가시가 바닥 밑으로 묻히지 않게)
             if (file == "fx_dash") return SpriteAlignment.LeftCenter;
             if (file.EndsWith("ground") || file.EndsWith("platform")) return SpriteAlignment.TopLeft;
             if (file.EndsWith("bg_far") || file.EndsWith("bg_mid")) return SpriteAlignment.BottomLeft;

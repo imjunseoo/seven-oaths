@@ -149,6 +149,24 @@ namespace SevenOaths
                     case "dodgeL": f.DodgePressed = true; f.MoveX = -1f; Next(); return f;
                     case "dodgeR": f.DodgePressed = true; f.MoveX = 1f; Next(); return f;
                     case "jump": f.JumpPressed = true; f.JumpHeld = true; Next(); return f;
+                    case "boss":   // 자동 검증: 보스가 싸울 준비가 되면 기술 강제 — leap·spikes·thrust·charge·burst(2페이즈 기술은 2페이즈로 바꿔서)
+                    {
+                        var b = w.Boss;
+                        if (b != null && b.Engaged && w.IntroLock == 0 && b.State == FState.Free)
+                        {
+                            if (arg == "burst") b.DebugBurst(w);
+                            else
+                            {
+                                var m = arg == "leap" ? Moves.BossLeap : arg == "spikes" ? Moves.BossSpikes : arg == "thrust" ? Moves.BossThrust : Moves.BossCharge;
+                                if (m == Moves.BossLeap || m == Moves.BossSpikes) b.Phase = 2;
+                                b.ForceBossMove(w, m);
+                            }
+                            Next();
+                            continue;
+                        }
+                        if (_t++ > 900) Next();
+                        return f;
+                    }
                     case "parry":   // 유물 패리: 적 공격이 닿기 3f 전(또는 화살이 26px 안)에 제자리 Shift(조준 = 적 쪽)
                     {
                         var pl = w.Player;

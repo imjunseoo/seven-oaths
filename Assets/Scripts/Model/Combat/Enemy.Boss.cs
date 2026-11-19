@@ -12,7 +12,18 @@ namespace SevenOaths.Model
         public bool Engaged;      // 보스전 시작(주인공이 가까이 오면)
         public int Phase = 1;
         int _slamChain, _walkTimer;
-        bool _counterReady, _secondCharge, _roarPending;
+        bool _counterReady, _secondCharge, _roarPending, _thrustChain;
+
+        // ── 낙하 내려찍기 ──
+        /// <summary>떨어질 자리(x). 붉은 표시가 주인공을 따라오다 LeapLockAt에 고정.</summary>
+        public float LeapTargetX;
+        bool InLeap => State == FState.Attack && Move == Moves.BossLeap;
+        /// <summary>하늘에 떠 있음(화면 밖) — 맞지 않음.</summary>
+        public bool LeapAirborne => InLeap && StateFrame >= Stats.LeapRiseAt && StateFrame < Move.Startup;
+        public bool LeapMarkOn => InLeap && StateFrame >= Stats.LeapMarkFrom && StateFrame < Move.Startup;
+        public bool LeapLocked => InLeap && StateFrame >= Stats.LeapLockAt;
+        /// <summary>표시가 나타난 지 몇 틱(연출용).</summary>
+        public int LeapMarkAge => InLeap ? StateFrame - Stats.LeapMarkFrom : -1;
 
         /// <summary>돌진이 멈출 x(몸 가운데). 붉은 줄 단계가 시작될 때 벽·기둥·창살까지 훑어 정한다.</summary>
         public float ChargeLineTo;
@@ -33,10 +44,49 @@ namespace SevenOaths.Model
             _counterReady = false;
             _secondCharge = false;
             _roarPending = false;
+            _thrustChain = false;
             _cooldown = 40;
         }
 
         int RecoveryFor(MoveData m) => Phase >= 2 ? (int)(m.Recovery * Stats.BossPhase2Recovery) : m.Recovery;
+
+        /// <summary>테스트·디버그: 침식 폭발 바로.</summary>
+        public void DebugBurst(World w) { Hp = MaxHp * Stats.BossPhase2At; CorruptionBurst(w); }
+
+        /// <summary>테스트·디버그: 보스 기술 바로 시작.</summary>
+        public void ForceBossMove(World w, MoveData m)
+        {
+            Body.Facing = w.Player.Body.Pos.X >= Body.Pos.X ? 1 : -1;
+            StartBossMove(w, m);
+        }
+
+        /// <summary>
+        /// 침식 폭발(사용자 v3): 1페이즈 HP가 절반에 닿는 순간 — 무너짐·처형·기절 중이어도 바로 2페이즈로.
+        /// 포효(무적) 6f째 가까운 주인공을 피해 + 밀쳐냄(World.RoarPush).
+        /// </summary>
+        internal void CorruptionBurst(World w)
+        {
+            if (Phase >= 2) return;
+            Phase = 2;
+            _roarPending = false;
+            Turning = 0;
+            Poise = MaxPoise;
+            Body.Vel = default;
+            StartBossMove(w, Moves.BossRoar);
+            w.Emit(EventType.CorruptionBurst, this);
+            w.Emit(EventType.BossPhase2, this);
+        }
+
+        void LeapMotion()
+        {
+            var b = Body;
+            int f = StateFrame;
+            if (f < Stats.LeapRiseAt) { b.Vel = new Vec2(0f, -1f); return; }                     // 웅크림
+            if (f < Stats.LeapFallAt) { b.Vel = new Vec2(0f, b.Pos.Y < _leapTop ? Stats.LeapRiseSpeed : 0f); return; }   // 하늘로 → 화면 밖에 머묾
+            if (f < Move.Startup) { b.Vel = new Vec2(0f, -Stats.LeapFallSpeed); return; }       // 내리찍기
+            b.Vel = new Vec2(0f, -1f);                                                          // 착지 뒤
+        }
+        float _leapTop;
 
         void StartBossMove(World w, MoveData m)
         {
@@ -76,13 +126,16 @@ namespace SevenOaths.Model
             if (_cooldown > 0) { if (dist > 90f) _desiredVx = Body.Facing * Stats.BossWalk; return; }
 
             int r = w.Rng.Range(0, 100);
-            if (Phase >= 2 && w.Pillars.Count == 0 && r < 22) { StartBossMove(w, Moves.BossPillars); return; }
+            if (Phase >= 2 && w.Pillars.Count == 0 && r < 18) { StartBossMove(w, Moves.BossPillars); return; }
+            if (Phase >= 2 && r >= 18 && r < 32) { StartBossMove(w, Moves.BossLeap); return; }            // 낙하 내려찍기(거리 상관없이)
             if (dist < 80f)
             {
-                if (Phase >= 2 && r < 45) { _slamChain = 2; StartBossMove(w, Moves.BossSlam24); return; }
+                if (Phase >= 2 && r < 60) { _slamChain = 2; StartBossMove(w, Moves.BossSlam24); return; }
+                if (r % 3 == 0) { _thrustChain = true; StartBossMove(w, Moves.BossBash); return; }        // 밀치기 → 늦게 찌르기
                 StartBossMove(w, r % 2 == 0 ? Moves.BossBash : Moves.BossSlam);
                 return;
             }
+            if (Phase >= 2 && dist >= 110f && r < 62) { StartBossMove(w, Moves.BossSpikes); return; }    // 멀면 침식 가시 줄
             if (dist < 260f && r < 45) { _walkTimer = 45; _desiredVx = Body.Facing * Stats.BossWalk; return; }
             _secondCharge = false;
             StartBossMove(w, Moves.BossCharge);
@@ -93,14 +146,43 @@ namespace SevenOaths.Model
         {
             var m = Move;
             int f = StateFrame;
-            int tele = m == Moves.BossCharge ? ChargeLineFrom : Math.Min(12, Math.Max(0, m.Startup - 8));
+            int tele = m == Moves.BossCharge ? ChargeLineFrom : m == Moves.BossThrust ? m.Startup - 10 : Math.Min(12, Math.Max(0, m.Startup - 8));
             if (!Telegraphed && f >= tele && m != Moves.BossRoar && m != Moves.BossIntro)
             {
                 Telegraphed = true;
                 w.Emit(EventType.Telegraph, this, move: m);
             }
 
-            if (m == Moves.BossRoar && f == 20) w.RoarPush(this);
+            if (m == Moves.BossRoar && f == Stats.BossBurstAt) w.RoarPush(this);
+            if (m == Moves.BossSpikes && f == m.Startup) w.StartSpikeLine(this);
+            if (m == Moves.BossLeap)
+            {
+                if (f == 1) LeapTargetX = w.Player.Body.Pos.X;
+                if (f == Stats.LeapRiseAt) { _leapTop = w.Level.Height + 80f; w.Emit(EventType.LeapRise, this); }
+                if (f >= Stats.LeapMarkFrom && f < Stats.LeapLockAt)
+                    LeapTargetX += (w.Player.Body.Pos.X - LeapTargetX) * Stats.LeapTrack;              // 붉은 표시가 주인공을 따라옴
+                if (f == Stats.LeapLockAt)
+                {
+                    LeapTargetX = w.ClampToArena(LeapTargetX, Body.W);
+                    w.Emit(EventType.LeapLock, this, pos: new Vec2(LeapTargetX, w.Player.Body.Pos.Y));
+                }
+                if (f == Stats.LeapFallAt)
+                {
+                    Body.Pos = new Vec2(LeapTargetX, w.Level.Height + 40f);                           // 표시 바로 위에서 떨어짐
+                    Body.Facing = w.Player.Body.Pos.X >= LeapTargetX ? 1 : -1;
+                    w.Emit(EventType.LeapFall, this, pos: new Vec2(LeapTargetX, 0f));
+                }
+                if (f > Stats.LeapFallAt && f < m.Startup)
+                {
+                    if (Body.OnGround)
+                    {
+                        StateFrame = m.Startup;                                                      // 착지 = 판정 시작
+                        w.Emit(EventType.LeapImpact, this, pos: Body.Pos);
+                    }
+                    else if (f == m.Startup - 1) StateFrame = m.Startup - 2;                         // 아직 공중이면 붙잡아 둠
+                }
+                if (StateFrame < m.Startup) return true;   // 공중(·웅크림)일 때만 여기서 끝. 착지 뒤엔 아래 공통 처리로 판정·후딜·끝내기
+            }
             if (m == Moves.BossIntro && f == Stats.BossIntroShoutAt) w.Emit(EventType.BossShout, this);
             if (m == Moves.BossPillars && f == m.Startup) w.RaisePillars(this);
             if (m == Moves.BossCharge && f == ChargeLineFrom)
@@ -136,6 +218,13 @@ namespace SevenOaths.Model
             int total = m.Startup + m.Active + RecoveryFor(m);
             if (f >= total)
             {
+                if (m == Moves.BossBash && _thrustChain)
+                {
+                    _thrustChain = false;
+                    Body.Facing = w.Player.Body.Pos.X >= Body.Pos.X ? 1 : -1;
+                    StartBossMove(w, Moves.BossThrust);
+                    return true;
+                }
                 if (m.Id == MoveId.BossSlam && _slamChain > 0)
                 {
                     var next = _slamChain == 1 ? Moves.BossSlam16Wide : Moves.BossSlam16;

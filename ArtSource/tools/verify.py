@@ -71,8 +71,9 @@ SPEC = {
     "Bosses/ironwall.aseprite": (128, 96, {
         "idle": (6, 140), "walk": (8, 110), "turn": (3, 60), "block": (2, 60), "bash": (8, None), "slam": (10, None),
         "charge_windup": (4, 80), "charge_run": (6, 70), "wall_stun": (6, 120), "counter": (6, None), "roar": (8, 100),
-        "broken": (4, 120), "death": (12, 90)}),
+        "broken": (4, 120), "death": (12, 90), "leap": (10, None), "thrust": (6, None)}),
     "FX/fx_shockwave.aseprite": (128, 32, {"play": (6, 50)}),
+    "FX/fx_corrupt_spike.aseprite": (16, 48, {"play": (6, 40)}),
     "FX/fx_pillar.aseprite": (24, 80, {"rise": (5, 50), "idle": (1, None), "crumble": (6, 60)}),
     "FX/fx_parry.aseprite": (48, 48, {"play": (5, 40)}),
     "UI/relic_endurance.aseprite": (24, 24, None),
@@ -87,6 +88,7 @@ SPEC = {
     "FX/fx_riposte_barrage.aseprite": (128, 128, {"play": (22, None)}),  # 50/33 ms alternating
     "UI/title_logo.aseprite": (240, 84, None),                          # title lettering, 1 frame
     "UI/title_portrait.aseprite": (158, 100, {"loop": (24, 120)}),       # looping portrait (GPT art via Chunckxel 12px, extended L36/T8), shown x2
+    "UI/ui_cursor.aseprite": (12, 15, {"normal": (1, None), "press": (1, None)}),   # hotspot (0,0)
     "UI/ui_boss_banner.aseprite": (64, 32, None),
     "UI/ui_boss_banner_mark.aseprite": (32, 32, None),
     "UI/ui_oath_banner.aseprite": (64, 32, None),
@@ -104,7 +106,8 @@ IMPACT = {("FX/fx_riposte_blast.aseprite", "play"): 4, (H, "slash1"): 2, (H, "sl
           ("Enemies/shieldman.aseprite", "bash"): 3, ("Enemies/shieldman.aseprite", "poke"): 3,
           ("Enemies/crossbow.aseprite", "shoot"): 1, ("Enemies/crossbow.aseprite", "kick"): 3,
           ("Bosses/ironwall.aseprite", "bash"): 4, ("Bosses/ironwall.aseprite", "slam"): 6,
-          ("Bosses/ironwall.aseprite", "counter"): 2}
+          ("Bosses/ironwall.aseprite", "counter"): 2, ("Bosses/ironwall.aseprite", "leap"): 6,
+          ("Bosses/ironwall.aseprite", "thrust"): 3}
 HEIGHT = {H: (42, 46, "idle"), "Enemies/soldier.aseprite": (48, 50, "idle"), "Enemies/dummy.aseprite": (38, 42, "idle"),
           "Enemies/shieldman.aseprite": (48, 50, "idle"), "Enemies/crossbow.aseprite": (44, 46, "idle"),
           "Bosses/ironwall.aseprite": (76, 84, "idle")}

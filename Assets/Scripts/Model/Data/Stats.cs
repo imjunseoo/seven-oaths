@@ -141,6 +141,26 @@ namespace SevenOaths.Model
         public const float BossDeathSlowScale = 0.25f;
         public const int BossDeathSlowTicks = 110;
         public const int BossIntroShoutAt = 46;   // 첫 대면 함성(이때 붉은 이름 배너)
+
+        // (사용자 v3) 침식 폭발: 1페이즈에선 HP가 절반 아래로 안 내려가고, 절반에 닿는 순간 무조건 터짐(무너짐·처형 중이어도)
+        public const int BossBurstAt = 6;            // 폭발(밀쳐내기 + 피해) 프레임
+        public const float BossBurstRadius = 96f;
+
+        // 낙하 내려찍기(2페이즈): 웅크림 → 하늘 높이(화면 밖) → 떨어질 자리에 붉은 표시(주인공을 따라오다 고정·깜빡임) → 내리찍기
+        public const int LeapRiseAt = 18;            // 뛰어오름
+        public const float LeapRiseSpeed = 14f;
+        public const int LeapMarkFrom = 30;          // 붉은 표시 시작(주인공을 따라감)
+        public const int LeapLockAt = 84;            // 표시 고정(이후 빠르게 깜빡임)
+        public const int LeapFallAt = 104;           // 그 자리 위에서 떨어지기 시작
+        public const float LeapFallSpeed = 18f;
+        public const float LeapTrack = 0.12f;        // 표시가 주인공을 따라가는 비율(틱마다)
+
+        // 침식 가시 줄(2페이즈): 검을 땅에 꽂으면 붉은 균열이 주인공 쪽으로 기어가고, 가까운 곳부터 가시가 솟음
+        public const int SpikeCount = 12;
+        public const float SpikeStep = 20f;
+        public const int SpikeEvery = 3;             // 가시 하나씩 솟는 간격(틱)
+        public const int SpikeWarn = 14;             // 균열 예고(틱)
+        public const int SpikeLife = 10;             // 솟아 있는 시간(판정)
         public const int BossStunFrames = 70;
         public const float BossPhase2At = 0.5f;
         public const float BossPhase2Recovery = 0.8f;

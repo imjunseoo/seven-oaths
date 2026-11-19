@@ -343,6 +343,56 @@
   - 24프레임 모두 같은 규칙: 늘어난 머리 끝도 원래와 같은 파동·박자로 흔들림. 칼은 고정이고, 반짝임은 새 칼끝까지 이어서 쓸고 지나감. verify 60/60.
 - 미리보기: `previews/title/title_portrait_loop_x4.gif`, `title_loop_mock_x2.gif`(타이틀 배치, 로고 L1).
 
+## 마우스 커서 (메인 요청 2026-11-19, 손으로 찍음, PixelLab 안 씀)
+- `Assets/Art/UI/ui_cursor.aseprite`: 12×15, 레이어 `cursor`. 소스는 `ArtSource/src/ui/ui_cursor.py`.
+  - **핫스팟: 왼쪽 위 픽셀 (0, 0)**.
+  - 태그 `normal` 1프레임 / `press` 1프레임(각 색 한 단계 밝게, 꼬리 1px 짧게, 끝에 반짝임).
+- 모양: 왼쪽 위를 가리키는 화살표 실루엣의 얼음 파랑 수정.
+  - 끝에서 바닥 쪽으로 능선 하이라이트 W.
+  - 왼쪽 면은 G/F로 밝게, 오른쪽 면은 E/D/C로 어둡게.
+  - 외곽선은 남색 A 1px. 밤 배경·흰 케이프·중간 회색 위에서 모두 읽히는지 확인함.
+- verify 61/61. 미리보기 `ArtSource/previews/ui/ui_cursor_x4.png`(위: normal, 아래: press / 배경: 밤·흰 케이프·회색).
+
+## 철벽 새 패턴 + 침식 가시 FX (메인 요청 2026-11-19, 손 도트, PixelLab 안 씀)
+- `Bosses/ironwall.aseprite`에 태그 2개 추가(128×96, 발 기준 그대로, 총 15태그). 소스는 `ArtSource/src/bosses/ironwall.py`.
+  - **`leap` 10프레임, 타격 프레임 6**. ms `100,110,150,70,70,90,180,140,140,160`.
+    - 0~2: 방패를 등에 메고 검을 아래로 든 채 점점 깊게 웅크림(1~2에 발밑 흙).
+    - 3: 뛰어오름(몸이 길게 펴지고 발끝이 아래, 망토가 아래로 늘어짐).
+    - 4~5: 떨어지며 두 손으로 검을 어깨 뒤 위로 젖혀 듦. 캔버스 안에 들어가게 −122°/−128°.
+    - **6: 착지와 동시에 검을 바닥에 내리꽂음**(가장 낮은 자세, 흙 + 진홍 불티).
+    - 7~9: 꽂은 검을 짚고 숨 고르기. 방패는 오른쪽 바닥에 내려놓음 = 반격 기회.
+  - **`thrust` 6프레임, 타격 프레임 3**. ms `90,110,200,160,110,120`.
+    - 0~2: 방패 옆으로 검을 뒤로 당겨 버팀. 2는 200ms로 한 박자 늦게, 방패 오른쪽 끝에서 칼끝 번뜩.
+    - **3: 앞으로 길게 찌름**. 칼날은 가슴 높이에서 수평, 칼끝은 캔버스 x 125 = 피벗(64)에서 약 +61px. 속도선 포함, 방패는 뒤로 낮게 비킴.
+    - 4~5: 회수.
+  - 요청한 +80px는 128px 캔버스로는 불가능해서 캔버스 끝까지만 뻗음. 더 길게 보여야 하면 코드에서 찌르기 궤적 FX를 덧대거나, 캔버스를 넓히는 계약 변경이 필요함.
+- `FX/fx_corrupt_spike.aseprite` 16×48, 피벗 바닥 가운데, `play` 6×40ms. 소스는 `ArtSource/src/fx/fx_corrupt.py`.
+  - 0: 바닥 균열이 붉게 빛남.
+  - 1: 28px로 솟음.
+  - 2: 40px 최대, 끝 섬광.
+  - 3: 유지.
+  - 4: 윗부분이 파편으로 부서지고 24px로 줄어듦.
+  - 5: 10px 밑동과 마지막 파편.
+  - 색은 침식 계열만 씀: 진홍 O/P/N/M, 검정 L/0, 밑동은 탁한 보라 S. 가는 윗부분은 외곽선 없이 빛나는 심.
+- verify 62/62(SPEC과 IMPACT 추가). 미리보기:
+  - `previews/bosses/ironwall_leap_strip_x2.png`, `ironwall_thrust_strip_x2.png`
+  - `ironwall__leap.gif`, `ironwall__thrust.gif`
+  - `previews/fx/fx_corrupt_spike_x6.png`
+
+## 주인공 얼굴 v2 (사용자 승인 2026-11-19, PixelLab 참고 + 손보정)
+- PixelLab 보너스 1회(edit_image_pixen, 1생성): 정면 대기 프레임 64×64를 넣고 얼굴만 디테일화. 참고본은 `ArtSource/title/pixellab/hero_face_out_64.png`.
+  - 별도로 1회는 대상을 타이틀 포트레이트로 잘못 잡아 씀(미사용).
+  - 남은 보너스 3회(매일 밤 +5, 최대 20).
+- 머리 그림 4장(`n`·`blink`·`hurt`·`shout`)을 손으로 다시 찍음. 소스 `ArtSource/src/characters/heroine_face_v2.py`, `heroine_model.HEADS`에 덮어씀.
+  - 가져온 것:
+    - 눈 한 칸 넓힘(가까운 눈 4~6열, 먼 눈 10~11열), 눈꼬리 쪽 흰자 `w`.
+    - 앞머리 아래 눈두덩 그림자 `u`.
+    - 코 1px `u`.
+    - 머리 오른쪽 밝은 테두리 `k`.
+  - 버린 것: 4px 두께 속눈썹(1줄로, 바깥 눈꼬리만 진하게), 입(2026-11-18에 사용자가 뺌).
+- heroine.aseprite 재출력(28태그), verify 62/62. 손으로 덮어쓴 프레임이 없어서 모든 동작에 반영됨.
+- 비교: `previews/characters/face_v2_review.png`, `face_v2_in_motion.png`.
+
 ## 남은 것 / 다음
 - 주인공 사용자 최종 승인.
 - 손 보정 2차: 나머지 공격 태그의 타격 프레임(slash2·3, heavy, charge_slash, dodge_slash, air_slash, execute) + run 다리 모양 → `frames/heroine/*.txt`.

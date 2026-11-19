@@ -152,6 +152,31 @@ MonoBehaviour:
       - 0.13999999
       - 0.13
       - 0.00999999
+    - tag: leap
+      frames:
+      - {fileID: 5246780741704733589, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: 2581502379492444612, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -7630373385050319260, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: 5922423595381685215, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -2885079251084145225, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -2914212287037805798, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -8112398604005269110, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -6903229304749185669, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: 1898019366786623789, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -4646497014392339005, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -4646497014392339005, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      durations:
+      - 0.10000038
+      - 0.10999966
+      - 0.14999962
+      - 0.07000065
+      - 0.069999695
+      - 0.09000015
+      - 0.1800003
+      - 0.13999939
+      - 0.14000034
+      - 0.14999998
+      - 0.00999999
     - tag: roar
       frames:
       - {fileID: 625362260150919628, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
@@ -197,6 +222,23 @@ MonoBehaviour:
       - 0.119999886
       - 0.120000124
       - 0.13
+      - 0.00999999
+    - tag: thrust
+      frames:
+      - {fileID: -6771648243423165317, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: 5508822029762540612, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -4054387219571500840, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: 4585772241193333754, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: 5854652170767226475, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -7426877605882706869, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      - {fileID: -7426877605882706869, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+      durations:
+      - 0.09000015
+      - 0.10999966
+      - 0.19999981
+      - 0.1600008
+      - 0.10999966
+      - 0.110000014
       - 0.00999999
     - tag: turn
       frames:
@@ -1250,6 +1292,26 @@ MonoBehaviour:
       - 0.060000002
       - 0.050000012
       - 0.00999999
+  - name: fx_corrupt_spike
+    defaultSprite: {fileID: -7244965916623006404, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+    clips:
+    - tag: play
+      frames:
+      - {fileID: -7244965916623006404, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      - {fileID: -5506705997153755971, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      - {fileID: -1266516795796594836, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      - {fileID: -1118996870338779927, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      - {fileID: -6166107913603847945, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      - {fileID: 7450773725008488102, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      - {fileID: 7450773725008488102, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+      durations:
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.04
+      - 0.040000007
+      - 0.030000001
+      - 0.010000005
   - name: fx_crystal_shard
     defaultSprite: {fileID: 2100241105389705731, guid: 43fd1efab2836584bb1da6c375aa0d68, type: 3}
     clips:
@@ -1807,6 +1869,23 @@ MonoBehaviour:
       - 0.119999886
       - 0.109999895
       - 0.00999999
+  - name: ui_cursor
+    defaultSprite: {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+    clips:
+    - tag: normal
+      frames:
+      - {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+      - {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
+    - tag: press
+      frames:
+      - {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+      - {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+      durations:
+      - 0.09
+      - 0.009999998
   - name: ui_hp
     defaultSprite: {fileID: 4896592003576973236, guid: 4907e7f617c523142ab44918ff7d509c, type: 3}
     clips:
@@ -1915,10 +1994,14 @@ MonoBehaviour:
     sprite: {fileID: -7925473467128777854, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: ironwall/idle
     sprite: {fileID: 1171689283128144792, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/leap
+    sprite: {fileID: 5246780741704733589, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: ironwall/roar
     sprite: {fileID: 625362260150919628, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: ironwall/slam
     sprite: {fileID: 9202483487638543663, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/thrust
+    sprite: {fileID: -6771648243423165317, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: ironwall/turn
     sprite: {fileID: 4937406872136274348, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: ironwall/walk
@@ -2255,10 +2338,74 @@ MonoBehaviour:
     sprite: {fileID: -4425801460394390003, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: Frame_82
     sprite: {fileID: -4425801460394390003, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_83
+    sprite: {fileID: 5246780741704733589, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_83
+    sprite: {fileID: 5246780741704733589, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_84
+    sprite: {fileID: 2581502379492444612, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_84
+    sprite: {fileID: 2581502379492444612, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_85
+    sprite: {fileID: -7630373385050319260, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_85
+    sprite: {fileID: -7630373385050319260, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_86
+    sprite: {fileID: 5922423595381685215, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_86
+    sprite: {fileID: 5922423595381685215, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_87
+    sprite: {fileID: -2885079251084145225, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_87
+    sprite: {fileID: -2885079251084145225, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_88
+    sprite: {fileID: -2914212287037805798, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_88
+    sprite: {fileID: -2914212287037805798, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_89
+    sprite: {fileID: -8112398604005269110, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_89
+    sprite: {fileID: -8112398604005269110, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: ironwall/Frame_9
     sprite: {fileID: -3394281282992299774, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: Frame_9
     sprite: {fileID: -3394281282992299774, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_90
+    sprite: {fileID: -6903229304749185669, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_90
+    sprite: {fileID: -6903229304749185669, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_91
+    sprite: {fileID: 1898019366786623789, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_91
+    sprite: {fileID: 1898019366786623789, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_92
+    sprite: {fileID: -4646497014392339005, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_92
+    sprite: {fileID: -4646497014392339005, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_93
+    sprite: {fileID: -6771648243423165317, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_93
+    sprite: {fileID: -6771648243423165317, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_94
+    sprite: {fileID: 5508822029762540612, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_94
+    sprite: {fileID: 5508822029762540612, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_95
+    sprite: {fileID: -4054387219571500840, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_95
+    sprite: {fileID: -4054387219571500840, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_96
+    sprite: {fileID: 4585772241193333754, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_96
+    sprite: {fileID: 4585772241193333754, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_97
+    sprite: {fileID: 5854652170767226475, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_97
+    sprite: {fileID: 5854652170767226475, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: ironwall/Frame_98
+    sprite: {fileID: -7426877605882706869, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
+  - name: Frame_98
+    sprite: {fileID: -7426877605882706869, guid: f5a1591f0aca2384fb4e2cefdc3c18af, type: 3}
   - name: heroine/air_slash
     sprite: {fileID: 14431509499211464, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/charge
@@ -2723,69 +2870,37 @@ MonoBehaviour:
     sprite: {fileID: -606320645499305417, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_83
     sprite: {fileID: 9172163225141680937, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_83
-    sprite: {fileID: 9172163225141680937, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_84
-    sprite: {fileID: 8468607820453746426, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_84
     sprite: {fileID: 8468607820453746426, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_85
     sprite: {fileID: 2760447137313826970, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_85
-    sprite: {fileID: 2760447137313826970, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_86
-    sprite: {fileID: -3599234696571442863, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_86
     sprite: {fileID: -3599234696571442863, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_87
     sprite: {fileID: -8753910349487849789, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_87
-    sprite: {fileID: -8753910349487849789, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_88
     sprite: {fileID: 4777759476413922344, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_88
-    sprite: {fileID: 4777759476413922344, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_89
-    sprite: {fileID: 889153951680215114, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_89
     sprite: {fileID: 889153951680215114, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_9
     sprite: {fileID: 5946354573949093469, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_90
     sprite: {fileID: 5017633507137564899, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_90
-    sprite: {fileID: 5017633507137564899, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_91
-    sprite: {fileID: 810252073050065387, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_91
     sprite: {fileID: 810252073050065387, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_92
     sprite: {fileID: 6025321838082786428, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_92
-    sprite: {fileID: 6025321838082786428, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_93
-    sprite: {fileID: -3182070680018193798, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_93
     sprite: {fileID: -3182070680018193798, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_94
     sprite: {fileID: -6690364186933738350, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_94
-    sprite: {fileID: -6690364186933738350, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_95
-    sprite: {fileID: -3007896265457422936, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_95
     sprite: {fileID: -3007896265457422936, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_96
     sprite: {fileID: 3105300621126515486, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_96
-    sprite: {fileID: 3105300621126515486, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_97
     sprite: {fileID: -4595436084940421392, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_97
-    sprite: {fileID: -4595436084940421392, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_98
-    sprite: {fileID: 14431509499211464, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
-  - name: Frame_98
     sprite: {fileID: 14431509499211464, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
   - name: heroine/Frame_99
     sprite: {fileID: -2541722089170576879, guid: 3de91080e0e8ae346bab254a6cb6986f, type: 3}
@@ -3281,6 +3396,22 @@ MonoBehaviour:
     sprite: {fileID: -1304228407899848385, guid: ee08e5ca23e275548a8f9f52ef8734bf, type: 3}
   - name: fx_corrupt_burst/Frame_6
     sprite: {fileID: 944150879186892583, guid: ee08e5ca23e275548a8f9f52ef8734bf, type: 3}
+  - name: fx_corrupt_spike/play
+    sprite: {fileID: -7244965916623006404, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike
+    sprite: {fileID: -7244965916623006404, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike/Frame_0
+    sprite: {fileID: -7244965916623006404, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike/Frame_1
+    sprite: {fileID: -5506705997153755971, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike/Frame_2
+    sprite: {fileID: -1266516795796594836, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike/Frame_3
+    sprite: {fileID: -1118996870338779927, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike/Frame_4
+    sprite: {fileID: -6166107913603847945, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
+  - name: fx_corrupt_spike/Frame_5
+    sprite: {fileID: 7450773725008488102, guid: de26b5ee8ff21394cacab6be219d8b68, type: 3}
   - name: fx_crystal_shard/a
     sprite: {fileID: 2100241105389705731, guid: 43fd1efab2836584bb1da6c375aa0d68, type: 3}
   - name: fx_crystal_shard/b
@@ -3781,6 +3912,16 @@ MonoBehaviour:
     sprite: {fileID: 6815988614484060729, guid: 5d6102d9c277b3648845baa8ebae2399, type: 3}
   - name: ui_boss_banner_mark
     sprite: {fileID: 388708390244605954, guid: 3cc5649026b6dcb44aefc5452ff7e9af, type: 3}
+  - name: ui_cursor/normal
+    sprite: {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+  - name: ui_cursor/press
+    sprite: {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+  - name: ui_cursor
+    sprite: {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+  - name: ui_cursor/Frame_0
+    sprite: {fileID: 2058863005376290320, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
+  - name: ui_cursor/Frame_1
+    sprite: {fileID: 5673490743445640985, guid: 8038fea8d19fb3442b56b3d87263db93, type: 3}
   - name: ui_hp/fill
     sprite: {fileID: 4896592003576973236, guid: 4907e7f617c523142ab44918ff7d509c, type: 3}
   - name: ui_hp/frame
@@ -3854,6 +3995,8 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 1029fd191cfd8d34d9e5ff61018b907f, type: 3}
   - name: bgm_region1
     clip: {fileID: 8300000, guid: e8f083edbd75b0647bd8312b8f9a34ff, type: 3}
+  - name: bgm_title
+    clip: {fileID: 8300000, guid: 35316d8abff91e947803782a9e522f7c, type: 3}
   - name: bgm_training
     clip: {fileID: 8300000, guid: d4e975c65f674384c9f68f635c15cbab, type: 3}
   - name: sfx_altar
@@ -3878,6 +4021,14 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: ecb50229126a76c418b26f42635cf02c, type: 3}
   - name: sfx_boss_intro_shout
     clip: {fileID: 8300000, guid: b6113ed152ce03c49a62936ba05cad8b, type: 3}
+  - name: sfx_boss_leap
+    clip: {fileID: 8300000, guid: 6c5090f44b9eda64db566d1d3570b35e, type: 3}
+  - name: sfx_boss_leap_fall
+    clip: {fileID: 8300000, guid: 25d94023ec2ec004395bf6e04629734e, type: 3}
+  - name: sfx_boss_leap_impact
+    clip: {fileID: 8300000, guid: 5445507af71293a4da28d9e2f79b13b9, type: 3}
+  - name: sfx_boss_leap_lock
+    clip: {fileID: 8300000, guid: 0850f25c45eed6e42aa760e60a6f00c9, type: 3}
   - name: sfx_boss_roar
     clip: {fileID: 8300000, guid: 5701caeb1a2aa6246959e93e62bfc619, type: 3}
   - name: sfx_boss_slam
@@ -3890,6 +4041,8 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 7c7e36f95704fc747a626b766e5f4c5a, type: 3}
   - name: sfx_charge_ready_02
     clip: {fileID: 8300000, guid: 70b03e8500870624d82d14eeeacdf86e, type: 3}
+  - name: sfx_corrupt_burst
+    clip: {fileID: 8300000, guid: d06e9272b31b13b4e8a65b6599cdf08d, type: 3}
   - name: sfx_dash_01
     clip: {fileID: 8300000, guid: 944637c897bb2d84e948c485511368dc, type: 3}
   - name: sfx_dash_02
@@ -3986,6 +4139,14 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 0d51cfb93a8ca8247aeda7aa4da5cf4a, type: 3}
   - name: sfx_shield_block_03
     clip: {fileID: 8300000, guid: 0cb7e373aa9ff9d4ea2762b6688a4533, type: 3}
+  - name: sfx_spike_crack
+    clip: {fileID: 8300000, guid: 309fce02b2fb32e4d8678c950b8a4285, type: 3}
+  - name: sfx_spike_erupt_01
+    clip: {fileID: 8300000, guid: 74d11d512ccfb1f4aa9b1237ddcc9a84, type: 3}
+  - name: sfx_spike_erupt_02
+    clip: {fileID: 8300000, guid: 9e0b7899d78315b40b8a04f9c8b42d90, type: 3}
+  - name: sfx_spike_erupt_03
+    clip: {fileID: 8300000, guid: 05b84e6600ee34a4db58d23423e291ae, type: 3}
   - name: sfx_step_stone_01
     clip: {fileID: 8300000, guid: 72a4ca9278d61f841a951c4154918416, type: 3}
   - name: sfx_step_stone_02

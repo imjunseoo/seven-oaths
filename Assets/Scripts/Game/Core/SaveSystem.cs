@@ -14,6 +14,7 @@ namespace SevenOaths
         public int checkpoint = -1;
         public List<string> relics = new List<string>();
         public List<string> equipped = new List<string>();
+        public List<string> bossesDefeated = new List<string>();   // 쓰러뜨린 보스가 있는 레벨 이름(예: boss_ironwall)
         public float bgmVolume = 0.4f, sfxVolume = 1f, ambVolume = 0.5f;
         public bool fullscreen = true;
         public bool rumble = true;

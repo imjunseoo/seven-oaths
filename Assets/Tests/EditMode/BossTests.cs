@@ -50,6 +50,133 @@ namespace SevenOaths.Tests
         }
 
         [Test]
+        public void Load_BossAlreadyDefeated_NoBossNoGate_RelicFloatsAgainIfNotPicked()
+        {
+            var w = NewArena(out var b);
+            w.ApplyBossDefeated(relicOwned: false);
+            Assert.IsNull(w.Boss);
+            Assert.IsTrue(w.BossDefeated);
+            Assert.IsFalse(w.Enemies.Contains(b), "다시 실행해도 보스가 다시 서 있지 않음");
+            Assert.AreEqual(1, w.Drops.Count, "줍기 전에 껐으면 유물이 그 자리에 다시 떠 있음");
+            w.Player.Body.Pos = new Vec2(300, 16);
+            Run(w, 5);
+            Assert.IsFalse(w.BossGate.HasValue, "입구 창살이 닫히지 않음");
+
+            var w2 = NewArena(out _);
+            w2.ApplyBossDefeated(relicOwned: true);
+            Assert.AreEqual(0, w2.Drops.Count, "이미 가졌으면 다시 안 뜸");
+        }
+
+        static World Engaged(out Enemy b)
+        {
+            var w = NewArena(out b);
+            w.Player.Body.Pos = new Vec2(300, 16);
+            Run(w, 2);
+            Assert.IsTrue(b.Engaged);
+            return w;
+        }
+
+        [Test]
+        public void Burst_AtHalfHp_AlwaysTriggers_EvenWhenBroken_CannotSkipPhase2()
+        {
+            var w = Engaged(out var b);
+            b.Body.Pos = new Vec2(400, 16);
+            w.Player.Body.Pos = new Vec2(360, 16);
+            b.Hp = b.MaxHp * 0.5f + 6f;
+            b.Poise = 1f;   // 이 공격으로 자세도 무너짐
+            var ev = new List<EventType>();
+            w.Event += e => ev.Add(e.Type);
+            w.Advance(new InputFrame { DashPressed = true, HasAim = true, AimX = 1 });
+            Assert.IsTrue(RunUntil(w, () => ev.Contains(EventType.CorruptionBurst), 40), "절반에 닿는 순간 침식 폭발");
+            Assert.AreEqual(b.MaxHp * 0.5f, b.Hp, 0.01f, "1페이즈 HP는 절반 아래로 안 내려감");
+            Assert.AreEqual(2, b.Phase);
+            Assert.AreEqual(Moves.BossRoar, b.Move, "무너짐이어도 바로 폭발(포효)");
+            Assert.IsFalse(b.Hittable, "폭발 동안 무적");
+        }
+
+        [Test]
+        public void Burst_HurtsAndPushesNearbyPlayer()
+        {
+            var w = Engaged(out var b);
+            b.Body.Pos = new Vec2(400, 16);
+            b.Body.Facing = -1;
+            w.Player.Body.Pos = new Vec2(432, 16);   // 등 뒤에서 베기(무적 없는 공격)로 절반을 넘김
+            b.Hp = b.MaxHp * 0.5f + 5f;
+            w.Advance(new InputFrame { AttackPressed = true, HasAim = true, AimX = -1 });
+            Assert.IsTrue(RunUntil(w, () => b.Move == Moves.BossRoar, 40));
+            float x0 = w.Player.Body.Pos.X;
+            Run(w, 30);
+            Assert.IsTrue(w.Player.Hp < Stats.PlayerMaxHp, "가까이 있으면 폭발에 맞음");
+            Assert.IsTrue(w.Player.Body.Pos.X > x0 + 10f, "밀려남");
+        }
+
+        [Test]
+        public void Leap_RisesOffscreen_MarkFollowsThenLocks_LandsOnMark()
+        {
+            var w = Engaged(out var b);
+            b.Phase = 2;
+            w.Player.Body.Pos = new Vec2(300, 16);
+            b.ForceBossMove(w, Moves.BossLeap);
+            Assert.IsTrue(RunUntil(w, () => b.LeapMarkOn, 60));
+            Run(w, 20);
+            Assert.IsTrue(b.Body.Pos.Y > w.Level.Height, "하늘 높이(화면 밖)");
+            Assert.IsFalse(b.Hittable, "떠 있는 동안 맞지 않음");
+            float before = b.LeapTargetX;
+            Run(w, 20, new InputFrame { MoveX = 1f });   // 주인공이 움직이면 표시가 따라옴
+            Assert.IsTrue(b.LeapTargetX > before + 5f, "붉은 표시가 주인공을 따라옴");
+            Assert.IsTrue(RunUntil(w, () => b.LeapLocked, 80));
+            float locked = b.LeapTargetX;
+            Run(w, 6, new InputFrame { MoveX = 1f });
+            Assert.AreEqual(locked, b.LeapTargetX, 0.01f, "고정 뒤엔 안 따라옴");
+            // 표시 밖으로 피함
+            w.Player.Body.Pos = new Vec2(locked - 140f, 16);
+            float hp = w.Player.Hp;
+            Assert.IsTrue(RunUntil(w, () => b.StateFrame >= Moves.BossLeap.Startup, 120), "착지");
+            Run(w, 10);
+            Assert.AreEqual(locked, b.Body.Pos.X, 2f, "표시한 자리에 떨어짐");
+            Assert.AreEqual(hp, w.Player.Hp, 0.01f, "표시 밖이면 안 맞음");
+            // (버그 수정) 착지 뒤 후딜이 끝나면 다시 움직인다 — 예전엔 내려찍기 상태에 영원히 멈춤
+            Assert.IsTrue(RunUntil(w, () => b.State != FState.Attack || b.Move != Moves.BossLeap, Moves.BossLeap.Active + Moves.BossLeap.Recovery + 20), "내려찍기가 끝남");
+            Assert.IsTrue(RunUntil(w, () => b.State == FState.Attack && b.Move != Moves.BossLeap, 400), "다음 공격을 이어 감");
+        }
+
+        [Test]
+        public void Leap_HitsPlayerStandingOnMark()
+        {
+            var w = Engaged(out var b);
+            b.Phase = 2;
+            w.Player.Body.Pos = new Vec2(260, 16);
+            b.ForceBossMove(w, Moves.BossLeap);
+            Assert.IsTrue(RunUntil(w, () => b.LeapLocked, 200));
+            w.Player.Body.Pos = new Vec2(b.LeapTargetX, 16);
+            Assert.IsTrue(RunUntil(w, () => w.Player.Hp < Stats.PlayerMaxHp, 120), "표시 위에 서 있으면 내리찍기에 맞음");
+        }
+
+        [Test]
+        public void Spikes_TravelTowardPlayer_HitOnce()
+        {
+            var w = Engaged(out var b);
+            b.Phase = 2;
+            b.Body.Pos = new Vec2(420, 16);
+            w.Player.Body.Pos = new Vec2(300, 16);
+            b.ForceBossMove(w, Moves.BossSpikes);
+            Assert.IsTrue(RunUntil(w, () => w.Spikes.Count > 0, 60), "검을 꽂으면 가시 줄");
+            Assert.IsTrue(w.Spikes[0].X < 420f, "주인공 쪽으로");
+            Run(w, 90);
+            Assert.AreEqual(Stats.PlayerMaxHp - Moves.BossSpikes.Damage, w.Player.Hp, 0.01f, "한 줄에 한 번만 맞음");
+        }
+
+        [Test]
+        public void Thrust_ReachesFarther_ThanBash()
+        {
+            var w = Engaged(out var b);
+            b.Body.Pos = new Vec2(400, 16);
+            w.Player.Body.Pos = new Vec2(330, 16);   // 70px: 밀치기보단 멀어도 찌르기는 닿음
+            b.ForceBossMove(w, Moves.BossThrust);
+            Assert.IsTrue(RunUntil(w, () => w.Player.Hp < Stats.PlayerMaxHp, 60), "늦게 찌르기 사거리");
+        }
+
+        [Test]
         public void FrontBlocked_DashPierces()
         {
             var w = NewArena(out var b);

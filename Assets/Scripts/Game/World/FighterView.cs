@@ -21,7 +21,7 @@ namespace SevenOaths
             { "slash1", 2 }, { "slash2", 2 }, { "heavy", 4 }, { "charge_slash", 3 },
             { "dodge_slash", 2 }, { "air_slash", 2 }, { "execute", 5 }, { "dash_attack", 2 }, { "dash_attack_up", 2 }, { "dash_attack_down", 2 }, { "attack", 5 }, { "draw_slash", 2 }, { "slash3", 8 },
             { "bash", 3 }, { "poke", 3 }, { "shoot", 1 }, { "kick", 3 },
-            { "ironwall/bash", 4 }, { "ironwall/slam", 6 }, { "ironwall/counter", 2 },
+            { "ironwall/bash", 4 }, { "ironwall/slam", 6 }, { "ironwall/counter", 2 }, { "ironwall/leap", 6 }, { "ironwall/thrust", 3 },
         };
 
         /// <summary>선딜 구간을 고르게 나누지 않는 태그: 선딜 프레임별 시작 시점(모델 프레임).</summary>
@@ -29,6 +29,10 @@ namespace SevenOaths
         {
             // 베기 3 빛의 구 낙하: 모으기 0·1 → 변신 2 → 비행 3·4 → 정지 5·6 → 낙하 7 (ART_LOG slash3_preview.py)
             { "slash3", new[] { 0, 10, 20, 26, 32, 38, 47, 52 } },
+            // 철벽 낙하 내려찍기: 웅크림 0~2(뛰기 전 18f) → 뛰어오름 3 → (화면 밖) → 떨어지며 검을 치켜듦 4~5 (ART_LOG)
+            { "ironwall/leap", new[] { 0, 6, 12, 18, Stats.LeapFallAt, Stats.LeapFallAt + 8 } },
+            // 철벽 늦게 찌르기: 2번(번뜩, 200ms)이 판정 10f 전 번뜩임(Telegraph)과 같은 때
+            { "ironwall/thrust", new[] { 0, 8, 20 } },
         };
 
         public Fighter Fighter { get; private set; }
@@ -370,6 +374,19 @@ namespace SevenOaths
                     var m = e.Move;
                     int f = e.StateFrame;
                     if (m == Moves.BossCharge) tag = f < m.Startup ? "charge_windup" : f < m.Startup + m.Active ? "charge_run" : "idle";
+                    else if (m == Moves.BossLeap)
+                    {
+                        // 낙하 내려찍기: 웅크림(뛰기 전) → (하늘, 화면 밖) → 검을 치켜든 채 떨어짐 → 착지 = 내려찍기 타격 프레임부터
+                        var leap = _set.Get("leap");
+                        if (leap != null) { tag = "leap"; frame = PhaseFrame(leap, "ironwall/leap", m, f); }
+                        else if (f < Stats.LeapRiseAt) tag = "charge_windup";
+                        else
+                        {
+                            tag = "slam";
+                            var sc = _set.Get("slam");
+                            if (sc != null) frame = f < m.Startup ? 3 : PhaseFrame(sc, "ironwall/slam", Moves.BossSlam, Moves.BossSlam.Startup + (f - m.Startup));
+                        }
+                    }
                     else if (m == Moves.BossRoar || m == Moves.BossPillars || m == Moves.BossIntro) { tag = "roar"; frame = Proportional("roar", f, m.Total); }
                     else
                     {

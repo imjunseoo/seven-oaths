@@ -8,6 +8,7 @@ namespace SevenOaths.Model
         ShieldBash, ShieldPoke, CrossbowShoot, CrossbowKick,
         BossBash, BossSlam, BossCharge, BossCounter, BossRoar, BossPillars,
         ReflectedBolt, RiposteSlash, RiposteBlast, BossIntro,
+        BossLeap, BossSpikes, BossThrust, BossBurst,
     }
 
     /// <summary>
@@ -239,6 +240,40 @@ namespace SevenOaths.Model
         public static readonly MoveData BossIntro = new MoveData
         {
             Id = MoveId.BossIntro, Anim = "roar", Startup = 70, Active = 1, Recovery = 40,
+        };
+
+        /// <summary>
+        /// 낙하 내려찍기(2페이즈): 판정은 착지하는 순간 시작(그 전엔 StateFrame을 Startup 앞에서 붙잡음).
+        /// 착지 자리 ±56 큰 판정 + 양옆 120 땅 충격파. 착지 뒤 50f 무방비(방패 내려감).
+        /// </summary>
+        public static readonly MoveData BossLeap = new MoveData
+        {
+            Id = MoveId.BossLeap, Anim = "slam", Startup = 140, Active = 6, Recovery = 50,
+            Damage = 26, Level = HitLevel.Finisher, Hitbox = new Box(-56, 0, 112, 64),
+            Hitbox2 = new Box(-120, 0, 240, 16), H2From = 140, H2To = 148, HeavySwing = true,
+        };
+
+        /// <summary>침식 가시 줄: 판정 첫 프레임에 검을 땅에 꽂음 → 가시는 World가 진행(판정 상자 없음).</summary>
+        public static readonly MoveData BossSpikes = new MoveData
+        {
+            Id = MoveId.BossSpikes, Anim = "slam", Startup = 28, Active = 1, Recovery = 46,
+            Damage = 12, Level = HitLevel.Heavy, Guarded = true, GuardUntil = 28,
+        };
+
+        /// <summary>늦게 찌르기: 방패 밀치기 뒤 이어지는 긴 찌르기(번뜩임 뒤 한 박자 늦게) — 급하게 구르면 맞는다, 패리 연습.</summary>
+        public static readonly MoveData BossThrust = new MoveData
+        {
+            // 도트 thrust: 칼끝 = 피벗 앞 약 +61(128px 캔버스 끝) → 판정도 그림에 맞춤(+66, 5px 여유)
+            Id = MoveId.BossThrust, Anim = "thrust", Startup = 30, Active = 4, Recovery = 34,
+            Damage = 16, Level = HitLevel.Heavy, Hitbox = new Box(10, 18, 56, 26),
+            Lunge = 4f, LungeFrom = 27, LungeTo = 33, HeavySwing = true, Guarded = true, GuardUntil = 30,
+        };
+
+        /// <summary>침식 폭발(2페이즈 진입): 가까이 있으면 피해 + 밀려남.</summary>
+        public static readonly MoveData BossBurst = new MoveData
+        {
+            Id = MoveId.BossBurst, Startup = 0, Active = 1, Recovery = 0,
+            Damage = 10, Level = HitLevel.Heavy,
         };
 
         public static MoveData Get(MoveId id)

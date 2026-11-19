@@ -1307,6 +1307,130 @@ def oath_absorb():
     return room(lp(x, 6500, 4), rt=1.0, wet=0.22, seed=93)
 
 
+# ============================================================ 7. Iron Wall new patterns (main session request)
+def corrupt_burst():
+    """HP 50 %: corruption bursts out through the armour gaps - heavy blast, plate tearing open (low stick-slip
+    screech + iron rip), then a low crimson corruption swell spreading out (FM growl + sizzle). sfx_boss_roar follows"""
+    n = N(1.8)
+    t = T(n)
+    r = rng(4100)
+    boom = sat(sine(34 + 70 * np.exp(-t / 0.05), n) * env_exp(n, 0.45, 0.003) * 1.5, 2.0)
+    blast = lp(colored_noise(n, -2.0, 4101), 1800, 2) * env_points(n, [(0, 0), (0.004, 1), (0.12, 0.35), (0.5, 0)])
+    rip = iron(n, 260, 4102, modes_n=18, tau0=0.18, damp=1.15, exc_lp=3000)
+    imp = np.zeros(n)
+    tt = 0.01
+    while tt < 0.35:
+        imp[N(tt)] = r.uniform(0.5, 1.0)
+        tt += 1.0 / (120 - 200 * tt) * r.uniform(0.8, 1.2) if tt < 0.3 else 0.02
+    tear = sum(g * resonator(lp(imp, 3000, 2), f, 18) for f, g in [(420, 1.0), (760, 0.7), (1250, 0.4)])
+    tear *= env_points(n, [(0, 0), (0.01, 1), (0.3, 0.5), (0.4, 0)])
+    growl = fm(n, 46 - 6 * np.clip(t / 1.5, 0, 1), 1.5, 2.2 * env_points(n, [(0, 0.5), (0.3, 1), (1.6, 0.3)]))
+    growl *= env_points(n, [(0, 0), (0.15, 1), (0.9, 0.6), (1.6, 0)])
+    sz = grit(n, 4103, 140, 0.4, 1200, 3800, start=0.05, t_max=1.3, decay=0.6)
+    x = mixdb((boom, -5), (blast, 0), (rip, -1), (tear, -3), (growl, -9), (sz, -12))
+    x = shelf(sat(x * 1.3, 1.6), 120, -4.0, "low")
+    return room(lp(x, 5500, 2), rt=1.3, wet=0.22, seed=95, brightness=4500)
+
+
+def boss_leap():
+    """the plate knight launches into the sky: heavy stomp + plate clank + rattle at t=0, an upward air 'whoosh'
+    peaking at ~0.2 s"""
+    n = N(0.9)
+    stomp = thump(110, 45, 0.015, 0.08, n, attack=0.001)
+    clank = iron(n, 300, 4110, modes_n=14, tau0=0.1, damp=1.2)
+    stone = grit(n, 4111, 30, 0.03, 400, 1600, t_max=0.15, decay=0.06)
+    rat = rattle(n, 4112, count=10, start=0.01, span=0.2, fmin=1000, fmax=2600)
+    sw, _ = whoosh(0.6, 200, 1500, 0.2, q=1.0, seed=4113, rise=1.5, fall=3.0)
+    x = mixdb((stomp, 0), (clank, -3), (stone, -9), (rat, -12), (sw, -4))
+    x = sat(x * 1.2, 1.4)
+    return room(lp(x, 6000, 2), rt=0.8, wet=0.16, seed=96)
+
+
+def boss_leap_lock():
+    """landing spot locked: a sharp two-ping 'lock-on' (B5 then F6, 70 ms apart) on a dark low hit - a different
+    height from the charge red line (2-3.6 kHz scrape)"""
+    n = N(0.9)
+    p1 = metal_bar(987.77, 0.22, n, seed=4120, amps=(1.0, 0.15, 0.0, 0.0))
+    p2 = at(n, metal_bar(1396.9, 0.28, N(0.8), seed=4121, amps=(1.0, 0.15, 0.0, 0.0)), 0.07)
+    click = clash_click(n, 4122, tau=0.0007)
+    low = sine(55, n) * env_exp(n, 0.12, 0.003)
+    x = mixdb((p1, -2), (p2, 0), (click, -12), (low, -8))
+    return room(lp(x, 6000, 4), rt=0.7, wet=0.16, seed=97)
+
+
+LEAP_FALL_S = 0.35
+
+
+def boss_leap_fall():
+    """falling out of the sky: wind rising in level and pitch, a low pressure swell; cut dead at 0.35 s"""
+    n = N(0.45)
+    t = T(n)
+    D = LEAP_FALL_S
+    u = np.clip(t / D, 0, 1)
+    wind = svf(bp(white(n, 4130), 200, 5000), 500 + 1800 * u ** 1.5, 1.5, "bp")
+    press = lp(colored_noise(n, -4.0, 4131), 250, 2)
+    x = mixdb((wind * u ** 1.6, 0), (press * u ** 2, -6))
+    x = room(lp(x, 5500, 2), rt=0.3, wet=0.06, seed=98)[:n]
+    return x * env_points(n, [(0, 0.1), (D - 0.004, 1.0), (D, 0.0)])
+
+
+def boss_leap_impact():
+    """landing slam: the ground breaks - deep boom, stone shattering, plate crash, debris, a long low tail"""
+    n = N(2.4)
+    t = T(n)
+    boom = sat(sine(30 + 70 * np.exp(-t / 0.06), n) * env_exp(n, 0.7, 0.003) * 1.5, 2.0)
+    crunch = peq(bp(white(n, 4140), 200, 2400), 500, 6.0, 1.2) * env_exp(n, 0.04, 0.0006)
+    shatter = grit(n, 4141, 120, 0.08, 350, 2200, start=0.0, t_max=0.6, decay=0.2)
+    crash = iron(n, 150, 4142, modes_n=20, tau0=0.25, damp=1.15, exc_lp=2600)
+    r = rng(4143)
+    debris = np.zeros(n)
+    for k in range(10):
+        t0 = 0.15 + r.uniform(0, 1.0)
+        mix_into(debris, thump(r.uniform(160, 300), r.uniform(90, 140), 0.006, 0.025, N(0.3)), N(t0),
+                 r.uniform(0.3, 1.0) * np.exp(-(t0 - 0.15) / 0.6))
+    tail = lp(colored_noise(n, -5.0, 4144), 140, 4) * env_points(n, [(0, 0), (0.05, 1), (0.6, 0.5), (1.8, 0)])
+    x = mixdb((boom, -7), (crunch, 0), (shatter, -1), (crash, -2), (debris, -7), (tail, -11))
+    x = sat(x * 1.3, 1.6)
+    return room(lp(x, 5500, 2), rt=1.2, wet=0.2, seed=99, brightness=4500)
+
+
+def spike_crack():
+    """sword driven into the ground, cracks crawling outward: a short steel-into-stone thunk, then stone splitting
+    'jjeo-jeok' (crack grains accelerating and moving away), a low corruption hum swelling"""
+    n = N(0.8)
+    t = T(n)
+    thunk = add(steel(n, 520, 4150, modes_n=10, tau0=0.06, damp=1.1), 0.8 * thump(150, 70, 0.01, 0.03, n))
+    r = rng(4151)
+    crk = np.zeros(n)
+    tt = 0.03
+    k = 0
+    while tt < 0.45:
+        f = r.uniform(500, 2200) * (1 - 0.4 * tt / 0.45)
+        g = modes(N(0.03), [f, f * r.uniform(1.6, 1.9)], [1, 0.4], [r.uniform(0.003, 0.008)] * 2, seed=4152 + k)
+        mix_into(crk, g, N(tt), r.uniform(0.4, 1.0) * (0.6 + 0.4 * np.sin(np.pi * tt / 0.45)))
+        tt += r.exponential(0.012 + 0.01 * (tt > 0.25))
+        k += 1
+    split = bp(white(n, 4153), 300, 1600) * env_points(n, [(0, 0), (0.04, 1), (0.25, 0.7), (0.45, 0)])
+    hum = fm(n, 48, 1.5, 1.2) * env_points(n, [(0, 0), (0.1, 0.4), (0.45, 1), (0.7, 0)])
+    x = mixdb((thunk, 0), (crk, -3), (split, -10), (hum, -7))
+    return room(lp(x, 5500, 2), rt=0.7, wet=0.15, seed=100)
+
+
+def spike_erupt(i):
+    """one corruption spike bursting out (they come every 50 ms): a short dark 'puk' - brittle crystal-and-stone
+    crack + small thud. attack < 1 ms, tail < 0.12 s so a chain stays distinct. (boss corruption, not the sword)"""
+    n = N(0.2)
+    fs = [1.0, 0.9, 1.12][i]
+    crack = modes(n, [900 * fs, 1430 * fs, 2050 * fs], [1.0, 0.5, 0.25], [0.025, 0.016, 0.01], seed=4160 + i,
+                  attack=0.0004)
+    snap = bp(white(n, 4163 + i), 700, 3500) * env_exp(n, 0.006, 0.0003)
+    thud = thump(170 * fs, 90 * fs, 0.006, 0.02, n, attack=0.0006)
+    x = mixdb((thud, -5), (crack, 0), (snap, -4))
+    x = sat(x * 1.2, 1.4)
+    x = lp(x, 5500, 4)
+    return x * env_points(n, [(0, 1), (0.09, 0.5), (0.13, 0)])
+
+
 # ============================================================ registry
 # name: (render fn, target momentary-max LUFS (dual mono), description)
 SFX = {}
@@ -1396,6 +1520,16 @@ SFX["sfx_boss_intro_shout"] = (boss_intro_shout, -15.0, f"철벽 첫 함성: 투
 SFX["sfx_boss_banner"] = (boss_banner, -15.0, "붉은 이름 배너: 트라이톤 낀 저음 금관 브람+일그러진 붐 한 방")
 SFX["sfx_oath_inherit"] = (oath_inherit, -18.0, f"서약을 이었다: Dsus4로 차오르다 {OATH_RESOLVE_T:.1f}초에 D장조로 해결(합창+오르간+높은 현)+금속 차임 아르페지오")
 SFX["sfx_oath_absorb"] = (oath_absorb, -21.0, f"배너 글자가 빛 알갱이로 빨려 듦: 상승하는 쉬익+올라가는 작은 금속 틱 → {ABSORB_CHING_T:.2f}초 맑은 '칭'")
+# ---- Iron Wall new patterns (main session request, 2026-11-19)
+SFX["sfx_corrupt_burst"] = (corrupt_burst, -14.0, "HP 절반 침식 터짐: 묵직한 폭발+갑옷이 찢어지는 금속(낮은 스틱슬립 끽+쇠)+붉게 퍼지는 낮은 침식 울림(FM 그르렁+지글거림). 이어서 sfx_boss_roar")
+SFX["sfx_boss_leap"] = (boss_leap, -17.0, "철벽 도약: 무거운 발구름+판금 쇳소리+달그락 → 0.2초 정점의 위로 가르는 '휙'")
+SFX["sfx_boss_leap_lock"] = (boss_leap_lock, -19.0, "착지 지점 고정 경고: 두 번 '핑핑'(B5→F6, 70ms) 조준 고정음+낮은 둠. 돌진 붉은 줄(2–3.6kHz 긁힘)과 다른 높이")
+SFX["sfx_boss_leap_fall"] = (boss_leap_fall, -18.0, f"하늘에서 낙하: 커지며 높아지는 바람+낮은 압력 → {LEAP_FALL_S}초에 툭 끊김")
+SFX["sfx_boss_leap_impact"] = (boss_leap_impact, -13.0, "착지 내리찍기: 깊은 붐+땅 깨지는 콰직+돌 파편+갑옷 쾅+떨어지는 돌덩이+긴 저음 꼬리")
+SFX["sfx_spike_crack"] = (spike_crack, -19.0, "검을 땅에 꽂고 균열이 기어감: 짧은 '턱' → 돌이 갈라지는 '쩌적'(빨라지며 멀어짐)+낮은 침식 웅웅")
+for i in range(3):
+    SFX[f"sfx_spike_erupt_{i + 1:02d}"] = (lambda i=i: spike_erupt(i), -22.0,
+                                          "침식 가시 솟음 '퍽': 어두운 결정·돌 바스러짐+작은 쿵. 50ms 간격 연타용, 꼬리 0.12초 미만")
 
 LOOP_SFX = {"sfx_charge_loop", "sfx_boss_charge_loop"}
 MAXDUR = {**{f"sfx_hit_heavy_{i + 1:02d}": 1.5 for i in range(3)}, "sfx_dash_01": 1.0, "sfx_dash_02": 1.0,
@@ -1403,8 +1537,9 @@ MAXDUR = {**{f"sfx_hit_heavy_{i + 1:02d}": 1.5 for i in range(3)}, "sfx_dash_01"
           "sfx_wave_clear": 2.4, "sfx_altar": 3.2, "sfx_relic_get": 4.0,
           "sfx_boss_charge_line": 0.45, "sfx_time_stop": 0.8, "sfx_riposte_blast": 1.2, "sfx_boss_banner": 1.4,
           "sfx_oath_inherit": 3.0, "sfx_oath_absorb": 1.3,
-          "sfx_boss_intro_shout": 2.2, "sfx_parry_slide": 0.6}
-FADEOUT = {"sfx_boss_charge_up": 0.004}   # hard stop on purpose
+          "sfx_boss_intro_shout": 2.2, "sfx_parry_slide": 0.6, "sfx_corrupt_burst": 1.6, "sfx_boss_leap": 0.8,
+          "sfx_boss_leap_lock": 0.7, "sfx_boss_leap_impact": 1.8, "sfx_spike_crack": 0.7}
+FADEOUT = {"sfx_boss_charge_up": 0.004, "sfx_boss_leap_fall": 0.004}   # hard stop on purpose
 
 
 def finish_loop(x, target):

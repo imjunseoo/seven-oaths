@@ -108,6 +108,11 @@ def dark_outer(img, src="h", dst="a"):
     return out
 
 
+# face v2 (user approved 2026-11-19): hand redraw referencing a PixelLab pixen edit - wider eyes with a
+# sclera corner, lid shadow under the bangs, nose pixel, lit rim on the right of the hair; 1-row lash, no mouth
+from heroine_face_v2 import HEADS_V2
+HEADS.update(HEADS_V2)
+
 for k_ in list(HEADS):
     HEADS[k_] = dark_outer(HEADS[k_])
 

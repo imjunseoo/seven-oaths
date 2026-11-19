@@ -17,9 +17,9 @@ from nb.measure import loop_seam
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 MASTERS = HERE / "build" / "masters"
-DEST = {"bgm_training": "BGM", "bgm_boss": "BGM", "bgm_region1": "BGM", "amb_cloister": "Ambient",
+DEST = {"bgm_training": "BGM", "bgm_boss": "BGM", "bgm_region1": "BGM", "bgm_title": "BGM", "amb_cloister": "Ambient",
         "amb_rampart": "Ambient"}
-LOOPS = {"bgm_training", "bgm_boss", "bgm_region1", "amb_cloister", "amb_rampart"}
+LOOPS = {"bgm_training", "bgm_boss", "bgm_region1", "bgm_title", "amb_cloister", "amb_rampart"}
 SEAM_MAX = 0.6
 
 

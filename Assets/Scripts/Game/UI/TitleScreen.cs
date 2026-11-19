@@ -136,7 +136,7 @@ namespace SevenOaths
 
         void BuildUi(IList<(string label, Action act)> items, string version)
         {
-            _canvas = Ui.OverlayCanvas("TitleCanvas", 45, PixelScreen.Instance.Scale);
+            _canvas = Ui.OverlayCanvas("TitleCanvas", 35, PixelScreen.Instance.Scale);   // 옵션 창(일시정지 메뉴 40)보다 아래 — 옵션을 열면 문구가 덮지 않게
             _canvas.transform.SetParent(transform, false);
             _scaler = _canvas.GetComponent<CanvasScaler>();
             _view = Ui.Rect("View", _canvas.transform);
@@ -257,7 +257,7 @@ namespace SevenOaths
         // ───────────────────────── 매 프레임 ─────────────────────────
 
         /// <summary>GameRoot.Update에서. 카메라를 타이틀로 옮기고, 등장 연출·배경·입력.</summary>
-        public void Tick(PixelScreen screen)
+        public void Tick(PixelScreen screen, bool acceptInput = true)
         {
             float t = Time.unscaledTime - _t0;
             float dt = Time.unscaledDeltaTime;
@@ -296,7 +296,7 @@ namespace SevenOaths
                 _puppet.SetLook(new Vector2(mp.x / Screen.width * 2f - 1f, mp.y / Screen.height * 2f - 1f));
             }
 
-            if (t < 2.0f) return;   // 메뉴가 나오기 전엔 입력 없음
+            if (t < 2.0f || !acceptInput) return;   // 메뉴가 나오기 전·옵션 창이 열린 동안엔 입력 없음(배경·등장 연출은 계속)
             if (_input.MenuUp) Move(-1);
             if (_input.MenuDown) Move(1);
             if (_input.MenuConfirm) Confirm(_sel);

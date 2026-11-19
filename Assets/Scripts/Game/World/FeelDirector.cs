@@ -314,6 +314,71 @@ namespace SevenOaths
                     _hud.ShowOathClear(1.3f);
                     _vignette = 0.35f;
                     break;
+                case EventType.CorruptionBurst:
+                {
+                    // 침식이 터짐(HP 절반): 진홍 폭발 + 붉은 화면 번쩍 + 크게 흔들림(이어서 BossPhase2 포효 연출)
+                    var c = Center(who);
+                    _fx.Play("fx_corrupt_burst", c, 1, 0f, hot: true, order: 43, scale: 2.6f);
+                    _fx.Play("fx_hit_ring", c, 1, 0f, hot: true, order: 42, scale: 3.2f, tint: new Color(1f, 0.25f, 0.3f));
+                    _fx.Corruption(c, 90, 40f);
+                    _fx.LightFlash(c, new Color(1f, 0.15f, 0.2f), 6f, 260f, 0.8f);
+                    _hud.ScreenFlash(new Color(0.9f, 0.05f, 0.1f, 0.45f), 10);
+                    _screen.Shake(6f, 24, Vector2.up);
+                    _chroma = Mathf.Max(_chroma, 0.6f);
+                    PlayOr("sfx_corrupt_burst", "sfx_riposte_blast");
+                    _input.Rumble(1f * _w.Feel.rumble, 0.8f * _w.Feel.rumble, 0.5f);
+                    break;
+                }
+                case EventType.LeapRise:
+                    _fx.Dust(feet, 12, 1f);
+                    _fx.Dust(feet, 12, -1f);
+                    Rubble(feet, 8, 0);
+                    _screen.Shake(3f, 10, Vector2.up);
+                    PlayOr("sfx_boss_leap", "sfx_jump");
+                    break;
+                case EventType.LeapLock:
+                    _fx.LightFlash(V(e.Pos) + new Vector2(0f, 8f), new Color(1f, 0.15f, 0.2f), 2.5f, 90f, 0.3f);
+                    PlayOr("sfx_boss_leap_lock", "sfx_boss_charge_line");
+                    break;
+                case EventType.LeapFall:
+                    PlayOr("sfx_boss_leap_fall", "sfx_dash");
+                    break;
+                case EventType.LeapImpact:
+                {
+                    var at = V(e.Pos);
+                    _fx.Play("fx_shockwave", at, 1, 0f, hot: true, order: 31, scale: 1.6f);
+                    _fx.Play("fx_shockwave", at, -1, 0f, hot: true, order: 31, scale: 1.6f);
+                    _fx.Play("fx_hit_heavy", at + new Vector2(0f, 20f), 1, 0f, hot: true, order: 41, scale: 1.6f, tint: new Color(1f, 0.6f, 0.5f));
+                    Rubble(at, 16, 0);
+                    _fx.Dust(at, 12, 1f);
+                    _fx.Dust(at, 12, -1f);
+                    _fx.LightFlash(at + new Vector2(0f, 20f), new Color(1f, 0.3f, 0.3f), 4f, 200f, 0.5f);
+                    _screen.Shake(7f, 26, Vector2.up);
+                    _screen.ZoomPunch(0.05f);
+                    _input.Rumble(1f * _w.Feel.rumble, 0.9f * _w.Feel.rumble, 0.45f);
+                    if (GameAssets.Instance.Audio("sfx_boss_leap_impact") != null) _audio.Play("sfx_boss_leap_impact");
+                    else { _audio.Play("sfx_boss_slam"); _audio.Play("sfx_boss_wall_hit", 0.8f); }
+                    break;
+                }
+                case EventType.SpikeCrack:
+                {
+                    var tip = new Vector2(who.Body.Pos.X + who.Body.Facing * (who.Body.W * 0.5f + 12f), who.Body.Pos.Y);
+                    _fx.Dust(tip, 6, who.Body.Facing);
+                    _fx.Corruption(tip + new Vector2(0f, 6f), 20, 10f);
+                    _fx.LightFlash(tip, new Color(1f, 0.15f, 0.2f), 2f, 70f, 0.3f);
+                    _screen.Shake(2.5f, 8, Vector2.up);
+                    PlayOr("sfx_spike_crack", "sfx_boss_slam", 0.7f);
+                    break;
+                }
+                case EventType.SpikeErupt:
+                {
+                    var at = V(e.Pos);
+                    Rubble(at, 2, 0);
+                    _fx.LightFlash(at + new Vector2(0f, 16f), new Color(1f, 0.2f, 0.25f), 1.2f, 40f, 0.12f);
+                    _screen.Shake(1f, 3, Vector2.up);
+                    _audio.Play(GameAssets.Instance.Audio("sfx_spike_erupt") != null ? "sfx_spike_erupt" : "sfx_hit_heavy", 0.45f, 0.08f, 0.04f);
+                    break;
+                }
                 case EventType.TimeStop:
                 {
                     // 크로노스피어: 시간이 멈춤(구체는 LevelView, "좌클릭 — 반격"은 Hud)
@@ -529,6 +594,8 @@ namespace SevenOaths
                     }
                     else if (f.Move == Moves.BossCharge) _audio.Play("sfx_boss_charge_loop");
                     else if (f.Move == Moves.BossCounter) _fx.Play("fx_slash_enemy", feet, f.Body.Facing, 0f, order: 31, scale: 1.5f);
+                    else if (f.Move == Moves.BossThrust)   // 직선 찌르기: 둥근 베기 궤적 대신 칼끝 번쩍 + 짧은 바람
+                        _fx.LightFlash(new Vector2(f.Body.Pos.X + f.Body.Facing * 60f, f.Body.Pos.Y + 30f), new Color(1f, 0.4f, 0.35f), 1.5f, 50f, 0.12f);
                 }
                 else if (f.Move.Hitbox.W > 0f) _fx.Play("fx_slash_enemy", feet, f.Body.Facing, 0f, order: 31);
             }

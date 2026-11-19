@@ -30,7 +30,7 @@ namespace SevenOaths.Model
             Reset();
         }
 
-        public bool Hittable => State != FState.Dead && State != FState.Held && !(State == FState.Attack && (Move == Moves.BossRoar || Move == Moves.BossIntro));
+        public bool Hittable => State != FState.Dead && State != FState.Held && !(State == FState.Attack && (Move == Moves.BossRoar || Move == Moves.BossIntro)) && !LeapAirborne;
         public bool IsDummy => Kind == EnemyKind.Dummy;
         public bool HasShield => Kind == EnemyKind.Shieldman || Kind == EnemyKind.Ironwall;
         public bool IsBoss => Kind == EnemyKind.Ironwall;
@@ -240,6 +240,7 @@ namespace SevenOaths.Model
                     break;
                 case FState.Attack:
                     var m = Move;
+                    if (IsBoss && m == Moves.BossLeap) { LeapMotion(); return; }   // 하늘로·내리찍기: 중력 없이 직접 속도
                     if (IsBoss && m == Moves.BossCharge && StateFrame >= m.Startup && StateFrame < m.Startup + m.Active) { b.Vel.X = b.Facing * Stats.BossChargeSpeed; break; }
                     if (m.Lunge > 0f && StateFrame >= m.LungeFrom && StateFrame < m.LungeTo) b.Vel.X = b.Facing * m.Lunge;
                     else b.Vel.X = MathX.Approach(b.Vel.X, 0f, 0.4f);

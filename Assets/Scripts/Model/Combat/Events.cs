@@ -41,6 +41,13 @@ namespace SevenOaths.Model
         RiposteEnd,     // 주인공이 돌아옴
         BossIntro,      // Who = 보스: 첫 대면 연출 시작(주인공 조작 잠금)
         BossShout,      // Who = 보스: 첫 함성(붉은 이름 배너)
+        CorruptionBurst, // Who = 보스: HP 절반 — 침식이 터짐(2페이즈)
+        LeapRise,       // Who = 보스: 하늘 높이 뛰어오름
+        LeapLock,       // Who = 보스: 떨어질 자리 고정(Pos)
+        LeapFall,       // Who = 보스: 떨어지기 시작(Pos = 떨어질 자리)
+        LeapImpact,     // Who = 보스: 내리찍음(Pos)
+        SpikeCrack,     // Who = 보스: 검을 땅에 꽂음 → 균열이 기어감
+        SpikeErupt,     // Pos = 솟은 가시, Value = 번호
     }
 
     public struct GameEvent

@@ -164,6 +164,79 @@ def anim_roar():
     return R(seq), [100] * 8
 
 
+def dust(x, y, n=4, spread=10):
+    """little dust / debris pixels at the feet (stone greys)."""
+    out = []
+    for i in range(n):
+        dx = (i - (n - 1) / 2) * spread / max(1, n - 1)
+        out += [(x + dx, y - (i % 2), "d"), (x + dx + 1, y - 1 - (i % 2), "c")]
+    return out
+
+
+def anim_leap():
+    """10 frames, impact = 6 (main session 2026-11-19): crouch deep with the shield slung on the back and the
+    sword low -> spring up -> fall with the sword raised two-handed overhead -> land driving the blade into
+    the floor (lowest pose) -> lean on the planted sword catching breath, shield lowered = opening."""
+    back = dict(shield=(56.0, 58.0, -8.0), shield_z="back", hand_f=(70.0, 70.0))
+    plant = dict(hip=(66.0, 75.0), lean=28, hand_n=(82.0, 76.0), hand_f=(80.0, 74.0), sword=90.0, shield=None,
+                 shield_ground=(96.0, 80.0, 30.0), foot_n=(50.0, 92.0), toe_n=40, foot_f=(84.0, 92.0), head_tilt=2)
+    seq = [
+        # 0-2 crouch, deeper each frame, dust at the feet
+        P(hip=(62.0, 68.0), lean=12, hand_n=(62.0, 74.0), sword=110.0, foot_n=(50.0, 92.0), foot_f=(74.0, 92.0),
+          cape=0.1, **back),
+        P(hip=(62.0, 72.0), lean=18, hand_n=(63.0, 78.0), sword=112.0, foot_n=(48.0, 92.0), foot_f=(76.0, 92.0),
+          toe_n=20, cape=0.2, glow=1, sparks=dust(62, 94, 4, 24), **back),
+        P(hip=(62.0, 75.0), lean=22, hand_n=(64.0, 80.0), sword=114.0, foot_n=(47.0, 92.0), foot_f=(77.0, 92.0),
+          toe_n=30, cape=0.3, glow=2, head_tilt=1, sparks=dust(62, 94, 6, 34), **back),
+        # 3 spring: stretched up, toes pointing down, cape trailing below
+        P(hip=(63.0, 56.0), lean=-4, hand_n=(62.0, 66.0), sword=100.0, foot_n=(58.0, 90.0), toe_n=60,
+          foot_f=(68.0, 88.0), toe_f=50, cape=-0.4, sparks=dust(62, 94, 5, 30), **back),
+        # 4-5 falling, sword raised two-handed overhead, knees drawn up
+        P(hip=(63.0, 58.0), lean=-8, hand_n=(62.0, 38.0), hand_f=(64.0, 40.0), sword=-122.0, sword_z="back",
+          arm_z="back", elbow_n=1, foot_n=(56.0, 84.0), toe_n=30, foot_f=(70.0, 82.0), toe_f=20, cape=0.6,
+          glow=1, shield=(56.0, 58.0, -8.0), shield_z="back"),
+        P(hip=(64.0, 60.0), lean=-4, hand_n=(63.0, 36.0), hand_f=(65.0, 38.0), sword=-128.0, sword_z="back",
+          arm_z="back", elbow_n=1, foot_n=(56.0, 88.0), toe_n=20, foot_f=(72.0, 86.0), toe_f=10, cape=0.8,
+          glow=2, head_off=(0.0, -1.0), shield=(56.0, 58.0, -8.0), shield_z="back"),
+        # 6 IMPACT: land and drive the blade into the floor, debris + crimson sparks
+        P(**{**plant, "hip": (66.0, 76.0)}, cape=1.0, glow=2,
+          sparks=dust(84, 94, 6, 28) + [(80, 90, "O"), (88, 89, "P"), (76, 88, "N"), (92, 91, "O")]),
+        # 7-9 lean on the planted sword, breathing, shield down at the side (opening)
+        P(**plant, cape=0.6, glow=1, eye="on"),
+        P(**{**plant, "hip": (66.0, 75.5)}, cape=0.4, eye="dim"),
+        P(**plant, cape=0.3, glow=1, eye="on"),
+    ]
+    return R(seq), [100, 110, 150, 70, 70, 90, 180, 140, 140, 160]
+
+
+def anim_thrust():
+    """6 frames, impact = 3 (main session 2026-11-19): after the shield bash a long thrust. 0-2 the sword is
+    drawn back beside the shield and held a beat (the tip flashes on 2) -> 3 lunge, blade level and far out
+    (tip reaches the canvas edge, x 126) -> 4-5 recover."""
+    def tip_spark(hand, ang, ln=38.0):
+        d = (math.cos(math.radians(ang)), math.sin(math.radians(ang)))
+        tx, ty = hand[0] + d[0] * (3.5 + ln), hand[1] + d[1] * (3.5 + ln)
+        return [(tx, ty, "W"), (tx + 1, ty, "g"), (tx - 1, ty, "g"), (tx, ty + 1, "g"), (tx, ty - 1, "g"),
+                (tx + 2, ty, "f"), (tx - 2, ty, "f"), (tx, ty + 2, "f"), (tx, ty - 2, "f")]
+    seq = [
+        P(hip=(61.0, 63.0), lean=-4, hand_n=(52.0, 60.0), sword=0.0, sword_z="back", arm_z="back",
+          shield=(82.0, 62.0, 0.0)),
+        P(hip=(60.0, 64.0), lean=-10, hand_n=(46.0, 58.0), sword=-3.0, sword_z="back", arm_z="back",
+          foot_n=(50.0, 92.0), shield=(81.0, 62.5, 2.0), glow=1),
+        P(hip=(59.5, 64.5), lean=-11, hand_n=(45.0, 58.0), sword=-3.0, sword_z="back", arm_z="back",
+          foot_n=(50.0, 92.0), shield=(81.0, 63.0, 2.0), glow=2, eye="on",
+          sparks=tip_spark((47.0, 59.0), -3.0)),
+        # 3 IMPACT: lunge; the shield swings low out of the way, blade level at chest height
+        P(hip=(76.0, 66.0), lean=22, hand_n=(86.0, 58.0), sword=0.0, sword_len=36.0, arm_z="front",
+          foot_n=(52.0, 92.0), toe_n=30, foot_f=(94.0, 92.0), shield=(70.0, 72.0, 16.0), shield_z="back",
+          cape=0.9, glow=2, sparks=[(x, 57, "f") for x in range(100, 118, 3)]),
+        P(hip=(72.0, 65.0), lean=14, hand_n=(84.0, 60.0), sword=6.0, foot_n=(54.0, 92.0), foot_f=(88.0, 92.0),
+          shield=(76.0, 68.0, 10.0), cape=0.6, glow=1),
+        P(hip=(64.0, 63.0), lean=4, hand_n=(62.0, 61.0), sword=40.0, shield=(82.0, 62.5, 0.0), cape=0.2),
+    ]
+    return R(seq), [90, 110, 200, 160, 110, 120]
+
+
 def kneel(**kw):
     base = dict(hip=(60.0, 74.0), lean=18, foot_n=(46.0, 92.0), toe_n=50, foot_f=(72.0, 92.0),
                 hand_n=(68.0, 70.0), sword=92.0, sword_len=30.0, hand_f=(76.0, 76.0), shield=None,
@@ -199,7 +272,7 @@ def anim_death():
 TAGS = [("idle", anim_idle), ("walk", anim_walk), ("turn", anim_turn), ("block", anim_block), ("bash", anim_bash),
         ("slam", anim_slam), ("charge_windup", anim_charge_windup), ("charge_run", anim_charge_run),
         ("wall_stun", anim_wall_stun), ("counter", anim_counter), ("roar", anim_roar), ("broken", anim_broken),
-        ("death", anim_death)]
+        ("death", anim_death), ("leap", anim_leap), ("thrust", anim_thrust)]
 
 
 def build():

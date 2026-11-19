@@ -16,11 +16,12 @@ LONG_DESC = {
     "bgm_training": ("밤의 성당 수련장", ""),
     "bgm_boss": ("보스전", ""),
     "bgm_region1": ("1지역 잿빛 성벽", ""),
+    "bgm_title": ("타이틀", ""),
     "amb_rampart": ("성벽 위", ""),
     "amb_cloister": ("회랑 앰비언스", ""),
 }
 LONG_DESC_FILE = HERE / "build" / "long_meta.json"   # written by make_bgm.py / make_amb.py
-LOOPS = {"bgm_training", "bgm_boss", "bgm_region1", "amb_cloister", "amb_rampart", "sfx_charge_loop", "sfx_boss_charge_loop"}
+LOOPS = {"bgm_training", "bgm_boss", "bgm_region1", "bgm_title", "amb_cloister", "amb_rampart", "sfx_charge_loop", "sfx_boss_charge_loop"}
 
 # card sections: (title, prefixes in display order)
 SECTIONS = [
@@ -32,7 +33,7 @@ SECTIONS = [
     ("적 · 허수아비 · 피격", "", ["sfx_enemy", "sfx_dummy", "sfx_player_hurt"]),
     ("1지역 잿빛 성벽 (v1.2)", "방패병·석궁병·제단·전투방", ["sfx_shield_block", "sfx_bolt", "sfx_kick", "sfx_altar",
                                                      "sfx_gate", "sfx_wave_clear"]),
-    ("보스 철벽 · 유물 (v1.2)", "", ["sfx_boss", "sfx_pillar", "sfx_parry", "sfx_relic", "sfx_ui_equip"]),
+    ("보스 철벽 · 유물 (v1.2)", "", ["sfx_boss", "sfx_corrupt", "sfx_spike", "sfx_pillar", "sfx_parry", "sfx_relic", "sfx_ui_equip"]),
     ("패리 반격 · 서약 계승", "시간 정지 → 9연 참격 → 폭발 / 클리어 배너", ["sfx_time", "sfx_riposte", "sfx_oath"]),
     ("UI", "", ["sfx_ui"]),
 ]
@@ -376,6 +377,12 @@ const TESTS = {
     sfx("sfx_boss_intro_shout"); later(1150, () => sfx("sfx_boss_banner"));
     later(3600, () => sfx("sfx_boss_death")); later(7000, () => sfx("sfx_oath_inherit"));
     later(9400, () => sfx("sfx_oath_absorb")); later(10600, () => sfx("sfx_relic_get")); }},
+  bossnew: {t:"철벽 신규 패턴", p:"HP 절반 침식 터짐 → 포효 / 도약 → 착지 지점 고정 → 낙하(0.335초에 끊김) → 착지 내리찍기 / 검 꽂고 균열 → 가시 6개 50ms 간격.", period: 11000, run(){
+    sfx("sfx_corrupt_burst"); later(1100, () => sfx("sfx_boss_roar"));
+    let s = 4600; later(s, () => sfx("sfx_boss_leap")); later(s + 700, () => sfx("sfx_boss_leap_lock"));
+    later(s + 1500, () => sfx("sfx_boss_leap_fall")); later(s + 1500 + 335, () => sfx("sfx_boss_leap_impact"));
+    s = 8400; later(s, () => sfx("sfx_spike_crack"));
+    const E = names("sfx_spike_erupt"); for (let k = 0; k < 6; k++) later(s + 500 + k*50, () => sfx(pick(E))); }},
   region: {t:"1지역 인게임 믹스", p:"bgm_region1 + amb_rampart 위에 콤보·방패·석궁이 무작위로. 권장 그룹 볼륨 적용.", period: 3200, needs:["bgm_region1"], bedList:[["bgm_region1"],["amb_rampart"]], run(){
     pick([TESTS.combo, TESTS.shield, TESTS.crossbow, TESTS.rhythm, TESTS.dash]).run(); }},
   mix: {t:"수련장 인게임 믹스", p:"bgm_training + amb_cloister 위에 콤보·회피·처형이 무작위로. 권장 그룹 볼륨 적용.", period: 3000, needs:["bgm_training"], bedList:[["bgm_training"],["amb_cloister"]], run(){

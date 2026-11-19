@@ -63,6 +63,7 @@ namespace SevenOaths
 
             _screen = PixelScreen.Create();
             _audio = AudioManager.Create(transform);
+            GameCursor.Create(transform);   // 파란 수정 커서(ui_cursor)
             _input = new InputReader();
             EnsureEventSystem();
 
@@ -92,6 +93,7 @@ namespace SevenOaths
             if (DebugAutomation.Flag("-soPauseOptions")) { OpenPause(); _pause.OpenOptions(); }
             if (DebugAutomation.Flag("-soRelicMenu")) OpenRelics(_w.Player.Owned.Count > 0 ? _w.Player.Owned[0] : RelicId.None);
             if (DebugAutomation.Arg("-soLevel") == null || DebugAutomation.Flag("-soTitle")) OpenTitle();
+            if (_title != null && DebugAutomation.Flag("-soTitleOptions")) _pause.OpenOptionsOnly();   // 자동 검증: 타이틀 위 옵션 창
         }
 
         // ───────────────────────── 일시정지·저장 ─────────────────────────
@@ -124,7 +126,7 @@ namespace SevenOaths
 
         void OpenTitle()
         {
-            bool hasSave = System.IO.File.Exists(SaveSystem.PathFile) && (_save.checkpoint >= 0 || _save.level != "training" || _save.relics.Count > 0);
+            bool hasSave = System.IO.File.Exists(SaveSystem.PathFile) && (_save.checkpoint >= 0 || _save.level != "training" || _save.relics.Count > 0 || _save.bossesDefeated.Count > 0);
             var items = new List<(string, System.Action)>();
             if (hasSave) items.Add(("이어하기", StartFromTitle));
             items.Add(("새 게임", () => { if (!hasSave || _title.AskConfirmNew()) NewGame(); }));
@@ -164,6 +166,7 @@ namespace SevenOaths
             _save.checkpoint = -1;
             _save.relics.Clear();
             _save.equipped.Clear();
+            _save.bossesDefeated.Clear();
             SaveSystem.Save(_save);
             LoadLevel("training");
             StartFromTitle();
@@ -273,6 +276,7 @@ namespace SevenOaths
                 level.PlayerSpawn = new Vec2(px, level.PlayerSpawn.Y);
             _w = new World(level, _feelTuning, 12345);
             LoadRelics();
+            if (_save.bossesDefeated.Contains(name)) _w.ApplyBossDefeated(_w.Player.Owned.Contains(RelicId.Endurance));
 
             _worldRoot = new GameObject("World").transform;
             _level = LevelView.Create(_w, _worldRoot);
@@ -341,6 +345,12 @@ namespace SevenOaths
                 case EventType.RoomWave:
                     if (e.Value > 1) _hud.ShowMessage($"웨이브 {e.Value}", "", 1.5f);
                     break;
+                case EventType.BossDefeated:
+                    // 다시 실행해도 쓰러진 채로(유물을 줍기 전에 꺼도 다음엔 그 자리에 다시 떠 있음)
+                    if (!_save.bossesDefeated.Contains(_levelName)) _save.bossesDefeated.Add(_levelName);
+                    _save.level = _levelName;
+                    SaveSystem.Save(_save);
+                    break;
                 case EventType.RelicGet:
                     SaveRelics();
                     StartCoroutine(OpenRelicsSoon((RelicId)e.Value));
@@ -361,8 +371,9 @@ namespace SevenOaths
             if (_title != null)
             {
                 // 타이틀: 게임은 멈춘 채 타이틀만(옵션은 일시정지 메뉴의 옵션 화면을 빌려 씀)
-                if (_pause.IsOpen) { if (_pause.Tick()) _pause.Close(); }
-                else _title.Tick(_screen);
+                bool opts = _pause.IsOpen;
+                if (opts && _pause.Tick()) _pause.Close();
+                _title.Tick(_screen, acceptInput: !opts);   // 옵션 창 뒤에서도 타이틀은 계속 움직임
                 return;
             }
             if (_input.ConsumeDebugToggle()) _panel.Toggle();
