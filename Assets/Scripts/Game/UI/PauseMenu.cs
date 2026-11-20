@@ -54,41 +54,46 @@ namespace SevenOaths
 
         void Build()
         {
-            _canvas = Ui.OverlayCanvas("PauseCanvas", 40, PixelScreen.Instance.Scale);
+            _canvas = Ui.OverlayCanvas("PauseCanvas", 40, PixelScreen.Instance.UiScale);
             _canvas.transform.SetParent(transform, false);
             _scaler = _canvas.GetComponent<CanvasScaler>();
             var dim = Ui.Image(_canvas.transform, "Dim", new Color(0.01f, 0.01f, 0.03f, 0.62f), raycast: true);
             dim.rectTransform.Stretch();
             _view = Ui.Rect("View", _canvas.transform);
-            _view.Place(0, 0, PixelScreen.ViewW, PixelScreen.ViewH);
+            _view.Place(0, 0, PixelScreen.UiW, PixelScreen.UiH);
             _canvas.gameObject.SetActive(false);
         }
 
-        static Sprite PanelSprite() => GameAssets.Instance.Sprite("ui_menu_panel") is Sprite s ? GameAssets.Instance.Bordered9(s, 8) : Placeholder.MenuPanel();
+        static Sprite PanelSprite() => GameAssets.Instance.Sprite("ui_menu_panel") is Sprite s ? GameAssets.Instance.Bordered9(s, Ui.IsHdArt(s) ? 12 : 8) : Placeholder.MenuPanel();
         static Sprite ButtonSprite(bool on)
         {
             var a = GameAssets.Instance;
             var s = a.Sprite(on ? "ui_menu_button/hover" : "ui_menu_button/normal", "ui_menu_button");
-            return s != null ? a.Bordered9(s, 5) : Placeholder.MenuButton(on);
+            return s != null ? a.Bordered9(s, Ui.IsHdArt(s) ? 8 : 5) : Placeholder.MenuButton(on);
         }
+
+        int _rowH = 18, _pitch = 22, _padX = 14, _fillW = 60, _fillH = 4;
 
         void Rebuild()
         {
             if (_panel != null) Destroy(_panel.gameObject);
             _items.Clear();
-            int w = 200, h = _options ? 196 : 132;
+            // HD(640×360): 버튼 그림 24px 높이에 맞춰 줄 높이·간격·패널을 키움
+            bool hd = PixelScreen.HD;
+            _rowH = hd ? 24 : 18; _pitch = hd ? 30 : 22; _padX = hd ? 18 : 14;
+            int w = hd ? 260 : 200, h = hd ? (_options ? 254 : 166) : (_options ? 196 : 132);
             var bg = Ui.Image(_view, "Panel", Color.white, PanelSprite(), sliced: true, raycast: true);
             _panel = bg.rectTransform;
-            _panel.Place((PixelScreen.ViewW - w) / 2, (PixelScreen.ViewH - h) / 2, w, h);
+            _panel.Place((PixelScreen.UiW - w) / 2, (PixelScreen.UiH - h) / 2, w, h);
 
             _title = Ui.Text(_panel, "Title", _options ? "옵션" : "일시정지", 12, (Color)Palette.Cry6, TextAlignmentOptions.Midline);
-            _title.rectTransform.Place(0, h - 22, w, 14);
+            _title.rectTransform.Place(0, h - (hd ? 26 : 22), w, 14);
             var line = Ui.Image(_panel, "Line", (Color)Palette.Cry2);
-            line.rectTransform.Place(24, h - 28, w - 48, 1);
+            line.rectTransform.Place(24, h - (hd ? 33 : 28), w - 48, 1);
             var gem = Ui.Image(_panel, "Gem", (Color)Palette.Cry5);
-            gem.rectTransform.Place(w / 2 - 2, h - 30, 4, 4);
+            gem.rectTransform.Place(w / 2 - 2, h - (hd ? 35 : 30), 4, 4);
 
-            int y = h - 54;
+            int y = h - (hd ? 64 : 54);
             if (!_options)
             {
                 AddButton("계속하기", () => _resume?.Invoke(), ref y, w);
@@ -111,10 +116,10 @@ namespace SevenOaths
             if (_gemClip != null)
             {
                 _gem = Ui.Image(_panel, "Gem", Color.white, _gemClip.frames[0]);
-                _gem.rectTransform.sizeDelta = new Vector2(8f, 8f);
+                _gem.rectTransform.sizeDelta = Ui.Native(_gemClip.frames[0], new Vector2(8f, 8f));
             }
             var hint = Ui.Text(_panel, "Hint", _options ? "W/S 선택 · A/D 조절 · ESC 뒤로" : "W/S 선택 · Enter 결정 · ESC 닫기", 8, Palette.WithA(Palette.Stone4, 0.9f), TextAlignmentOptions.Midline);
-            hint.rectTransform.Place(0, 6, w, 9);
+            hint.rectTransform.Place(0, hd ? 10 : 6, w, 9);
             Refresh();
         }
 
@@ -124,12 +129,12 @@ namespace SevenOaths
             var bg = Ui.Image(_panel, text, Color.white, ButtonSprite(false), sliced: true, raycast: true);
             it.bg = bg;
             it.rt = bg.rectTransform;
-            it.rt.Place(14, y, w - 28, 18);
+            it.rt.Place(_padX, y, w - _padX * 2, _rowH);
             it.label = Ui.Text(it.rt, "Label", text, 10, (Color)Palette.Stone6, centered ? TextAlignmentOptions.Midline : TextAlignmentOptions.MidlineLeft);
             it.label.rectTransform.Stretch();
-            it.label.rectTransform.offsetMin = new Vector2(centered ? 0f : 10f, 0f);
+            it.label.rectTransform.offsetMin = new Vector2(centered ? 0f : (PixelScreen.HD ? 18f : 10f), 0f);
             _items.Add(it);
-            y -= 22;
+            y -= _pitch;
             return it;
         }
 
@@ -145,9 +150,11 @@ namespace SevenOaths
             it.slider = true;
             it.get = get;
             var track = Ui.Image(it.rt, "Track", (Color)Palette.Ink1);
-            track.rectTransform.Place(w - 28 - 72, 6, 62, 6);
+            int tw = PixelScreen.HD ? 84 : 62, th = PixelScreen.HD ? 8 : 6;
+            track.rectTransform.Place(w - _padX * 2 - tw - 10, (_rowH - th) / 2, tw, th);
             it.fill = Ui.Image(track.rectTransform, "Fill", (Color)Palette.Cry4);
-            it.fill.rectTransform.Place(1, 1, 60, 4);
+            it.fill.rectTransform.Place(1, 1, tw - 2, th - 2);
+            _fillW = tw - 2; _fillH = th - 2;
             it.onAdjust = d => { set(Mathf.Clamp01(Mathf.Round((get() + d * 0.1f) * 10f) / 10f)); _settingsChanged?.Invoke(); };
             it.onConfirm = () => it.onAdjust(1);
         }
@@ -157,7 +164,7 @@ namespace SevenOaths
             var it = AddRow(text, ref y, w, false);
             it.value = Ui.Text(it.rt, "Value", "", 10, (Color)Palette.Cry5, TextAlignmentOptions.MidlineRight);
             it.value.rectTransform.Stretch();
-            it.value.rectTransform.offsetMax = new Vector2(-10f, 0f);
+            it.value.rectTransform.offsetMax = new Vector2(PixelScreen.HD ? -14f : -10f, 0f);
             it.valueText = () => get() ? "켜짐" : "꺼짐";
             it.onAdjust = d => { set(!get()); _settingsChanged?.Invoke(); };
             it.onConfirm = () => it.onAdjust(1);
@@ -177,10 +184,10 @@ namespace SevenOaths
                 {
                     _gem.rectTransform.anchorMin = _gem.rectTransform.anchorMax = Vector2.zero;
                     _gem.rectTransform.pivot = new Vector2(0f, 0.5f);
-                    _gem.rectTransform.anchoredPosition = new Vector2(it.rt.anchoredPosition.x + 3f, it.rt.anchoredPosition.y + 9f);
+                    _gem.rectTransform.anchoredPosition = new Vector2(it.rt.anchoredPosition.x + 3f, it.rt.anchoredPosition.y + _rowH / 2);
                 }
                 if (it.value != null && it.valueText != null) it.value.text = it.valueText();
-                if (it.fill != null) { it.fill.rectTransform.sizeDelta = new Vector2(Mathf.Round(60f * it.get()), 4f); it.fill.color = on ? (Color)Palette.Cry5 : (Color)Palette.Cry3; }
+                if (it.fill != null) { it.fill.rectTransform.sizeDelta = new Vector2(Mathf.Round(_fillW * it.get()), _fillH); it.fill.color = on ? (Color)Palette.Cry5 : (Color)Palette.Cry3; }
             }
         }
 
@@ -236,9 +243,9 @@ namespace SevenOaths
         /// <summary>메뉴가 열려 있을 때 매 프레임(GameRoot가 부름). 닫혀야 하면 true.</summary>
         public bool Tick()
         {
-            _scaler.scaleFactor = PixelScreen.Instance.Scale;
+            _scaler.scaleFactor = PixelScreen.Instance.UiScale;
             var o = PixelScreen.Instance.ViewOriginScreen;
-            _view.anchoredPosition = new Vector2(o.x / (float)PixelScreen.Instance.Scale, o.y / (float)PixelScreen.Instance.Scale);
+            _view.anchoredPosition = new Vector2(o.x / (float)PixelScreen.Instance.UiScale, o.y / (float)PixelScreen.Instance.UiScale);
 
             if (_gem != null && _gemClip != null) _gem.sprite = _gemClip.frames[_gemClip.FrameAt(Time.unscaledTime, true)];
             if (_closeRequested) { _closeRequested = false; return true; }

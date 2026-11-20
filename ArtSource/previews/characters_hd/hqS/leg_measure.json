@@ -1,0 +1,986 @@
+{
+"idle_0": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"idle_1": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"idle_2": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"idle_3": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"idle_4": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"idle_5": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"idle_drawn_0": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"idle_drawn_1": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"idle_drawn_2": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"idle_drawn_3": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"idle_drawn_4": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"idle_drawn_5": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"draw_0": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"draw_1": {
+"top": 30,
+"waist": 77,
+"leg": 18,
+"torso": 47
+},
+"draw_2": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"draw_slash_0": {
+"top": 34,
+"waist": 81,
+"leg": 14,
+"torso": 47
+},
+"draw_slash_1": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"draw_slash_2": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"draw_slash_3": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"draw_slash_4": {
+"top": 30,
+"waist": 77,
+"leg": 18,
+"torso": 47
+},
+"draw_slash_5": {
+"top": 29,
+"waist": 77,
+"leg": 18,
+"torso": 48
+},
+"sheathe_0": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"sheathe_1": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"sheathe_2": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"sheathe_3": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"sheathe_4": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"sheathe_5": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"run_0": {
+"top": 27,
+"waist": 79,
+"leg": 16,
+"torso": 52
+},
+"run_1": {
+"top": 26,
+"waist": 77,
+"leg": 18,
+"torso": 51
+},
+"run_2": {
+"top": 23,
+"waist": 75,
+"leg": 20,
+"torso": 52
+},
+"run_3": {
+"top": 24,
+"waist": 75,
+"leg": 20,
+"torso": 51
+},
+"run_4": {
+"top": 27,
+"waist": 77,
+"leg": 18,
+"torso": 50
+},
+"run_5": {
+"top": 25,
+"waist": 75,
+"leg": 20,
+"torso": 50
+},
+"run_6": {
+"top": 23,
+"waist": 73,
+"leg": 22,
+"torso": 50
+},
+"run_7": {
+"top": 24,
+"waist": 76,
+"leg": 19,
+"torso": 52
+},
+"jump_0": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"jump_1": {
+"top": 26,
+"waist": 73,
+"leg": 22,
+"torso": 47
+},
+"fall_0": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"fall_1": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"land_0": {
+"top": 36,
+"waist": 82,
+"leg": 13,
+"torso": 46
+},
+"land_1": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"slash1_0": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"slash1_1": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"slash1_2": {
+"top": 35,
+"waist": 81,
+"leg": 14,
+"torso": 46
+},
+"slash1_3": {
+"top": 35,
+"waist": 81,
+"leg": 14,
+"torso": 46
+},
+"slash1_4": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"slash1_5": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"slash1_6": {
+"top": 30,
+"waist": 77,
+"leg": 18,
+"torso": 47
+},
+"slash2_0": {
+"top": 30,
+"waist": 77,
+"leg": 18,
+"torso": 47
+},
+"slash2_1": {
+"top": 30,
+"waist": 76,
+"leg": 19,
+"torso": 46
+},
+"slash2_2": {
+"top": 37,
+"waist": 83,
+"leg": 12,
+"torso": 46
+},
+"slash2_3": {
+"top": 37,
+"waist": 83,
+"leg": 12,
+"torso": 46
+},
+"slash2_4": {
+"top": 35,
+"waist": 82,
+"leg": 13,
+"torso": 47
+},
+"slash2_5": {
+"top": 31,
+"waist": 79,
+"leg": 16,
+"torso": 48
+},
+"slash2_6": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"slash3_0": {
+"top": 34,
+"waist": 81,
+"leg": 14,
+"torso": 47
+},
+"slash3_1": {
+"top": 40,
+"waist": 86,
+"leg": 9,
+"torso": 46
+},
+"slash3_2": {
+"top": 34,
+"waist": 80,
+"leg": 15,
+"torso": 46
+},
+"slash3_7": {
+"top": 10,
+"waist": 58,
+"leg": 37,
+"torso": 48
+},
+"slash3_8": {
+"top": 42,
+"waist": 88,
+"leg": 7,
+"torso": 46
+},
+"slash3_9": {
+"top": 42,
+"waist": 88,
+"leg": 7,
+"torso": 46
+},
+"slash3_10": {
+"top": 42,
+"waist": 88,
+"leg": 7,
+"torso": 46
+},
+"slash3_11": {
+"top": 38,
+"waist": 84,
+"leg": 11,
+"torso": 46
+},
+"slash3_12": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"slash3_13": {
+"top": 29,
+"waist": 76,
+"leg": 19,
+"torso": 47
+},
+"heavy_0": {
+"top": 29,
+"waist": 77,
+"leg": 18,
+"torso": 48
+},
+"heavy_1": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"heavy_2": {
+"top": 31,
+"waist": 79,
+"leg": 16,
+"torso": 48
+},
+"heavy_3": {
+"top": 32,
+"waist": 78,
+"leg": 17,
+"torso": 46
+},
+"heavy_4": {
+"top": 35,
+"waist": 80,
+"leg": 15,
+"torso": 45
+},
+"heavy_5": {
+"top": 34,
+"waist": 80,
+"leg": 15,
+"torso": 46
+},
+"heavy_6": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"heavy_7": {
+"top": 30,
+"waist": 78,
+"leg": 17,
+"torso": 48
+},
+"charge_0": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"charge_1": {
+"top": 34,
+"waist": 81,
+"leg": 14,
+"torso": 47
+},
+"charge_2": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"charge_3": {
+"top": 34,
+"waist": 81,
+"leg": 14,
+"torso": 47
+},
+"charge_slash_0": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"charge_slash_1": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"charge_slash_2": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"charge_slash_3": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"charge_slash_4": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"charge_slash_5": {
+"top": 30,
+"waist": 78,
+"leg": 17,
+"torso": 48
+},
+"charge_slash_6": {
+"top": 32,
+"waist": 78,
+"leg": 17,
+"torso": 46
+},
+"charge_slash_7": {
+"top": 29,
+"waist": 77,
+"leg": 18,
+"torso": 48
+},
+"dodge_0": {
+"top": 42,
+"waist": 87,
+"leg": 8,
+"torso": 45
+},
+"dodge_1": {
+"top": 51,
+"waist": 94,
+"leg": 1,
+"torso": 43
+},
+"dodge_2": {
+"top": 59,
+"waist": 94,
+"leg": 1,
+"torso": 35
+},
+"dodge_3": {
+"top": 57,
+"waist": 94,
+"leg": 1,
+"torso": 37
+},
+"dodge_4": {
+"top": 42,
+"waist": 87,
+"leg": 8,
+"torso": 45
+},
+"dodge_slash_0": {
+"top": 38,
+"waist": 85,
+"leg": 10,
+"torso": 47
+},
+"dodge_slash_1": {
+"top": 35,
+"waist": 82,
+"leg": 13,
+"torso": 47
+},
+"dodge_slash_2": {
+"top": 34,
+"waist": 80,
+"leg": 15,
+"torso": 46
+},
+"dodge_slash_3": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"dodge_slash_4": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"dodge_slash_5": {
+"top": 30,
+"waist": 78,
+"leg": 17,
+"torso": 48
+},
+"air_slash_0": {
+"top": 25,
+"waist": 73,
+"leg": 22,
+"torso": 48
+},
+"air_slash_1": {
+"top": 26,
+"waist": 72,
+"leg": 23,
+"torso": 46
+},
+"air_slash_2": {
+"top": 27,
+"waist": 74,
+"leg": 21,
+"torso": 47
+},
+"air_slash_3": {
+"top": 27,
+"waist": 74,
+"leg": 21,
+"torso": 47
+},
+"air_slash_4": {
+"top": 25,
+"waist": 73,
+"leg": 22,
+"torso": 48
+},
+"execute_0": {
+"top": 30,
+"waist": 77,
+"leg": 18,
+"torso": 47
+},
+"execute_1": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"execute_2": {
+"top": 28,
+"waist": 75,
+"leg": 20,
+"torso": 47
+},
+"execute_3": {
+"top": 22,
+"waist": 70,
+"leg": 25,
+"torso": 48
+},
+"execute_4": {
+"top": 33,
+"waist": 79,
+"leg": 16,
+"torso": 46
+},
+"execute_5": {
+"top": 40,
+"waist": 86,
+"leg": 9,
+"torso": 46
+},
+"execute_6": {
+"top": 41,
+"waist": 86,
+"leg": 9,
+"torso": 45
+},
+"execute_7": {
+"top": 37,
+"waist": 84,
+"leg": 11,
+"torso": 47
+},
+"execute_8": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"execute_9": {
+"top": 29,
+"waist": 77,
+"leg": 18,
+"torso": 48
+},
+"dash_attack_0": {
+"top": 43,
+"waist": 88,
+"leg": 7,
+"torso": 45
+},
+"dash_attack_1": {
+"top": 53,
+"waist": 94,
+"leg": 1,
+"torso": 41
+},
+"dash_attack_2": {
+"top": 54,
+"waist": 92,
+"leg": 3,
+"torso": 38
+},
+"dash_attack_3": {
+"top": 54,
+"waist": 92,
+"leg": 3,
+"torso": 38
+},
+"dash_attack_4": {
+"top": 54,
+"waist": 92,
+"leg": 3,
+"torso": 38
+},
+"dash_attack_5": {
+"top": 57,
+"waist": 94,
+"leg": 1,
+"torso": 37
+},
+"dash_attack_6": {
+"top": 50,
+"waist": 92,
+"leg": 3,
+"torso": 42
+},
+"dash_attack_up_0": {
+"top": 37,
+"waist": 84,
+"leg": 11,
+"torso": 47
+},
+"dash_attack_up_1": {
+"top": 39,
+"waist": 86,
+"leg": 9,
+"torso": 47
+},
+"dash_attack_up_2": {
+"top": 38,
+"waist": 82,
+"leg": 13,
+"torso": 44
+},
+"dash_attack_up_3": {
+"top": 38,
+"waist": 82,
+"leg": 13,
+"torso": 44
+},
+"dash_attack_up_4": {
+"top": 38,
+"waist": 82,
+"leg": 13,
+"torso": 44
+},
+"dash_attack_up_5": {
+"top": 25,
+"waist": 71,
+"leg": 24,
+"torso": 46
+},
+"dash_attack_up_6": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"dash_attack_down_0": {
+"top": 24,
+"waist": 71,
+"leg": 24,
+"torso": 47
+},
+"dash_attack_down_1": {
+"top": 29,
+"waist": 47,
+"leg": 48,
+"torso": 18
+},
+"dash_attack_down_2": {
+"top": 11,
+"waist": 54,
+"leg": 41,
+"torso": 43
+},
+"dash_attack_down_3": {
+"top": 12,
+"waist": 55,
+"leg": 40,
+"torso": 43
+},
+"dash_attack_down_4": {
+"top": 11,
+"waist": 54,
+"leg": 41,
+"torso": 43
+},
+"dash_attack_down_5": {
+"top": 54,
+"waist": 93,
+"leg": 2,
+"torso": 39
+},
+"dash_attack_down_6": {
+"top": 48,
+"waist": 91,
+"leg": 4,
+"torso": 43
+},
+"parry_0": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"parry_1": {
+"top": 33,
+"waist": 81,
+"leg": 14,
+"torso": 48
+},
+"parry_2": {
+"top": 34,
+"waist": 82,
+"leg": 13,
+"torso": 48
+},
+"parry_3": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"parry_counter_0": {
+"top": 33,
+"waist": 81,
+"leg": 14,
+"torso": 48
+},
+"parry_counter_1": {
+"top": 32,
+"waist": 79,
+"leg": 16,
+"torso": 47
+},
+"parry_counter_2": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"parry_counter_3": {
+"top": 36,
+"waist": 82,
+"leg": 13,
+"torso": 46
+},
+"parry_slide_0": {
+"top": 38,
+"waist": 84,
+"leg": 11,
+"torso": 46
+},
+"parry_slide_1": {
+"top": 41,
+"waist": 87,
+"leg": 8,
+"torso": 46
+},
+"parry_slide_2": {
+"top": 39,
+"waist": 86,
+"leg": 9,
+"torso": 47
+},
+"parry_slide_3": {
+"top": 39,
+"waist": 86,
+"leg": 9,
+"torso": 47
+},
+"parry_rise_0": {
+"top": 38,
+"waist": 85,
+"leg": 10,
+"torso": 47
+},
+"parry_rise_1": {
+"top": 34,
+"waist": 81,
+"leg": 14,
+"torso": 47
+},
+"parry_rise_2": {
+"top": 29,
+"waist": 77,
+"leg": 18,
+"torso": 48
+},
+"drink_0": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"drink_1": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"drink_2": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"drink_3": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"drink_4": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"drink_5": {
+"top": 28,
+"waist": 76,
+"leg": 19,
+"torso": 48
+},
+"hurt_0": {
+"top": 31,
+"waist": 77,
+"leg": 18,
+"torso": 46
+},
+"hurt_1": {
+"top": 32,
+"waist": 78,
+"leg": 17,
+"torso": 46
+},
+"hurt_2": {
+"top": 30,
+"waist": 78,
+"leg": 17,
+"torso": 48
+},
+"death_0": {
+"top": 31,
+"waist": 78,
+"leg": 17,
+"torso": 47
+},
+"death_1": {
+"top": 33,
+"waist": 80,
+"leg": 15,
+"torso": 47
+},
+"death_2": {
+"top": 38,
+"waist": 85,
+"leg": 10,
+"torso": 47
+},
+"death_3": {
+"top": 38,
+"waist": 85,
+"leg": 10,
+"torso": 47
+},
+"death_4": {
+"top": 39,
+"waist": 85,
+"leg": 10,
+"torso": 46
+},
+"death_5": {
+"top": 41,
+"waist": 86,
+"leg": 9,
+"torso": 45
+},
+"death_6": {
+"top": 54,
+"waist": 93,
+"leg": 2,
+"torso": 39
+},
+"death_7": {
+"top": 63,
+"waist": 94,
+"leg": 1,
+"torso": 31
+}
+}

@@ -435,23 +435,28 @@ def sword_draw(i):
     return room(lp(x, 5500, 4), rt=0.35, wet=0.08, seed=62)
 
 
-SHEATHE_CLICK_T = 0.35   # code plays this 0.12 s after the sheathe starts; the click lands at the end of 6 x 80 ms
+SHEATHE_CLICK_T = 0.10   # v2: click 0.10 s after the file starts (code delays it 0.22 s standing / 0.14 s running)
 
 
 def sword_sheathe():
-    """blade sliding home (scrape pitch falls as it goes in) -> soft 'click' of the guard on the locket at 0.35 s"""
-    n = N(0.8)
+    """v2: a short metal slide INTO the scabbard (0-0.10 s, getting louder, pitch falling) -> a clear 'click' at
+    0.10 s (guard meets the locket) -> a short clean steel ring. <= 0.35 s. Bright but no crystal/glass ring
+    (user rule), level close to sfx_sword_draw"""
+    n = N(0.45)
     t = T(n)
     st = SHEATHE_CLICK_T
-    fc = 3000 - 1700 * np.clip(t / st, 0, 1)
-    slide = svf(bp(white(n, 3101), 600, 5000), fc, 3.0, "bp")
-    slide *= env_points(n, [(0, 0.3), (0.02, 0.7), (st - 0.06, 1.0), (st - 0.005, 0.6), (st, 0)])
-    grain = scrape(n, 3102, st, rate=450, lo=1200, hi=3800, bed=0.0)
-    click = add(modes(N(0.12), [2350, 3420, 1580], [1, 0.5, 0.6], [0.012, 0.008, 0.02], seed=3103),
-                0.6 * thump(420, 260, 0.003, 0.01, N(0.12)))
-    settle = bp(white(N(0.2), 3104), 250, 1000) * env_exp(N(0.2), 0.03, 0.002)
-    x = mixdb((slide, -7), (grain, -15), (at(n, click, st), 0), (at(n, settle, st + 0.004), -10))
-    return room(lp(x, 6000, 4), rt=0.35, wet=0.08, seed=63)
+    fc = 3400 - 1500 * np.clip(t / st, 0, 1)
+    slide = svf(bp(white(n, 3101), 900, 5500), fc, 4.0, "bp")
+    slide *= env_points(n, [(0, 0.15), (st * 0.5, 0.5), (st - 0.004, 1.0), (st, 0.0)])
+    grain = scrape(n, 3102, st, rate=650, lo=1500, hi=4000, bed=0.0)
+    grain *= env_points(n, [(0, 0.3), (st, 1.0), (st + 0.001, 0)])
+    m = N(0.3)
+    click = add(modes(m, [2350, 3420, 1580, 980], [0.8, 0.35, 0.7, 0.6], [0.012, 0.008, 0.02, 0.025], seed=3103,
+                      attack=0.0008),
+                0.25 * clash_click(m, 3104, tau=0.0006), 0.7 * thump(420, 260, 0.003, 0.012, m))
+    ring = steel(m, 1250, 3105, modes_n=8, tau0=0.08, damp=1.0, exc_lp=6000)
+    x = mixdb((slide, -7), (grain, -15), (at(n, click, st), 0), (at(n, ring, st), -9))
+    return room(lp(x, 5500, 4), rt=0.3, wet=0.07, seed=63)
 
 
 def dodge(i):
@@ -1530,6 +1535,122 @@ def soul_crystal_break():
     return room(lp(x, 6500, 4), rt=1.3, wet=0.24, seed=105)
 
 
+# ============================================================ 9. stage 1-2 'Fallen Watchtower' (main session request)
+def _beast(n, f0, seed, formants, rough=0.6, rough_hz=30.0, breath=0.5, jitter=0.04):
+    """beast voice source -> muzzle formants. f0 may be an array. rough = subharmonic 'rrr' amplitude flutter"""
+    r = rng(seed)
+    t = T(n)
+    f0 = np.broadcast_to(np.asarray(f0, float), (n,))
+    j = lp(r.standard_normal(n), 10, 1)
+    j = j / (np.max(np.abs(j)) + 1e-9)
+    f = f0 * (1 + jitter * j)
+    src = saw(f, n, r.uniform())
+    flutter = np.abs(np.sin(np.pi * np.cumsum(rough_hz * (1 + 0.2 * j)) / SR))
+    src = src * ((1 - rough) + rough * flutter)
+    src = src + breath * bp(white(n, seed + 1), 300, 4000)
+    return sum(g * resonator(src, fr, fr / bw) for fr, bw, g in formants)
+
+
+def hound_growl(i):
+    """corrupted hound, low growl right before it lunges: rough voiced growl through a muzzle, distorted, with a
+    crimson ring-mod grit"""
+    n = N(0.6)
+    t = T(n)
+    f0 = [78, 70][i] * (1 + 0.05 * np.sin(TAU * 2.5 * t))
+    v = _beast(n, f0, 4400 + i, [(380, 110, 1.0), (950, 180, 0.6), (1900, 300, 0.2)], rough=0.75,
+               rough_hz=[28, 34][i], breath=0.45)
+    v *= env_points(n, [(0, 0), (0.06, 0.8), (0.35, 1.0), (0.5, 0.7), (0.58, 0)])
+    grit_ = v * np.sin(TAU * [37, 43][i] * t)
+    x = mixdb((v, 0), (grit_, -9))
+    x = sat(x * 2.0, 2.4)
+    return room(lp(x, 4500, 2), rt=0.5, wet=0.12, seed=106)
+
+
+def hound_bite():
+    """lunge + jaws snapping: air rush, two teeth clicks (upper/lower) 12 ms apart, a jaw thud, a short snarl"""
+    n = N(0.45)
+    sw, _ = whoosh(0.12, 400, 1600, 0.06, q=1.0, seed=4410, rise=1.5, fall=3.0)
+    click1 = bp(white(n, 4411), 1200, 4500) * env_exp(n, 0.0015, 0.0002)
+    click2 = at(n, bp(white(N(0.2), 4412), 1000, 4000) * env_exp(N(0.2), 0.0015, 0.0002), 0.012)
+    teeth = modes(n, [2300, 3400], [1, 0.5], [0.012, 0.008], seed=4413, attack=0.0003)
+    jaw = thump(220, 120, 0.004, 0.015, n, attack=0.0006)
+    m = N(0.25)
+    snarl = _beast(m, 140, 4414, [(500, 150, 1.0), (1200, 250, 0.5)], rough=0.6, rough_hz=40, breath=0.6)
+    snarl *= env_points(m, [(0, 0), (0.02, 1), (0.15, 0.3), (0.2, 0)])
+    x = mixdb((at(n, sw, 0.0), -8), (click1, 0), (click2, -2), (teeth, -6), (jaw, -5), (at(n, snarl, 0.02), -9))
+    x = sat(x * 1.3, 1.5)
+    return room(lp(x, 6000, 4), rt=0.4, wet=0.1, seed=107)
+
+
+def hound_yelp():
+    """hit: a short yelp - voiced, pitch snapping down 900 -> 480 Hz, a little corrupted grit"""
+    n = N(0.4)
+    t = T(n)
+    f0 = 480 + 420 * np.exp(-t / 0.05)
+    v = _beast(n, f0, 4420, [(900, 200, 1.0), (1700, 300, 0.6), (2800, 400, 0.2)], rough=0.25, rough_hz=55,
+               breath=0.3, jitter=0.02)
+    v *= env_points(n, [(0, 0), (0.008, 1), (0.12, 0.6), (0.22, 0)])
+    x = sat(v * 1.8, 1.8)
+    return room(lp(x, 5500, 4), rt=0.4, wet=0.1, seed=108)
+
+
+def hound_death():
+    """falls: body thud, a fading whimper, then corruption scattering into ash (low exhale + sizzle thinning out)"""
+    n = N(1.2)
+    t = T(n)
+    thud = add(thump(140, 65, 0.01, 0.05, n, attack=0.001), 0.6 * body_hit(n, 4430, 150, 1500, 300, 700, 0.03))
+    m = N(0.5)
+    tm = T(m)
+    whimper = _beast(m, 620 - 200 * np.clip(tm / 0.35, 0, 1), 4431, [(800, 200, 1.0), (1600, 300, 0.5)],
+                     rough=0.2, rough_hz=50, breath=0.4, jitter=0.03)
+    whimper *= env_points(m, [(0, 0), (0.03, 1), (0.3, 0.4), (0.45, 0)])
+    ex = breath(n, 4432, [(500, 150, 1.0), (950, 200, 0.5)], 0.9, attack=0.08)
+    sz = grit(n, 4433, 120, 0.3, 1200, 3800, start=0.12, t_max=0.9, decay=0.4)
+    x = mixdb((thud, 0), (at(n, whimper, 0.05), -6), (at(n, lp(ex, 2500, 2), 0.15), -6), (sz, -12))
+    return room(lp(x, 5500, 2), rt=0.9, wet=0.18, seed=109)
+
+
+def crumble_shake():
+    """a ledge about to go: stone groaning under load, cracks ticking faster, dust and pebbles trickling - tense,
+    getting louder toward the end"""
+    n = N(0.6)
+    t = T(n)
+    r = rng(4440)
+    groan = lp(white(n, 4441), 300, 2) * (0.6 + 0.4 * np.abs(np.sin(TAU * 18 * t)))
+    groan *= env_points(n, [(0, 0.2), (0.45, 1), (0.55, 0.8), (0.6, 0)])
+    crk = np.zeros(n)
+    tt = 0.02
+    k = 0
+    while tt < 0.5:
+        f = r.uniform(600, 2400)
+        g = modes(N(0.03), [f, f * 1.7], [1, 0.4], [r.uniform(0.003, 0.007)] * 2, seed=4442 + k)
+        mix_into(crk, g, N(tt), r.uniform(0.3, 1.0) * (0.4 + 0.6 * tt / 0.5))
+        tt += r.exponential(0.05 - 0.07 * tt * 0.6)
+        k += 1
+    dust = grit(n, 4443, 40, 0.25, 900, 3000, start=0.05, t_max=0.5, decay=0.6)
+    x = mixdb((groan, -3), (crk, 0), (dust, -10))
+    return room(lp(x, 5000, 2), rt=0.6, wet=0.14, seed=110)
+
+
+def crumble_break():
+    """the stone ledge breaks and drops away: crack burst, crunch, chunks tumbling and fading down"""
+    n = N(1.0)
+    t = T(n)
+    burst = add(peq(bp(white(n, 4450), 250, 2500), 600, 6.0, 1.2) * env_exp(n, 0.03, 0.0006),
+                0.8 * thump(150, 70, 0.012, 0.05, n, attack=0.001))
+    crk = grit(n, 4451, 70, 0.05, 400, 2200, start=0.0, t_max=0.3, decay=0.12)
+    r = rng(4452)
+    chunks = np.zeros(n)
+    for k in range(9):
+        t0 = 0.08 + r.uniform(0, 0.5)
+        mix_into(chunks, thump(r.uniform(180, 320), r.uniform(100, 150), 0.006, 0.025, N(0.3)), N(t0),
+                 r.uniform(0.3, 1.0) * np.exp(-(t0 - 0.08) / 0.35))
+    fall = lp(white(n, 4453), 900, 2) * env_points(n, [(0, 0), (0.05, 1), (0.4, 0.4), (0.8, 0)])
+    x = mixdb((burst, 0), (crk, -3), (chunks, -6), (fall, -12))
+    x = sat(x * 1.2, 1.4)
+    return room(lp(x, 5500, 2), rt=0.8, wet=0.18, seed=111)
+
+
 # ============================================================ registry
 # name: (render fn, target momentary-max LUFS (dual mono), description)
 SFX = {}
@@ -1553,8 +1674,8 @@ for i in range(2):
 for i in range(2):
     SFX[f"sfx_sword_draw_{i + 1:02d}"] = (lambda i=i: sword_draw(i), -27.0,
                                           "검 뽑기(v1.1): 칼집 쓸림(위로 올라가는 긁힘)+짧고 작은 강철 울림. 발도 베기 땐 swing이 겹치니 가볍게")
-SFX["sfx_sword_sheathe"] = (sword_sheathe, -31.0,
-                            f"검 넣기(v1.1): 칼집으로 미끄러져 들어가는 긁힘 → {SHEATHE_CLICK_T:.2f}초에 부드러운 '딸깍'")
+SFX["sfx_sword_sheathe"] = (sword_sheathe, -27.0,
+                            f"검 넣기 v2: 금속이 짧게 미끄러져 들어감(점점 커짐) → {SHEATHE_CLICK_T:.2f}초 또렷한 '딸깍' → 짧은 맑은 강철 여운 (0.35초 이내)")
 for i in range(2):
     SFX[f"sfx_dash_{i + 1:02d}"] = (lambda i=i: dash(i), -21.0,
                                     f"대쉬 공격: 칼 돌리는 '스윽'+가죽 삐걱 예비음 → {DASH_T * 1000:.0f}ms(5f)에 공기 찢는 돌진(빠른 대역 스윕+거친 펄럭임+떨어지는 '즈웅')+낮은 바람 꼬리")
@@ -1637,17 +1758,28 @@ SFX["sfx_flask_drink"] = (flask_drink, -21.0, f"성수병: 마개 유리 '딸깍
 SFX["sfx_flask_empty"] = (flask_empty, -25.0, "빈 병: 텅 빈 유리병 '톡'+작게 처지는 한숨 같은 블립")
 SFX["sfx_soul_crystal_form"] = (soul_crystal_form, -21.0, "영혼의 수정 맺힘: 얼음처럼 자라는 결정 잔금+맑게 울려 오는 결정 화음+낮은 침식 웅웅")
 SFX["sfx_soul_crystal_break"] = (soul_crystal_break, -18.0, f"영혼의 수정 깨짐: 유리 산산조각 → 영혼이 돌아오는 상승음+반짝임 → {SOUL_RESOLVE_T:.2f}초 맑은 D장조 해결 차임")
+# ---- stage 1-2 'Fallen Watchtower' (main session request, 2026-11-19)
+for i in range(2):
+    SFX[f"sfx_hound_growl_{i + 1:02d}"] = (lambda i=i: hound_growl(i), -20.0,
+                                          "침식 사냥개 으르렁(공격 예고): 거친 '그르르' 성대음+주둥이 공명+침식 일그러짐")
+SFX["sfx_hound_bite"] = (hound_bite, -19.0, "사냥개 물기: 뛰어드는 쉭+이빨 '딱딱'(12ms)+턱 쿵+짧은 으르렁")
+SFX["sfx_hound_yelp"] = (hound_yelp, -20.0, "사냥개 피격 깨갱: 900→480Hz로 꺾이는 짧은 비명")
+SFX["sfx_hound_death"] = (hound_death, -19.0, "사냥개 쓰러짐: 몸 쿵+잦아드는 낑낑+침식 재로 흩어짐(날숨·지글거림)")
+SFX["sfx_crumble_shake"] = (crumble_shake, -22.0, "무너지는 발판 예고: 하중에 신음하는 돌+점점 빨라지는 금 가는 소리+돌가루, 끝으로 갈수록 커짐")
+SFX["sfx_crumble_break"] = (crumble_break, -17.0, "돌 발판 부서짐: 콰직+균열+굴러떨어지는 돌덩이 9개+떨어지며 멀어짐")
 
 LOOP_SFX = {"sfx_charge_loop", "sfx_boss_charge_loop"}
 MAXDUR = {**{f"sfx_hit_heavy_{i + 1:02d}": 1.5 for i in range(3)}, "sfx_dash_01": 1.0, "sfx_dash_02": 1.0,
-          "sfx_sword_draw_01": 0.35, "sfx_sword_draw_02": 0.35, "sfx_enemy_glint": 1.0,
+          "sfx_sword_draw_01": 0.35, "sfx_sword_draw_02": 0.35, "sfx_enemy_glint": 1.0, "sfx_sword_sheathe": 0.35,
           "sfx_wave_clear": 2.4, "sfx_altar": 3.2, "sfx_relic_get": 4.0,
           "sfx_boss_charge_line": 0.45, "sfx_time_stop": 0.8, "sfx_riposte_blast": 1.2, "sfx_boss_banner": 1.4,
           "sfx_oath_inherit": 3.0, "sfx_oath_absorb": 1.3,
           "sfx_boss_intro_shout": 2.2, "sfx_parry_slide": 0.6, "sfx_corrupt_burst": 1.6, "sfx_boss_leap": 0.8,
           "sfx_boss_leap_lock": 0.7, "sfx_boss_leap_impact": 1.8, "sfx_spike_crack": 0.7, "sfx_flask_drink": 1.1,
           "sfx_soul_crystal_form": 1.4, "sfx_soul_crystal_break": 1.5,
-          "sfx_lumen_gain_01": 0.3, "sfx_lumen_gain_02": 0.3, "sfx_lumen_gain_03": 0.3}
+          "sfx_lumen_gain_01": 0.3, "sfx_lumen_gain_02": 0.3, "sfx_lumen_gain_03": 0.3,
+          "sfx_hound_growl_01": 0.55, "sfx_hound_growl_02": 0.55, "sfx_hound_bite": 0.35, "sfx_hound_yelp": 0.32,
+          "sfx_hound_death": 0.9, "sfx_crumble_break": 0.7}
 FADEOUT = {"sfx_boss_charge_up": 0.004, "sfx_boss_leap_fall": 0.004}   # hard stop on purpose
 
 

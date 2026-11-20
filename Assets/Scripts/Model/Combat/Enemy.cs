@@ -57,6 +57,8 @@ namespace SevenOaths.Model
                     Body.W = 22f; Body.H = 46f; MaxHp = Hp = Stats.ShieldHp; MaxPoise = Poise = Stats.ShieldPoise; break;
                 case EnemyKind.Crossbow:
                     Body.W = 16f; Body.H = 42f; MaxHp = Hp = Stats.CrossbowHp; MaxPoise = Poise = Stats.CrossbowPoise; break;
+                case EnemyKind.Hound:
+                    Body.W = 24f; Body.H = 22f; MaxHp = Hp = Stats.HoundHp; MaxPoise = Poise = Stats.HoundPoise; break;
                 case EnemyKind.Ironwall:
                     Body.W = 34f; Body.H = 78f; MaxHp = Hp = Stats.BossHp; MaxPoise = Poise = Stats.BossPoise; ResetBoss(); break;
                 default:
@@ -114,6 +116,7 @@ namespace SevenOaths.Model
                     if (Kind == EnemyKind.Soldier) ThinkSoldier(w);
                     else if (Kind == EnemyKind.Shieldman) ThinkShield(w);
                     else if (Kind == EnemyKind.Crossbow) ThinkCrossbow(w);
+                    else if (Kind == EnemyKind.Hound) ThinkHound(w);
                     else if (IsBoss) ThinkBoss(w);
                     break;
                 case FState.Attack:
@@ -189,11 +192,58 @@ namespace SevenOaths.Model
             if (!p.Alive) return;
             float dx = p.Body.Pos.X - Body.Pos.X, dist = Math.Abs(dx), dy = Math.Abs(p.Body.Pos.Y - Body.Pos.Y);
             if (dist > Stats.CrossbowAggro) return;
+            if (dy > 40f && !w.LineClear(BowPos, p.Body.Pos + new Vec2(0f, 20f))) return;   // 다른 층(바닥에 막힘)이면 모른 척
             Body.Facing = dx >= 0f ? 1 : -1;
             if (dist < 34f && dy < 30f && _cooldown == 0) { Attack(w, Moves.CrossbowKick); return; }
             if (dist < Stats.CrossbowKeepMin && Body.OnGround) { _desiredVx = -Body.Facing * Stats.CrossbowWalk; return; }
             if (dist > Stats.CrossbowKeepMax) { _desiredVx = Body.Facing * Stats.CrossbowWalk; return; }
             if (_cooldown == 0) { Attack(w, Moves.CrossbowShoot); TrackAim(w.Player); }
+        }
+
+        /// <summary>
+        /// 침식 사냥개: 가까이 오면 빠르게 달려옴(낭떠러지 앞에선 멈춤) → 88px 안이면 웅크렸다 낮게 뛰어듦.
+        /// 무리끼리 겹치지 않게 앞에 동료가 있으면 살짝 늦게 덤빈다.
+        /// </summary>
+        void ThinkHound(World w)
+        {
+            var p = w.Player;
+            if (!p.Alive) return;
+            float dx = p.Body.Pos.X - Body.Pos.X, dist = Math.Abs(dx), dy = Math.Abs(p.Body.Pos.Y - Body.Pos.Y);
+            if (dist > Stats.HoundAggro || dy > 60f) return;
+            Body.Facing = dx >= 0f ? 1 : -1;
+            var mate = PackMateAhead(w, dist);
+            if (dist > Stats.HoundLungeRange || dy > 26f)
+            {
+                // 무리: 앞(주인공 쪽)에 동료가 바짝 있으면 뒤에서 기다린다 — 겹쳐 한 덩어리로 보이지 않게
+                if (mate == null && w.GroundAhead(this)) _desiredVx = Body.Facing * Stats.HoundRun;
+                return;
+            }
+            if (_cooldown == 0 && !MateLunging(w)) Attack(w, Moves.HoundLunge);   // 번갈아 덤빔
+        }
+
+        /// <summary>가까운 다른 사냥개가 덤비는 중(예고~물기). 회복 중이면 덤벼도 됨.</summary>
+        public bool IsLunging => State == FState.Attack && Move == Moves.HoundLunge && StateFrame < Move.Startup + Move.Active;
+
+        bool MateLunging(World w)
+        {
+            foreach (var o in w.Enemies)
+                if (o != this && o.Kind == EnemyKind.Hound && o.IsLunging
+                    && Math.Abs(o.Body.Pos.X - Body.Pos.X) < 160f && Math.Abs(o.Body.Pos.Y - Body.Pos.Y) < 20f) return true;
+            return false;
+        }
+
+        /// <summary>같은 높이에서 나보다 주인공에 가깝고, 간격이 HoundPackGap보다 좁은 사냥개.</summary>
+        Enemy PackMateAhead(World w, float dist)
+        {
+            var p = w.Player;
+            foreach (var o in w.Enemies)
+            {
+                if (o == this || o.Kind != EnemyKind.Hound || o.State == FState.Dead) continue;
+                float odx = p.Body.Pos.X - o.Body.Pos.X, od = Math.Abs(odx);
+                if (od < dist && dist - od < Stats.HoundPackGap && (Math.Sign(odx) == Body.Facing || od < 1f)
+                    && Math.Abs(o.Body.Pos.Y - Body.Pos.Y) < 20f) return o;
+            }
+            return null;
         }
 
         void TrackAim(Player p)
@@ -223,8 +273,8 @@ namespace SevenOaths.Model
             }
             if (f >= m.Total)
             {
-                int min = Kind == EnemyKind.Crossbow ? 50 : Stats.SoldierCooldownMin;
-                int max = Kind == EnemyKind.Crossbow ? 90 : Stats.SoldierCooldownMax;
+                int min = Kind == EnemyKind.Crossbow ? 50 : Kind == EnemyKind.Hound ? Stats.HoundCooldownMin : Stats.SoldierCooldownMin;
+                int max = Kind == EnemyKind.Crossbow ? 90 : Kind == EnemyKind.Hound ? Stats.HoundCooldownMax : Stats.SoldierCooldownMax;
                 _cooldown = w.Rng.Range(min, max + 1);
                 SetState(FState.Free);
             }

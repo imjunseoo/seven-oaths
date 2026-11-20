@@ -19,6 +19,7 @@ namespace SevenOaths
         public string soulLevel = "";           // 영혼의 수정이 박힌 레벨(없으면 "")
         public float soulX, soulY;
         public int soulLumen;
+        public bool tutorialDone;               // 수련장 튜토리얼을 마침(또는 건너뜀)
         public float bgmVolume = 0.4f, sfxVolume = 1f, ambVolume = 0.5f;
         public bool fullscreen = true;
         public bool rumble = true;

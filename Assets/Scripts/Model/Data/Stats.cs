@@ -12,7 +12,7 @@ namespace SevenOaths.Model
         public const float GroundAccel = 0.6f;
         public const float GroundDecel = 0.6f;
         public const float AirAccel = 0.3f;
-        public const float JumpSpeed = 6.2f;
+        public const float JumpSpeed = 7.2f;   // 최고 약 68px(v²/2g) — 망루 발판 간격 48px을 여유 있게(사용자 요청, 6.2 → 50px은 빠듯)
         public const float Gravity = 0.38f;
         public const float MaxFall = 7f;
         public const float JumpCut = 0.5f;
@@ -178,6 +178,18 @@ namespace SevenOaths.Model
         public const int PillarRiseFrames = 15;    // fx_pillar rise 5프레임×50ms와 같은 길이
         public const float BossEngage = 300f;     // 이 거리 안에 들어오면 전투 시작
         public const float RoarPush = 90f;
+
+        // ── 침식 사냥개(1-2 망루, 2~3마리 무리): 빠르게 달려와 웅크렸다 뛰어듦 ──
+        public const float HoundHp = 25f, HoundPoise = 15f;
+        public const float HoundRun = 2.4f;
+        public const float HoundAggro = 230f, HoundLungeRange = 88f;
+        public const float HoundPackGap = 40f;   // 무리 간격: 앞 동료와 이만큼 떨어져 뒤따름
+        public const int HoundCooldownMin = 45, HoundCooldownMax = 85;
+        public const int LumenHound = 8;
+
+        // ── 무너지는 발판(~): 올라서면 흔들리다 무너지고, 잠시 뒤 다시 생김 ──
+        public const int CrumbleDelay = 32;        // 올라선 뒤 무너지기까지(흔들림)
+        public const int CrumbleRespawn = 210;     // 무너진 뒤 다시 생기기까지
 
         // ── 지역 ──
         public const int RoomWaveDelay = 50;        // 웨이브 사이 텀

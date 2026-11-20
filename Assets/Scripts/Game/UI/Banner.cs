@@ -31,8 +31,15 @@ namespace SevenOaths
         public Action Absorbed;
         public bool Active => _visible;
 
-        const float W = PixelScreen.ViewW;
-        const float BandW = 360f;   // 도트 띠(가운데), 양끝 문장은 띠 끝에서 22px 바깥
+        static float W => PixelScreen.UiW;
+        static float BandW => PixelScreen.HD ? 440f : 360f;   // 도트 띠(가운데), 양끝 문장은 띠 끝에서 22px 바깥
+        // HD: 띠 그림 96×48(9-slice L,R 18 / T,B 12) · 문장 48×48 → 띠 높이 60, 배너 높이 76
+        static float BandH => PixelScreen.HD ? 60f : 40f;
+        static float RootH => PixelScreen.HD ? 76f : 56f;
+        static float MarkS => PixelScreen.HD ? 48f : 32f;
+        // 큰 이름: 12px 픽셀 글꼴을 정수배(SD ×2 / HD ×3 — 띠 높이에 대한 비율을 같게). 그림자는 배율만큼 오른쪽 아래
+        static float BigK => PixelScreen.HD ? 3f : 2f;
+        static float BigY => RootH * 0.5f - (PixelScreen.HD ? 9f : 6f) - 7f * BigK;   // SD 8
         const float BossIn = 0.25f, BossOut = 2.9f, BossEnd = 3.4f;
         const float OathIn = 0.35f, OathAbsorb = 2.5f, OathEnd = 3.7f;
 
@@ -41,12 +48,13 @@ namespace SevenOaths
             _view = view;
             _target = target;
             _root = Ui.Rect("Banner", view);
-            _root.Place(0, 124, W, 56);
+            // 띠 가운데 = 화면 가운데보다 조금 위(SD +17 / HD +23)
+            _root.Place(0, Mathf.Round(PixelScreen.UiH * 0.5f + (PixelScreen.HD ? 23f : 17f) - RootH * 0.5f), W, RootH);
 
             _band = Ui.Rect("Band", _root);
             _band.anchorMin = _band.anchorMax = new Vector2(0.5f, 0.5f);
             _band.pivot = new Vector2(0.5f, 0.5f);
-            _band.sizeDelta = new Vector2(BandW, 40);
+            _band.sizeDelta = new Vector2(BandW, BandH);
             _band.anchoredPosition = Vector2.zero;
             _bandImg = Ui.Image(_band, "Fill", Color.black);
             _bandImg.rectTransform.Stretch();
@@ -60,23 +68,24 @@ namespace SevenOaths
             _flash.rectTransform.Stretch();
 
             _markL = Ui.Image(_root, "MarkL", Color.white);
-            float mx = (W - BandW) * 0.5f - 22f;
-            _markL.rectTransform.Place(mx, 12, 32, 32);
+            float ms = MarkS, my = (RootH - ms) * 0.5f;
+            float mx = (W - BandW) * 0.5f - ms * 0.6875f;   // SD 22px 바깥
+            _markL.rectTransform.Place(mx, my, ms, ms);
             _markR = Ui.Image(_root, "MarkR", Color.white);
-            _markR.rectTransform.Place(W - mx - 32f, 12, 32, 32);
+            _markR.rectTransform.Place(W - mx - ms, my, ms, ms);
             _markR.rectTransform.pivot = new Vector2(0.5f, 0f);   // 가운데 기준으로 좌우 반전
-            _markR.rectTransform.anchoredPosition = new Vector2(W - mx - 16f, 12f);
+            _markR.rectTransform.anchoredPosition = new Vector2(W - mx - ms * 0.5f, my);
             _markR.rectTransform.localScale = new Vector3(-1f, 1f, 1f);
 
             _small = Ui.Text(_root, "Small", "", 10, Color.white, TextAlignmentOptions.Midline);
-            _small.rectTransform.Place(0, 50, W, 12);   // 띠(가운데 ±20) 바로 위 — 들쭉날쭉한 테두리와 겹치지 않게
+            _small.rectTransform.Place(0, (RootH + BandH) * 0.5f + 2f, W, 12);   // 띠 바로 위 — 들쭉날쭉한 테두리와 겹치지 않게(SD 50)
             // 큰 이름: 12px 픽셀 글꼴을 정수 2배로(또렷하게) — 그림자 먼저
             _bigShadow = Ui.Text(_root, "BigShadow", "", 12, new Color(0, 0, 0, 0.85f), TextAlignmentOptions.Midline);
-            _bigShadow.rectTransform.Place(2, 6, W / 2f, 14);
-            _bigShadow.rectTransform.localScale = new Vector3(2f, 2f, 1f);
+            _bigShadow.rectTransform.Place(BigK, BigY - BigK, W / BigK, 14);
+            _bigShadow.rectTransform.localScale = new Vector3(BigK, BigK, 1f);
             _big = Ui.Text(_root, "Big", "", 12, Color.white, TextAlignmentOptions.Midline);
-            _big.rectTransform.Place(0, 8, W / 2f, 14);
-            _big.rectTransform.localScale = new Vector3(2f, 2f, 1f);
+            _big.rectTransform.Place(0, BigY, W / BigK, 14);
+            _big.rectTransform.localScale = new Vector3(BigK, BigK, 1f);
             _root.gameObject.SetActive(false);
         }
 
@@ -94,7 +103,7 @@ namespace SevenOaths
             bool boss = kind == Kind.Boss;
             var band = a.Sprite(boss ? "ui_boss_banner" : "ui_oath_banner");
             var mark = a.Sprite(boss ? "ui_boss_banner_mark" : "ui_oath_banner_mark");
-            // 도트 띠: 9-slice L,R 12 / T,B 8, 가장자리 무늬 10px 주기라 Tiled(ART_LOG). 픽셀 1:1이 되게 PPU 배율을 맞춘다
+            // 도트 띠: 9-slice L,R 12 / T,B 8(HD 18 / 12), 가장자리 무늬 10px(HD 15px) 주기라 Tiled(ART_LOG). 픽셀 1:1이 되게 PPU 배율을 맞춘다
             _bandImg.sprite = band != null ? Sliced(band) : Placeholder.White();
             _bandImg.type = band != null ? Image.Type.Tiled : Image.Type.Simple;
             if (band != null && _bandImg.canvas != null) _bandImg.pixelsPerUnitMultiplier = _bandImg.canvas.referencePixelsPerUnit / band.pixelsPerUnit;
@@ -118,7 +127,8 @@ namespace SevenOaths
         {
             if (s.border != Vector4.zero) return s;
             if (_sliced.TryGetValue(s, out var c) && c != null) return c;
-            c = Sprite.Create(s.texture, s.rect, new Vector2(0.5f, 0.5f), s.pixelsPerUnit, 0, SpriteMeshType.FullRect, new Vector4(12, 8, 12, 8));
+            var b = Ui.IsHdArt(s) ? new Vector4(18, 12, 18, 12) : new Vector4(12, 8, 12, 8);
+            c = Sprite.Create(s.texture, s.rect, new Vector2(0.5f, 0.5f), s.pixelsPerUnit, 0, SpriteMeshType.FullRect, b);
             c.name = s.name + "_9s";
             _sliced[s] = c;
             return c;
@@ -159,8 +169,8 @@ namespace SevenOaths
             _bigShadow.alpha = bigA * 0.9f;
             // 붉은 이름은 박히는 순간 잠깐 떨린다(위협)
             float jx = boss && t > 0.3f && t < 0.75f ? ((int)(t * 60f) % 2 == 0 ? 1f : -1f) : 0f;
-            _big.rectTransform.anchoredPosition = new Vector2(jx, 8f);
-            _bigShadow.rectTransform.anchoredPosition = new Vector2(2f + jx, 6f);
+            _big.rectTransform.anchoredPosition = new Vector2(jx, BigY);
+            _bigShadow.rectTransform.anchoredPosition = new Vector2(BigK + jx, BigY - BigK);
 
             if (!boss) UpdateAbsorb(t);
             if (t > end) { _visible = false; _root.gameObject.SetActive(false); ClearMotes(); }
@@ -180,7 +190,8 @@ namespace SevenOaths
                     img.rectTransform.sizeDelta = new Vector2(2f, 2f);
                     img.rectTransform.anchorMin = img.rectTransform.anchorMax = Vector2.zero;
                     img.rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                    var from = new Vector2(UnityEngine.Random.Range(130f, 350f), UnityEngine.Random.Range(130f, 170f));
+                    float cx = W * 0.5f, cy = _root.anchoredPosition.y + RootH * 0.5f;
+                    var from = new Vector2(UnityEngine.Random.Range(cx - 110f, cx + 110f), UnityEngine.Random.Range(cy - 20f, cy + 20f));
                     img.rectTransform.anchoredPosition = from;
                     _motes.Add(new Mote { img = img, from = from, delay = UnityEngine.Random.Range(0f, 0.3f), dur = UnityEngine.Random.Range(0.5f, 0.8f), arc = UnityEngine.Random.Range(-40f, 40f) });
                 }

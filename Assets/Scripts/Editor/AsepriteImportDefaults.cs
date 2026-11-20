@@ -22,14 +22,26 @@ namespace SevenOaths.EditorTools
             Apply(imp, assetPath);
         }
 
+        /// <summary>640×360용 그림 폴더(같은 이름·하위 폴더, PPU 48).</summary>
+        public const string HdRoot = "Assets/Art/HD/";
+        public static bool IsHd(string path) => path.Replace("\\", "/").StartsWith(HdRoot);
+        /// <summary>HD 그림도 옛 그림과 같은 규칙: Assets/Art/HD/X → Assets/Art/X 로 보고 판정.</summary>
+        static string Norm(string path) { path = path.Replace("\\", "/"); return path.StartsWith(HdRoot) ? "Assets/Art/" + path.Substring(HdRoot.Length) : path; }
+        public static float PpuFor(string path) => IsHd(path) ? 48f : 32f;
+
         public static SpriteAlignment PivotFor(string path)
         {
+            path = Norm(path);
             string file = System.IO.Path.GetFileNameWithoutExtension(path);
             if (path.StartsWith("Assets/Art/Characters/") || path.StartsWith("Assets/Art/Enemies/") || path.StartsWith("Assets/Art/Bosses/")) return SpriteAlignment.BottomCenter;
+            // 환경 소품(Deco): 맨 아래 줄 = 바닥에 닿는 점 / 벽에 거는 점. 파티클(재·불씨)은 가운데, 안개 띠는 왼쪽 아래(가로로 이어 붙임)
+            if (path.Contains("/Deco/"))
+                return file == "fx_ash" || file == "fx_ember" ? SpriteAlignment.Center
+                     : file == "fx_fog_band" ? SpriteAlignment.BottomLeft : SpriteAlignment.BottomCenter;
             if (file.StartsWith("fx_slash") || file == "fx_dust" || file == "fx_shockwave" || file == "fx_pillar" || file == "fx_corrupt_spike" || file == "soul_crystal") return SpriteAlignment.BottomCenter;   // 땅에서 솟는 것들(가시가 바닥 밑으로 묻히지 않게)
             if (file == "fx_dash") return SpriteAlignment.LeftCenter;
-            if (file.EndsWith("ground") || file.EndsWith("platform")) return SpriteAlignment.TopLeft;
-            if (file.EndsWith("bg_far") || file.EndsWith("bg_mid")) return SpriteAlignment.BottomLeft;
+            if (file.EndsWith("ground") || file.EndsWith("platform") || file.EndsWith("crumble")) return SpriteAlignment.TopLeft;   // 타일 줄: 왼쪽 위 = 칸 자리(잘라 이어 붙임)
+            if (file.EndsWith("bg_far") || file.EndsWith("bg_mid") || file.EndsWith("bg_wall") || file.EndsWith("bg_sky")) return SpriteAlignment.BottomLeft;   // bg_wall: 왼쪽 아래 = 레벨 (0,0)
             if (file == "gate_bars" || file == "checkpoint_altar") return SpriteAlignment.BottomCenter;
             if (file.EndsWith("_portrait")) return SpriteAlignment.BottomCenter;   // 타이틀 포트레이트: 바닥 가운데를 화면 맨 아래에
             if (file == "torch_fire" || file.EndsWith("props")) return SpriteAlignment.BottomCenter;
@@ -40,7 +52,7 @@ namespace SevenOaths.EditorTools
         {
             imp.importMode = FileImportModes.AnimatedSprite;
             imp.layerImportMode = LayerImportModes.MergeFrame;
-            imp.spritePixelsPerUnit = 32f;
+            imp.spritePixelsPerUnit = PpuFor(path);
             imp.filterMode = FilterMode.Point;
             imp.mipmapEnabled = false;
             imp.wrapMode = TextureWrapMode.Clamp;
@@ -91,7 +103,7 @@ namespace SevenOaths.EditorTools
                 if (!(AssetImporter.GetAtPath(p) is AsepriteImporter imp)) continue;
                 var wantLayer = IsPropSheet(p) || IsPuppet(p) ? LayerImportModes.IndividualLayers : LayerImportModes.MergeFrame;
                 var wantPivot = IsPropSheet(p) || IsPuppet(p) ? SpriteAlignment.BottomCenter : PivotFor(p);
-                if (imp.layerImportMode == wantLayer && imp.pivotAlignment == wantPivot && (!IsPuppet(p) || imp.includeHiddenLayers)) continue;
+                if (imp.layerImportMode == wantLayer && imp.pivotAlignment == wantPivot && Mathf.Approximately(imp.spritePixelsPerUnit, PpuFor(p)) && (!IsPuppet(p) || imp.includeHiddenLayers)) continue;
                 Apply(imp, p);
                 imp.SaveAndReimport();
                 Debug.Log($"[Aseprite] 규칙 재적용: {p}");

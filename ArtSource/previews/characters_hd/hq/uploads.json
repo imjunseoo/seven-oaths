@@ -1,0 +1,34 @@
+{
+"ref": "upload:878fb2e2-580d-450d-adc9-d5c637b05cdc",
+"idle": [
+"upload:ffc0f184-694a-4df6-83fb-fd017862f299",
+"upload:41db9e12-df3c-430b-b394-1baa41d1715e",
+"upload:81aaa048-c9c6-45ff-8dc3-a648e4d789d2",
+"upload:e3e099c7-48be-4da6-aeb0-246b7c082af8",
+"upload:3c2f6d48-f3cb-4538-872c-2515d67d430b",
+"upload:087dc718-5d73-41e5-900d-d8ad7033d3ab"
+],
+"run": [
+"upload:3ed67ca5-c1ef-4431-8ba3-10908f026de1",
+"upload:6211c38a-3773-48b0-9b72-ffa1fc6e8295",
+"upload:1166766b-d606-4394-aa67-872813d8d57a",
+"upload:00dcb610-b8be-46de-aa30-1d92ecc490c1",
+"upload:b9c80e52-219e-4681-b093-a3ff8ce6cebb",
+"upload:96924cd9-d3a8-4bbe-90aa-db3a7a892040",
+"upload:6cdf1e51-6480-485f-a09c-1750d56169f4",
+"upload:d81e3415-0cf8-4f51-a214-4ce6f319a6b4"
+],
+"slash1": [
+"upload:b4507fb8-be25-4ad5-9c12-caa58f682e2a",
+"upload:66860bdc-0f65-49ae-9199-74abc80a5d97",
+"upload:ebd4fed6-4ed5-46b8-8ca8-0f5dbe40ac01",
+"upload:e0f2432f-06cd-4da8-aefa-4ff61a7a67a9",
+"upload:e16c4d19-b504-4770-bf1e-2e93609130dd",
+"upload:77d54d43-8dad-4ddf-8d39-422926695451"
+],
+"hurt": [
+"upload:a0efc152-0d3a-442b-96ea-06d036424ebc",
+"upload:2684f8ed-21b0-4250-bfe6-652a7848fc91",
+"upload:80eb97f2-1d4b-4293-8cce-5a4addb8a229"
+]
+}

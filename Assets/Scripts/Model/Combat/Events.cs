@@ -43,6 +43,9 @@ namespace SevenOaths.Model
         BossShout,      // Who = 보스: 첫 함성(붉은 이름 배너)
         CorruptionBurst, // Who = 보스: HP 절반 — 침식이 터짐(2페이즈)
         LumenGain,      // Who = 주인공, Other = 쓰러진 적(없으면 수정), Value = 얻은 루멘, Pos = 나온 곳
+        CrumbleShake,   // Value = 무너지는 발판 번호, Pos = 가운데
+        CrumbleBreak,   // Value = 번호, Pos
+        CrumbleRestore, // Value = 번호, Pos
         SoulCrystalPlaced, // Pos = 수정 자리, Value = 갇힌 루멘
         SoulRecovered,  // Pos = 수정 자리, Value = 되찾은 루멘
         FlaskStart,     // Who = 주인공(병을 꺼냄)

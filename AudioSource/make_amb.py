@@ -190,15 +190,89 @@ def amb_rampart(L_sec=52.0):
     return finalize(y, -24.0)
 
 
+def amb_tower(L_sec=50.0):
+    """inside the fallen watchtower at night: wind forcing through gaps (gusty bed + three howling narrow bands
+    that swell with the gusts), timber beams creaking (stick-slip resonators), chains swinging far up the shaft.
+    loop-safe: circular noise, harmonic-of-loop LFOs, events wrapped"""
+    from nb.dsp import resonator, modes, env_points
+    L = N(L_sec)
+    n_ext = L + N(10)
+    t = np.arange(L) / SR
+    gust = periodic_lfo(L, 301, kmax=18, slope=0.8)
+    flutter = periodic_lfo(L, 302, kmax=60, slope=1.0, kmin=10)
+    g = np.clip(0.5 + 0.45 * gust + 0.12 * flutter, 0.08, 1.3) ** 1.6
+
+    def noise_st(seed, slope):
+        a = colored_noise(L, slope, seed)
+        b = colored_noise(L, slope, seed + 1)
+        c = colored_noise(L, slope, seed + 2)
+        return np.stack([0.75 * a + 0.45 * b, 0.75 * a + 0.45 * c])
+    low = circ_filter(noise_st(310, -4.0), lambda z: lp(z, 180, 4)) * (0.6 + 0.4 * g)
+    mid = circ_filter(noise_st(320, -3.0), lambda z: bp(z, 250, 1000, 2)) * g
+    hi = circ_filter(noise_st(330, -3.0), lambda z: bp(z, 1000, 2800, 2)) * g ** 1.8
+    howl = np.zeros((2, L))
+    for k, (f0, span, q, lag) in enumerate([(450, 120, 16.0, 0.0), (720, 160, 18.0, 0.9), (1150, 220, 20.0, 1.7)]):
+        fc = f0 + span * periodic_lfo(L, 340 + k, kmax=5) + 0.4 * span * gust
+        wn = colored_noise(L, -1.0, 350 + k)
+        h = circular_process(wn, lambda z, fc=fc, q=q: svf(z, np.concatenate([fc, fc]), q, "bp"), reps=2)
+        h = h * np.clip(np.roll(g, N(lag)) - 0.5, 0, None) ** 1.5
+        howl += np.stack([h, np.roll(h, N(0.011 + 0.006 * k))]) * (0.85 ** k)
+    bed = 0.45 * low + 0.7 * mid + 0.14 * hi + 0.12 * howl
+    room_ir = make_ir(rt60=1.8, predelay=0.02, stereo=True, seed=360, brightness=3800, hf_ratio=0.4)
+    far_ir = make_ir(rt60=3.0, predelay=0.05, stereo=True, seed=361, brightness=2600, hf_ratio=0.3)
+    # ---- timber creaks (wrapped)
+    ev = np.zeros((2, n_ext))
+    r = rng(370)
+    for k, (st, f0, dur, p) in enumerate([(3.0, 190, 1.2, -0.5), (11.5, 240, 0.9, 0.4), (19.0, 160, 1.5, -0.2),
+                                          (28.5, 210, 1.0, 0.6), (37.0, 175, 1.3, -0.6), (46.5, 230, 0.8, 0.3)]):
+        m = N(dur + 0.4)
+        imp = np.zeros(m)
+        tt = 0.02
+        while tt < dur:
+            imp[N(tt)] = r.uniform(0.5, 1.0)
+            rate = 14 + 26 * np.sin(np.pi * tt / dur)
+            tt += (1 / rate) * r.uniform(0.7, 1.35)
+        cr = sum(gn * resonator(lp(imp, 2000, 2), f0 * h, 14) for h, gn in [(1, 1.0), (2.2, 0.6), (3.6, 0.3), (5.1, 0.12)])
+        cr = lp(cr * env_points(m, [(0, 0), (0.1, 1), (dur * 0.8, 0.8), (dur, 0), (dur + 0.4, 0)]), 2200, 2)
+        mix_into(ev, pan(cr, p), N(st), r.uniform(0.6, 1.0))
+    ev = ev + 0.5 * conv(ev, room_ir)[:, :n_ext]
+    # ---- distant chains swinging far up the shaft (wrapped)
+    ch = np.zeros((2, n_ext))
+    for k, (st, dur, p) in enumerate([(7.0, 1.4, 0.5), (16.5, 0.9, -0.4), (24.0, 1.8, 0.2), (33.5, 1.1, -0.6),
+                                      (42.0, 1.5, 0.6)]):
+        m = N(dur + 0.3)
+        c = np.zeros(m)
+        tt = 0.0
+        j = 0
+        while tt < dur:
+            f = r.uniform(1300, 2800)
+            clk = modes(N(0.08), [f, f * 1.47, f * 2.1], [1, 0.5, 0.2], [0.02, 0.012, 0.008], seed=380 + k * 100 + j)
+            mix_into(c, clk, N(tt), r.uniform(0.3, 1.0) * np.sin(np.pi * tt / dur) ** 0.7)
+            tt += r.exponential(0.07)
+            j += 1
+        mix_into(ch, pan(lp(c, 2600, 2), p), N(st), 1.0)
+    ch = 0.3 * ch + conv(ch, far_ir)[:, :n_ext]
+    ev = wrap(ev, L)
+    ch = wrap(ch, L)
+    lv = integrated_lufs(bed)
+    ev *= db2a((lv - 4) - integrated_lufs(ev))
+    ch *= db2a((lv - 8) - integrated_lufs(ch))
+    y = bed + ev + ch
+    y = circ_filter(y, lambda z: lp(hp(z, 25, 2), 6000, 2))
+    return finalize(y, -24.0)
+
+
 DESC = {"amb_cloister": "48초 루프. 원형 노이즈 3밴드 밤바람(돌풍 LFO는 루프 정수 주기) + 아치 사이로 우는 좁은 대역 공명 + "
                         "좌·우 횃불 두 개(불꽃 웅웅 + 송진 톡톡·타닥 연발) + 먼 종 두 번(A2·D3, 성당 잔향 4초).",
         "amb_rampart": "52초 루프. 성벽 위 강풍(돌풍 깊고 고역 많음)+총안 사이 휘파람(820Hz 부근 좁은 대역)+먼 종 한 번(17초, A2)+"
-                       "낮은 침식 웅웅(46Hz 드론+배음, 맥놀이, 0.25Hz 맥동)+가끔 진홍 지글거림 4번."}
+                       "낮은 침식 웅웅(46Hz 드론+배음, 맥놀이, 0.25Hz 맥동)+가끔 진홍 지글거림 4번.",
+        "amb_tower": "50초 루프, 1-2 무너진 망루 안. 틈으로 휘몰아치는 돌풍 바람+돌풍 따라 부푸는 좁은 대역 울부짖음 3줄(450/720/1150Hz)+"
+                     "나무 들보 삐걱임 6번(스틱슬립 공진, 망루 안 잔향)+멀리 위쪽에서 흔들리는 쇠사슬 5번(먼 잔향)."}
 
 if __name__ == "__main__":
     import sys
     OUT.mkdir(parents=True, exist_ok=True)
-    which = sys.argv[1:] or ["cloister", "rampart"]
+    which = sys.argv[1:] or ["cloister", "rampart", "tower"]
     if "cloister" in which:
         y = amb_cloister()
         write_wav(OUT / "amb_cloister.wav", y, seed=5)
@@ -207,6 +281,10 @@ if __name__ == "__main__":
         y = amb_rampart()
         write_wav(OUT / "amb_rampart.wav", y, seed=6)
         print("amb_rampart", y.shape[-1] / SR)
+    if "tower" in which:
+        y = amb_tower()
+        write_wav(OUT / "amb_tower.wav", y, seed=7)
+        print("amb_tower", y.shape[-1] / SR)
     mp = HERE / "build" / "long_meta.json"
     old = json.loads(mp.read_text(encoding="utf-8")) if mp.exists() else {}
     for k, v in DESC.items():

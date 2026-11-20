@@ -8,7 +8,7 @@ namespace SevenOaths.Model
         ShieldBash, ShieldPoke, CrossbowShoot, CrossbowKick,
         BossBash, BossSlam, BossCharge, BossCounter, BossRoar, BossPillars,
         ReflectedBolt, RiposteSlash, RiposteBlast, BossIntro,
-        BossLeap, BossSpikes, BossThrust, BossBurst,
+        BossLeap, BossSpikes, BossThrust, BossBurst, HoundLunge,
     }
 
     /// <summary>
@@ -215,6 +215,14 @@ namespace SevenOaths.Model
         public static readonly MoveData BossPillars = new MoveData
         {
             Id = MoveId.BossPillars, Anim = "roar", Startup = 24, Active = 1, Recovery = 20, Guarded = true,
+        };
+
+        /// <summary>침식 사냥개 덤벼들기: 웅크림 16f(눈 번쩍 = 예고) → 낮게 길게 뛰어듦(6px/f). 퍼펙트 회피 연습용.</summary>
+        public static readonly MoveData HoundLunge = new MoveData
+        {
+            Id = MoveId.HoundLunge, Anim = "lunge", Startup = 16, Active = 8, Recovery = 30,
+            Damage = 8, Level = HitLevel.Light, Hitbox = new Box(6, 2, 26, 18),
+            Lunge = 6f, LungeFrom = 16, LungeTo = 24,
         };
 
         /// <summary>패리로 되받아친 석궁 화살(적에게 맞음).</summary>

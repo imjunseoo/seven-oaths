@@ -131,6 +131,7 @@ namespace SevenOaths
             else if (h.Target is Enemy d && d.IsDummy) { _audio.Play("sfx_dummy_hit"); if (lvl >= HitLevel.Heavy) _audio.Play("sfx_hit_heavy", 0.4f); }
             else _audio.Play(lvl == HitLevel.Light ? "sfx_hit_light" : "sfx_hit_heavy");
             if (h.PoiseBroken) _audio.Play("sfx_poise_break");
+            if (!hurtPlayer && h.Target is Enemy hd && hd.Kind == EnemyKind.Hound && hd.Alive) PlayOr("sfx_hound_yelp", "sfx_hit_light", 0.7f);   // 사냥개: 맞으면 깨갱
 
             float r = feel.rumble;
             if (lvl == HitLevel.Light) _input.Rumble(0.2f * r, 0.4f * r, 0.08f);
@@ -313,6 +314,18 @@ namespace SevenOaths
                     _fx.LightFlash(Center(who), new Color(0.9f, 0.95f, 1f), 3f, 160f, 0.8f);
                     _hud.ShowOathClear(1.3f);
                     _vignette = 0.35f;
+                    break;
+                case EventType.CrumbleShake:
+                    _fx.Dust(V(e.Pos), 4, 0f);
+                    PlayOr("sfx_crumble_shake", "sfx_step_stone", 0.8f);
+                    break;
+                case EventType.CrumbleBreak:
+                    Rubble(V(e.Pos), 6, 0);
+                    _fx.Dust(V(e.Pos), 6, 0f);
+                    PlayOr("sfx_crumble_break", "sfx_pillar_crumble", 0.8f);
+                    break;
+                case EventType.CrumbleRestore:
+                    _fx.Dust(V(e.Pos), 3, 0f);
                     break;
                 case EventType.LumenGain:
                 {
@@ -570,6 +583,11 @@ namespace SevenOaths
                     _fx.Corruption(Center(who), 24, 10f);
                     _fx.LightFlash(Center(who), new Color(1f, 0.25f, 0.3f), 2f, 70f, 0.3f);
                     break;
+                case EventType.Telegraph when who is Enemy hd && hd.Kind == EnemyKind.Hound:
+                    // 사냥개: 웅크리며 진홍 눈이 번쩍 + 으르렁
+                    _fx.Play("fx_glint", new Vector2(who.Body.Pos.X + who.Body.Facing * 10f, who.Body.Pos.Y + 16f), 1, 0f, hot: true, order: 42, scale: 1.0f, tint: new Color(1f, 0.3f, 0.3f));
+                    PlayOr("sfx_hound_growl", "sfx_enemy_glint", 0.9f);
+                    break;
                 case EventType.Telegraph:
                     if (v != null) _fx.Play("fx_glint", v.WeaponTipPx(), 1, 0f, hot: true, order: 42, scale: 1.5f);
                     _fx.LightFlash(Center(who), new Color(1f, 0.3f, 0.3f), 1.2f, 50f, 0.2f);
@@ -590,7 +608,7 @@ namespace SevenOaths
                         _fx.Play("fx_corrupt_burst", Center(who), 1, 0f, order: 39);
                         _fx.Play("fx_ring_rot", Center(who), 1, 0f, hot: true, order: 39, scale: 1.8f);
                         _fx.Corruption(Center(who), 40, 12f);
-                        _audio.Play("sfx_enemy_death");
+                        _audio.Play(who is Enemy dh && dh.Kind == EnemyKind.Hound && GameAssets.Instance.Audio("sfx_hound_death") != null ? "sfx_hound_death" : "sfx_enemy_death");
                     }
                     else _hud.ScreenFlash(new Color(0.6f, 0f, 0.05f, 0.6f), 30);
                     break;
@@ -643,6 +661,7 @@ namespace SevenOaths
                     else if (f.Move == Moves.BossThrust)   // 직선 찌르기: 둥근 베기 궤적 대신 칼끝 번쩍 + 짧은 바람
                         _fx.LightFlash(new Vector2(f.Body.Pos.X + f.Body.Facing * 60f, f.Body.Pos.Y + 30f), new Color(1f, 0.4f, 0.35f), 1.5f, 50f, 0.12f);
                 }
+                else if (f.Move == Moves.HoundLunge) PlayOr("sfx_hound_bite", "sfx_swing", 0.9f);   // 사냥개: 베기 궤적 대신 무는 소리
                 else if (f.Move.Hitbox.W > 0f) _fx.Play("fx_slash_enemy", feet, f.Body.Facing, 0f, order: 31);
             }
 
@@ -673,7 +692,7 @@ namespace SevenOaths
                 _fx.Dust(V(pp.Body.Pos), 5, 0f);
             }
             foreach (var e in _w.Enemies)
-                if (e.State == FState.Attack && e.Move != null && !e.IsBoss && e.Move != Moves.CrossbowShoot && e.StateFrame == Mathf.Max(0, e.Move.Startup - 12))
+                if (e.State == FState.Attack && e.Move != null && !e.IsBoss && e.Move != Moves.CrossbowShoot && e.Move != Moves.HoundLunge && e.StateFrame == Mathf.Max(0, e.Move.Startup - 12))
                     _audio.Play("sfx_enemy_swing");
 
             var pl = _w.Player;
@@ -792,7 +811,7 @@ namespace SevenOaths
                 _dimSr.sprite = Placeholder.White();
                 _dimSr.sharedMaterial = new Material(Resources.Load<Shader>("Shaders/SpriteFX"));
                 _dimSr.sortingOrder = -20;
-                go.transform.localScale = new Vector3(PixelScreen.RtW / 4f * 1.3f, PixelScreen.RtH / 4f * 1.3f, 1f);
+                go.transform.localScale = new Vector3(PixelScreen.WorldRtW / 4f * 1.3f, PixelScreen.WorldRtH / 4f * 1.3f, 1f);
             }
             _dim = Mathf.Max(_dim, alpha);
             _dimHold |= hold;
@@ -834,14 +853,14 @@ namespace SevenOaths
             var feel = _w.Feel;
             if (_screen.Bloom != null)
             {
-                _screen.Bloom.intensity.value = feel.bloomIntensity + _bloomPulse;
-                _screen.Bloom.threshold.value = feel.bloomThreshold;
+                _screen.Bloom.intensity.value = feel.bloomIntensity + Atmosphere.BloomAddNow + _bloomPulse;
+                _screen.Bloom.threshold.value = feel.bloomThreshold + Atmosphere.ThresholdAddNow;
             }
             if (_screen.Chroma != null) _screen.Chroma.intensity.value = _chroma + (_w.InSlow ? 0.05f : 0f);
             _hurtVignette = Mathf.MoveTowards(_hurtVignette, 0f, 0.012f);
             if (_screen.Vignette != null)
             {
-                _screen.Vignette.intensity.value = 0.22f + _vignette + _hurtVignette + (_w.InSlow ? 0.12f : 0f);
+                _screen.Vignette.intensity.value = Atmosphere.VignetteBase + _vignette + _hurtVignette + (_w.InSlow ? 0.12f : 0f);
                 _screen.Vignette.color.value = Color.Lerp(Color.black, new Color(0.55f, 0.02f, 0.05f), Mathf.Clamp01(_hurtVignette * 2.2f));
             }
         }

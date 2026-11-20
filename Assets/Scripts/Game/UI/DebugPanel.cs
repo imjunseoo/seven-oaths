@@ -65,7 +65,7 @@ namespace SevenOaths
             return p;
         }
 
-        float CanvasScale => Mathf.Max(1, PixelScreen.Instance.Scale / 2);
+        float CanvasScale => Mathf.Max(1, PixelScreen.Instance.UiScale / 2);
 
         void Build()
         {

@@ -11,6 +11,7 @@ namespace SevenOaths
     ///   hold:N                       — 좌클릭 N틱 누르고 있다가 놓기(차지)
     ///   dash:x,y                     — 우클릭(조준 x,y)
     ///   dodge  dodgeL  dodgeR  jump  — 한 번
+    ///   jr:N  jl:N                   — 점프 키를 N틱 누른 채(최고 높이) 오른쪽/왼쪽으로
     ///   parry  — 적 공격 3f 전·화살이 가까울 때 제자리 Shift(유물 「철벽의 문장」 필요, -soRelic)
     ///   aim:x,y                      — 이후 조준 방향 고정
     ///   perfect                      — 병사 공격 판정 2프레임 전까지 기다렸다가 회피(퍼펙트 회피 시연)
@@ -149,6 +150,10 @@ namespace SevenOaths
                     case "dodgeL": f.DodgePressed = true; f.MoveX = -1f; Next(); return f;
                     case "dodgeR": f.DodgePressed = true; f.MoveX = 1f; Next(); return f;
                     case "jump": f.JumpPressed = true; f.JumpHeld = true; Next(); return f;
+                    case "jr":   // 점프 키를 N틱 누른 채(최고 높이) 오른쪽/왼쪽으로
+                    case "jl":
+                        if (_t < N(arg)) { f.JumpPressed = _t == 0; f.JumpHeld = true; f.MoveX = cmd == "jr" ? 1f : -1f; _t++; return f; }
+                        Next(); continue;
                     case "heal": f.HealPressed = true; Next(); return f;
                     case "die": w.DebugKillPlayer(); Next(); return f;
                     case "boss":   // 자동 검증: 보스가 싸울 준비가 되면 기술 강제 — leap·spikes·thrust·charge·burst(2페이즈 기술은 2페이즈로 바꿔서)

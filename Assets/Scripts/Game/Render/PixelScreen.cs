@@ -13,10 +13,41 @@ namespace SevenOaths
     /// </summary>
     public class PixelScreen : MonoBehaviour
     {
-        public const int ViewW = 480, ViewH = 270, Margin = 12, PPU = 32;
+        /// <summary>옛 화면 크기(480×270 + 여백) — 레벨 설계 기준(세로 스테이지 판단 등). UI 배치는 UiW·UiH를 쓴다.</summary>
+        public const int ViewW = 480, ViewH = 270, Margin = 12;
+        /// <summary>UI 논리 크기(HUD·메뉴 배치 좌표): SD 480×270, HD 640×360 — HD에선 UI 1px = 게임 화면 그림 1px(같은 격자).</summary>
+        public static int UiW => HD ? 640 : ViewW;
+        public static int UiH => HD ? 360 : ViewH;
+        public static int UiMargin => HD ? 18 : Margin;
+        /// <summary>월드 단위: 1유닛 = 게임 규칙(모델) 32px. 옛 그림 PPU도 32.</summary>
+        public const int PPU = 32;
         public const int ScreenLayer = 30;
         public static int RtW => ViewW + Margin * 2;
         public static int RtH => ViewH + Margin * 2;
+
+        // ───── HD(640×360) — 게임 화면만 그림 밀도 1.5배. 게임 규칙(모델 px)은 그대로 ─────
+        /// <summary>HD 모드(시작 전에 SetHD). HD 그림(Assets/Art/HD, PPU 48)이 있으면 그것을, 없으면 옛 그림을 쓴다.</summary>
+        public static bool HD { get; private set; }
+        public static void SetHD(bool on) { HD = on; }
+        /// <summary>모델 1px당 화면 그림 px(1 또는 1.5).</summary>
+        public static float ArtScale => HD ? 1.5f : 1f;
+        /// <summary>그림 PPU(월드 1유닛당 그림 px): 32 또는 48.</summary>
+        public static float ArtPPU => PPU * ArtScale;
+        /// <summary>월드 RT의 보이는 영역·여백(그림 px).</summary>
+        public static int RtViewW => HD ? 640 : ViewW;
+        public static int RtViewH => HD ? 360 : ViewH;
+        public static int RtMargin => HD ? 18 : Margin;
+        public static int RtPxW => RtViewW + RtMargin * 2;
+        public static int RtPxH => RtViewH + RtMargin * 2;
+        /// <summary>보이는 세상 크기(모델 px): 480×270 또는 426.7×240.</summary>
+        public static float WorldViewW => RtViewW / ArtScale;
+        public static float WorldViewH => RtViewH / ArtScale;
+        /// <summary>여백 포함 RT가 덮는 세상 크기(모델 px).</summary>
+        public static float WorldRtW => RtPxW / ArtScale;
+        public static float WorldRtH => RtPxH / ArtScale;
+        /// <summary>모델 px → 월드 유닛, 화면 그림 px 격자에 맞춤(HD에서 1.5px 단위로 덜컥이지 않게).</summary>
+        public static float SnapU(float modelPx) => Mathf.Round(modelPx * ArtScale) / ArtPPU;
+        public static float FloorU(float modelPx) => Mathf.Floor(modelPx * ArtScale) / ArtPPU;
 
         public static PixelScreen Instance { get; private set; }
 
@@ -26,7 +57,10 @@ namespace SevenOaths
         public Bloom Bloom { get; private set; }
         public ChromaticAberration Chroma { get; private set; }
         public Vignette Vignette { get; private set; }
+        /// <summary>월드 RT 1px당 화면 px(정수).</summary>
         public int Scale { get; private set; } = 1;
+        /// <summary>UI 논리 1px당 화면 px(정수). UI 크기(UiW×UiH)가 게임 화면과 같아서 보통 Scale과 같다.</summary>
+        public int UiScale { get; private set; } = 1;
 
         /// <summary>카메라 중심(월드 픽셀). GameRoot가 따라가기로 갱신.</summary>
         public Vector2 CamPx;
@@ -55,13 +89,13 @@ namespace SevenOaths
 
         void Build()
         {
-            _rt = new RenderTexture(RtW, RtH, 24, RenderTextureFormat.DefaultHDR) { filterMode = FilterMode.Point, name = "WorldRT", useMipMap = false };
+            _rt = new RenderTexture(RtPxW, RtPxH, 24, RenderTextureFormat.DefaultHDR) { filterMode = FilterMode.Point, name = "WorldRT", useMipMap = false };
             _rt.Create();
 
             var wc = new GameObject("WorldCamera");
             WorldCam = wc.AddComponent<Camera>();
             WorldCam.orthographic = true;
-            WorldCam.orthographicSize = RtH * 0.5f / PPU;
+            WorldCam.orthographicSize = RtPxH * 0.5f / ArtPPU;
             WorldCam.targetTexture = _rt;
             WorldCam.clearFlags = CameraClearFlags.SolidColor;
             WorldCam.backgroundColor = (Color)Palette.Ink0;
@@ -122,22 +156,43 @@ namespace SevenOaths
             Vignette.color.Override(Color.black);
             var tm = profile.Add<Tonemapping>(true);
             tm.mode.Override(TonemappingMode.None);
+            // 색보정(장소 분위기 @light가 있을 때만 값이 들어감, 기본은 중립)
+            _lgg = profile.Add<LiftGammaGain>(true);
+            _adjust = profile.Add<ColorAdjustments>(true);
             Volume.sharedProfile = profile;
+            ApplyGrade(null);
+        }
+
+        LiftGammaGain _lgg;
+        ColorAdjustments _adjust;
+
+        /// <summary>장소 분위기 색보정(어두운 곳은 보라로, 밝은 곳은 따뜻하게). null = 중립(옛 화면).</summary>
+        public void ApplyGrade(Atmosphere a)
+        {
+            if (_lgg == null || _adjust == null) return;
+            _lgg.lift.Override(a != null ? a.Lift : new Vector4(1f, 1f, 1f, 0f));
+            _lgg.gamma.Override(new Vector4(1f, 1f, 1f, 0f));
+            _lgg.gain.Override(a != null ? a.Gain : new Vector4(1f, 1f, 1f, 0f));
+            _adjust.contrast.Override(a != null ? a.Contrast : 0f);
+            _adjust.saturation.Override(a != null ? a.Saturation : 0f);
         }
 
         void Relayout()
         {
             _lastW = Screen.width;
             _lastH = Screen.height;
-            Scale = Mathf.Max(1, Mathf.Min(Screen.width / ViewW, Screen.height / ViewH));
+            Scale = Mathf.Max(1, Mathf.Min(Screen.width / RtViewW, Screen.height / RtViewH));
+            UiScale = Mathf.Max(1, Mathf.Min(Screen.width / UiW, Screen.height / UiH));
             ScreenCam.orthographicSize = Screen.height * 0.5f;
             ScreenCam.transform.position = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, -10f) + ScreenSpaceOrigin;
         }
 
         static readonly Vector3 ScreenSpaceOrigin = new Vector3(100000f, 0f, 0f);
 
-        /// <summary>뷰(480×270) 왼쪽 아래 모서리의 화면 픽셀 좌표.</summary>
-        public Vector2Int ViewOriginScreen => new Vector2Int((Screen.width - ViewW * Scale) / 2, (Screen.height - ViewH * Scale) / 2);
+        /// <summary>UI 뷰(UiW×UiH) 왼쪽 아래 모서리의 화면 픽셀 좌표.</summary>
+        public Vector2Int ViewOriginScreen => new Vector2Int((Screen.width - UiW * UiScale) / 2, (Screen.height - UiH * UiScale) / 2);
+        /// <summary>월드 화면(RT 보이는 영역) 왼쪽 아래 모서리의 화면 픽셀 좌표.</summary>
+        public Vector2Int WorldOriginScreen => new Vector2Int((Screen.width - RtViewW * Scale) / 2, (Screen.height - RtViewH * Scale) / 2);
 
         // ───────────────────────── 연출 ─────────────────────────
 
@@ -159,7 +214,7 @@ namespace SevenOaths
         public void Kick(Vector2 dir, float px)
         {
             if (px <= 0f || dir.sqrMagnitude < 0.0001f) return;
-            var k = dir.normalized * px * Scale;
+            var k = dir.normalized * px * ArtScale * Scale;
             if (k.sqrMagnitude > _kick.sqrMagnitude) _kick = k;
         }
 
@@ -169,7 +224,7 @@ namespace SevenOaths
             if (_shakeFrames > 0)
             {
                 float t = (float)_shakeFrames / _shakeTotal;
-                float a = _shakeAmp * t * Scale;
+                float a = _shakeAmp * t * ArtScale * Scale;
                 _shakeSign = -_shakeSign;
                 // 맞은 방향으로 왕복 + 수직으로 약간 흔들림
                 var perp = new Vector2(-_shakeDir.y, _shakeDir.x);
@@ -187,16 +242,17 @@ namespace SevenOaths
         {
             if (Screen.width != _lastW || Screen.height != _lastH) Relayout();
 
-            // 월드 카메라: 픽셀 격자에 맞춤
-            var snapped = new Vector2(Mathf.Floor(CamPx.x), Mathf.Floor(CamPx.y));
-            var frac = CamPx - snapped;
-            WorldCam.transform.position = new Vector3(snapped.x / PPU, snapped.y / PPU, -10f);
+            // 월드 카메라: 그림 px 격자에 맞춤(HD면 모델 1px = 1.5 그림 px)
+            var camArt = CamPx * ArtScale;
+            var snapped = new Vector2(Mathf.Floor(camArt.x), Mathf.Floor(camArt.y));
+            var frac = camArt - snapped;
+            WorldCam.transform.position = new Vector3(snapped.x / ArtPPU, snapped.y / ArtPPU, -10f);
 
             // 화면 사각형: 뷰 영역이 정수 화면 픽셀에 오도록
-            var origin = ViewOriginScreen;
-            float w = RtW * Scale, h = RtH * Scale;
-            float left = origin.x - Margin * Scale - Mathf.Round(frac.x * Scale);
-            float bottom = origin.y - Margin * Scale - Mathf.Round(frac.y * Scale);
+            var origin = WorldOriginScreen;
+            float w = RtPxW * Scale, h = RtPxH * Scale;
+            float left = origin.x - RtMargin * Scale - Mathf.Round(frac.x * Scale);
+            float bottom = origin.y - RtMargin * Scale - Mathf.Round(frac.y * Scale);
             var kick = new Vector2(Mathf.Round(_kick.x), Mathf.Round(_kick.y));
             var center = new Vector3(left + w * 0.5f, bottom + h * 0.5f, 0f) + (Vector3)ShakeOffsetScreenPx + (Vector3)kick;
             _quad.position = center + ScreenSpaceOrigin;
@@ -204,8 +260,28 @@ namespace SevenOaths
             _quad.localScale = new Vector3(w * z, h * z, 1f);
         }
 
-        /// <summary>월드 픽셀 → HUD 캔버스 좌표(뷰 왼쪽 아래 = 0,0, 단위 = 월드 픽셀).</summary>
-        public Vector2 WorldToView(Vector2 worldPx) => worldPx - CamPx + new Vector2(ViewW * 0.5f, ViewH * 0.5f);
+        /// <summary>월드(모델 px) → HUD 캔버스 좌표(UI 뷰 왼쪽 아래 = 0,0, 단위 = UI 논리 px). HD면 화면 px를 거쳐 바꾼다.</summary>
+        public Vector2 WorldToView(Vector2 worldPx)
+        {
+            if (!HD) return worldPx - CamPx + new Vector2(UiW * 0.5f, UiH * 0.5f);
+            var wo = WorldOriginScreen; var uo = ViewOriginScreen;
+            var scr = new Vector2(wo.x, wo.y) + ((worldPx - CamPx) * ArtScale + new Vector2(RtViewW * 0.5f, RtViewH * 0.5f)) * Scale;
+            return (scr - new Vector2(uo.x, uo.y)) / UiScale;
+        }
+
+        /// <summary>월드(모델 px) → 화면 픽셀(왼쪽 아래 = 0,0). 흔들림·줌 펀치는 무시(배치 도구용).</summary>
+        public Vector2 WorldToScreen(Vector2 worldPx)
+        {
+            var wo = WorldOriginScreen;
+            return new Vector2(wo.x, wo.y) + ((worldPx - CamPx) * ArtScale + new Vector2(RtViewW * 0.5f, RtViewH * 0.5f)) * Scale;
+        }
+
+        /// <summary>화면 픽셀(왼쪽 아래 = 0,0) → 월드(모델 px).</summary>
+        public Vector2 ScreenToWorld(Vector2 screen)
+        {
+            var wo = WorldOriginScreen;
+            return CamPx + ((screen - new Vector2(wo.x, wo.y)) / Scale - new Vector2(RtViewW * 0.5f, RtViewH * 0.5f)) / ArtScale;
+        }
 
         void OnDestroy()
         {

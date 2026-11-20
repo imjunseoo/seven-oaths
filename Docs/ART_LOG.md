@@ -420,6 +420,345 @@
   - 병은 남색 테를 두른 5×5. heroine 29태그, verify IMPACT (heroine, drink)=3. 미리보기 `previews/characters/drink_x5.png`.
 - verify 65/65.
 
+## 1-2 「무너진 망루」 (메인 요청 2026-11-19, 손 도트, PixelLab 안 씀)
+- 소스 `ArtSource/src/environment/region1_tower.py`(r1t_*), `ArtSource/src/enemies/hound.py`. 출력 위치 `Assets/Art/Environment/Region1/`, `Assets/Art/Enemies/`.
+- `r1t_bg_mid` 480×270: 망루 안쪽 벽, **위아래·좌우 모두 이음새 없음**.
+  - 석재 32×9, 한 줄씩 엇갈려 주기 32×18 → 480·270을 정확히 나눔. 2×2로 붙여 확인함.
+  - 어두운 3/2 위주, 가끔 a 돌(윗면 b). 줄눈 1.
+  - 화살 구멍 창 3개는 **투명**(r1t_bg_far와 하늘이 비침), 창 아래 바닥은 달빛 디더.
+  - 무너진 틈(투명, 깨진 돌 끝) 1개, 줄눈을 타고 구불거리며 가지 치는 진홍 맥 4줄, 끊어진 쇠사슬.
+  - (메인 수정 요청 2026-11-19) x 60~78 / y 206~213의 갈색 나무 들보 토막이 밟을 수 있는 발판처럼 보여서 지웠고, 들보가 빠진 빈 구멍(검은 6×7, 위에 밝은 상인방 돌)으로 바꿈. 배경에 갈색 수평 판자는 없음.
+  - 미리보기 `previews/region1/r1t_bg_mid_tiled_2x2.png`.
+- `r1t_bg_far` 480×270 투명: 1지역 원경(수도)을 한 톤 어둡게 하고 가운데 480을 자름.
+- `r1t_ground` 64×32, 피벗 왼쪽 위, **32px 안에서 끝남**.
+  - 0~12: 돌판 두 줄(윗날 d), 진홍 스밈.
+  - 13: 그림자.
+  - 14~27: 어두운 나무 들보(l/m, 어두운 결 s, 쇠띠).
+  - 28~31: 아래 그림자.
+  - 가로로 이음.
+- `r1t_platform` 64×12: 낡은 나무판 2장(이음매 x 31·32, 못·결) + 아래 받침과 걸쇠. 밤 톤이라 m/l 위주.
+- `r1t_crumble` 64×16:
+  - `idle` 1: 금 간 돌 발판 + 진홍 맥.
+  - `shake` 2×60ms: 균열이 벌어지고 ±1px 흔들림, 돌가루, 맥 섬광.
+  - `break` 5×50ms: 균열을 따라 4조각으로 갈라져 기울며 떨어짐.
+- `Enemies/hound.aseprite` 64×40, 발 y 39, 오른쪽을 봄. 침식 사냥개: 갈비뼈가 드러난 마른 검은 몸, 진홍 눈, 등의 침식 결정 가시 4개, 뒤로 젖힌 귀, 긴 주둥이.
+  - 크기: 몸 길이 약 40px, 몸 높이 약 24px. 가시·귀·꼬리 포함하면 31×60.
+  - 어두운 배경에서 보이도록 위쪽 가장자리에 달빛 테두리(b/a).
+  - 태그:
+    - `idle` 4×140: 으르렁, 턱이 들썩.
+    - `run` 6×60.
+    - **`lunge` 6프레임, 타격 프레임 3**, ms 90,110,160,120,100,120. 0~2 웅크림(2에서 눈 번쩍) → **3 입을 크게 벌리고 앞으로 길게 뛰어듦** → 4~5 착지·회복.
+    - `hurt` 2.
+    - `broken` 2 루프(머리를 떨군 채 비틀거림, 눈이 꺼졌다 켜짐).
+    - `death` 6: 쓰러져 진홍 재로 흩어짐.
+  - verify IMPACT (hound, lunge)=3.
+- verify 71/71. 미리보기:
+  - `previews/region1/r1t_stage_mock_x2.png`(주인공·사냥개와 함께 배치), `r1t_tiles_mock_x4.png`, `r1t_crumble_x3.png`, `r1t_bg_mid_tiled_2x2.png`
+  - `previews/enemies/hound_review_x3.png`, `previews/enemies/hound__*.gif`
+
+## 배경 시안: 스테이지마다 한 장으로 구성 (메인·사용자 2026-11-19, 게임에 미적용)
+- 사용자 피드백: 지금 배경은 벽돌 위에 균열·창을 무작위로 덮은 듯하고 난잡함 → 반복 타일 대신 스테이지 하나에 맞춘 **구성된 한 장**.
+  - 손 도트, PixelLab·변환 안 씀. 소스 `ArtSource/src/environment/bg_drafts.py`.
+  - 레이아웃 가이드: 메인 노트 폴더 `layout_r1_tower.png`(480×928), `layout_region1.png`(2400×272).
+- 공통 원칙:
+  - 뒷배경 명도는 플레이 층(b/c/d/e)보다 낮게 a/h까지만. 하늘·달·빛줄기만 예외.
+  - 장식은 이유 있는 자리에만: 창은 아치 안, 균열은 무너진 곳 둘레, 침식은 아래(근원) 쪽.
+  - 발판처럼 보이는 수평 갈색 판자 없음.
+- 망루 A **「달빛 수직 갱도」**:
+  - 지붕이 찢겨 꼭대기에 달.
+  - 양옆에 기둥이 있고, 실제 바닥이 닿는 높이에 받침돌.
+  - 층마다 큰 아치 벽감. 위에서 두 번째 층은 벽이 터져 밤하늘과 먼 탑이 보이고, 그 아래 층은 첨두창.
+  - 지붕 틈에서 왼쪽 아래로 떨어지는 빛줄기 2개. 아래로 갈수록 어둡고 진홍 침식과 돌무더기.
+- 망루 B **「갈라진 탑」**:
+  - 둥근 탑 양끝이 어두움. 꼭대기 총안 너머로 하늘과 달, 종이 걸린 종탑 아치.
+  - 탑을 세로로 가른 긴 균열 너머로 밤하늘이 보이고, 균열 입술에 침식.
+  - 옛 바닥의 들보 구멍 줄(층 사이), 오른쪽 큰 첨두창과 바닥의 빛 웅덩이.
+  - 바닥에 봉인된 아치문과 돌무더기.
+- 마감 샘플(A, 480×270 한 화면, y 270~540): 석재 36×18(톤 차이 작게), 아치 홍예돌 이음매, 벽감 안쪽의 희미한 줄눈, 깨진 돌 테두리를 두른 벽 구멍과 먼 탑, 들어오는 달빛 웅덩이, 기둥 마디.
+  - 실제 r1t 바닥·발판·무너지는 발판과 주인공을 올린 판도 있음(대비 확인용).
+- 1-1 「잿빛 성벽」(2400×272):
+  - 총안 성벽 뒤 하늘과 먼 수도.
+  - 왼쪽에 보루 탑, 가이드의 계단 단 위에 성문 망루(아치 통로).
+  - 가운데쯤 성벽이 무너진 틈으로 먼 도시와 달이 보임.
+  - 오른쪽으로 갈수록 침식 맥이 짙어지고, 끝에는 봉인된 성문탑(출구).
+- 미리보기 `ArtSource/previews/region1/`:
+  - `bgdraft_tower_AB_half.png`, `bgdraft_tower_AB_half_guide.png`
+  - `bgdraft_tower_A_sample_x2.png`, `bgdraft_tower_A_sample_floors_x2.png`
+  - `bgdraft_r1_half.png`, `bgdraft_r1_half_guide.png`
+- 사용자가 고르면 본 작업으로 레벨 크기 한 장 + far/wall 레이어로 나눠 납품.
+- **(2026-11-20) 사용자가 망루 A안으로 결정, 본 작업 납품.** 1-1은 보류. 기존 r1t_bg_far/mid는 1-1·폴백용으로 그대로 둠.
+  - `Environment/Region1/r1t_bg_wall.aseprite` 480×928, 1프레임: 레벨과 1:1로 함께 움직이는 뒷벽.
+    - 캔버스 왼쪽 아래 = 레벨 (0,0). 층 윗면은 아래 기준 48·240·432·624(위 기준 880·688·496·304)로 가이드와 일치.
+    - 지붕 틈·벽 구멍(불규칙하게 깨짐)·첨두창은 **투명**.
+    - 기둥 받침돌은 실제 바닥이 닿는 높이와 벽에만 둠: 왼쪽 880·688, 오른쪽 880·496·400·304. 따로 떠 있는 선반처럼 보이지 않게.
+    - 횃불 같은 광원 없음, 갈색 수평 판자 없음.
+  - `Environment/Region1/r1t_bg_sky.aseprite` 480×480, 1프레임: 구멍 너머 하늘. 위에서 아래로 A→B 디더 그라데이션.
+    - 위쪽: 달(반지름 22, 왼쪽 그림자 초승달·분화구·광륜)과 옅은 구름 두 줄.
+    - 아래쪽: 먼 수도 실루엣 두 겹과 진홍 창불 몇 개. 별은 아래로 갈수록 적고 어두움.
+  - 소스: `ArtSource/src/environment/bg_drafts.py`의 `tower_A(detail=True, final=True)`, `tower_sky()`, `export_tower_final()`.
+  - verify 73/73. 미리보기:
+    - `previews/region1/r1t_bg_wall_screens_x2.png`(카메라 바닥·중간·꼭대기, 하늘 시차와 실제 발판·주인공 포함)
+    - `r1t_bg_wall_overview_1x.png`
+
+## 1-1 「잿빛 성벽」 배경 시안 2안 (사용자 2026-11-20, 게임에 미적용)
+- 소스 `ArtSource/src/environment/r1_drafts.py`(bg_drafts 도우미 재사용). 레이아웃 `layout_region1.png`(2400×272, 바닥 윗면 y 224) 기준.
+- A **「성벽 위 산책로」**: 트인 밤하늘 아래 총안 성벽.
+  - 200px마다 버팀벽, 배수 구멍, 찢긴 진홍 깃발 4장(세로 천, 판자 아님).
+  - 탑: 왼쪽 보루, 계단 단 위 성문 망루(아치 통로), 침식된 중간 탑, 끝의 봉인된 성문탑(내리닫이 창살).
+  - 가운데 성벽이 V자로 내려앉은 틈 너머로 먼 수도와 달.
+  - 오른쪽으로 갈수록 침식 맥과 진홍 결정이 짙어짐.
+- B **「성벽 안쪽 회랑」**: 성벽 안쪽을 따라 160px마다 반원 아치 창이 이어진 회랑.
+  - 아치마다 낮은 난간, 기둥머리·받침이 있는 기둥. 위쪽은 볼트 그림자와 처마돌.
+  - 계단 참 위에는 더 큰 아치. 아치 사이로 바깥 밤 도시가 보임.
+  - 회랑이 무너진 구간은 하늘이 트이고 달이 보임. 끝은 내리닫이 성문.
+  - 침식은 오른쪽 기둥을 타고 오름.
+- 둘 다 명도는 플레이 층보다 낮게, 갈색 수평 판자 없음. 고르면 망루처럼 뒷벽(하늘 자리 투명) + 하늘 레이어로 본 작업.
+- 본 작업 규격(메인 2026-11-20):
+  - `Environment/Region1/r1_bg_wall.aseprite` 2400×272. 왼쪽 아래 = 레벨 (0,0), 하늘 자리는 투명.
+  - `r1_bg_sky.aseprite`는 크기 자유. 480보다 넓으면 카메라 진행 비율만큼 가로 시차(예: 960×272면 레벨 끝까지 480px 이동). 달 위치는 자유.
+  - 피벗은 둘 다 BottomLeft 자동.
+  - **주의: 1-1 테마가 `r1_`라 `r1_bg_sky`를 만드는 순간 게임에 바로 쓰임.** 사용자 선택 전에는 만들지 말 것.
+- **(2026-11-20) 사용자가 A안으로 결정, 본 작업 납품.** 소스 `ArtSource/src/environment/r1_final.py`.
+  - `Environment/Region1/r1_bg_wall.aseprite` 2400×272, 레이어 1장(렌더러용).
+    - 하늘·총안 틈·무너진 틈은 투명.
+    - 마감 디테일:
+      - 성벽: 석재 28×14, 덮개돌, 여장마다 밝은 머리돌, 일부 여장에 화살 구멍.
+      - 버팀벽: 돌마디와 비스듬한 덮개.
+      - 배수 구멍과 물자국, 찢긴 진홍 깃발 4장.
+    - 탑 4개(석재 20×12, 총안, 화살 구멍):
+      - 보루.
+      - 성문 망루: 아치 통로, 홍예돌, 쐐기돌.
+      - 침식된 중간 탑: 맥과 갈라진 금.
+      - 끝 성문탑: 내리닫이 창살.
+    - V자로 내려앉은 틈: 달빛 테두리와 튀어나온 깨진 돌.
+    - 그 밖: 돌무더기, 오른쪽으로 짙어지는 침식 맥과 진홍 결정, 벽 아래 그늘.
+  - `Environment/Region1/r1_bg_sky.aseprite` 960×272: 디더 그라데이션, 별, 달(x 511, y 48, 옅은 구름 두 줄), 지평선의 먼 수도 두 겹과 진홍 창불.
+    - 시차 계산: 무너진 틈이 화면 가운데일 때(카메라 x≈1085) 하늘 x≈271+240=511 → 달이 틈 위에 옴.
+  - **구조별 레이어 원본** `ArtSource/environment_src/r1_bg_wall_layers.aseprite`(해상도 변경 대비, 게임 미사용).
+    - 레이어 12개: parapet, buttress, drains, banners, tower_bastion, tower_gatehouse, tower_mid, tower_gate, breach_rim, rubble, corruption, foot_shade.
+    - 각 픽셀은 마지막으로 그린 단계의 레이어에 들어가므로, 다 쌓으면 r1_bg_wall과 픽셀까지 같음(확인함).
+  - verify 75/75. 미리보기:
+    - `previews/region1/r1_bg_wall_screens_x2.png`(카메라 시작·성문 망루·무너진 틈·끝, 하늘 시차와 실제 r1 바닥·발판·주인공 포함)
+    - `r1_bg_wall_overview_half.png`
+- 미리보기 `previews/region1/`:
+  - `bgdraft_r1_AB_half.png`(+`_guide`)
+  - `bgdraft_r1_A_sample_x2.png`/`_floors_x2.png`
+  - `bgdraft_r1_B_sample_x2.png`/`_floors_x2.png`(성문 망루 구간 한 화면, 실제 r1 바닥·발판·주인공 포함)
+
+## HD 전환 (메인·사용자 2026-11-20: 화면 640×360, 1 모델 px = 1.5 그림 px)
+- 규칙:
+  - 같은 이름과 하위 폴더를 `Assets/Art/HD/` 아래에 둠. 옛 파일은 그대로(HD가 없으면 옛 파일로 대신 씀).
+  - 크기 ×1.5. 태그·프레임 수·시간은 옛 파일과 같게. 피벗은 이름 기준 그대로.
+  - **확대가 아니라 다시 그림**: 같은 구성 코드에서 위치·크기만 ×1.5로 계산하고, 1px 선은 1px로 유지. 돌·탑·여장·깃발·결정은 커짐.
+- (1) 1-1 「잿빛 성벽」 A안 HD, 소스 `ArtSource/src/environment/r1_wall_hd.py`:
+  - `HD/Environment/Region1/r1_bg_wall.aseprite` 3600×408, 왼쪽 아래 = 레벨 (0,0), 하늘·틈 투명.
+  - `HD/Environment/Region1/r1_bg_sky.aseprite` 1440×408, 달 (766, 72).
+  - 구조별 레이어 원본 `ArtSource/environment_src/hd/r1_bg_wall_layers.aseprite`(쌓으면 같음 확인).
+  - 미리보기 `previews/region1/hd_r1_bg_wall_screens_x2.png`(640×360 화면 3곳, 바닥은 가이드 임시 표시), `hd_vs_sd_gatehouse.png`.
+- (2) 1-1 타일 HD, 소스 `ArtSource/src/environment/region1_hd.py`:
+  - `HD/Environment/Region1/r1_ground.aseprite` 96×72(옛 64×48), `r1_platform.aseprite` 96×36(옛 64×24). 태그 없음(옛 파일과 같음).
+  - 석판 이음 48칸, 벽면 돌 24×12, 발판 돌 24칸, 아래 깨진 가장자리는 주기 96으로 맞춰서 96 단위로 끊김 없이 이어짐.
+  - 따로 된 1-1 벽 타일은 없음: 게임(LevelView)이 벽 칸도 `ground`로 그림.
+  - 미리보기 `previews/region1/hd_r1_tiles_vs_sd.png`(같은 화면 크기에서 SD ×3 / HD ×2 비교).
+- (3) 1-2 「무너진 망루」 타일 HD, 소스 `ArtSource/src/environment/region1_tower_hd.py`:
+  - `HD/Environment/Region1/r1t_ground.aseprite` 96×48, `r1t_platform.aseprite` 96×18.
+  - `r1t_crumble.aseprite` 96×24, idle 1 / shake 2×60 / break 5×50(옛 파일과 같음).
+  - 모두 96 단위로 끊김 없이 이어짐(SD 바닥 들보의 나뭇결은 64에서 살짝 어긋났는데, HD는 감아서 맞춤).
+  - 흔들림은 ±2px(옛 ±1 모델 px = 1.5).
+  - 미리보기 `previews/region1/hd_r1t_tiles_vs_sd.png`.
+- (4) 1-2 배경 HD, 소스 `ArtSource/src/environment/r1t_bg_hd.py`:
+  - `HD/Environment/Region1/r1t_bg_wall.aseprite` 720×1392, 왼쪽 위 = 레벨 왼쪽 위. 지붕 틈·창·구멍은 투명.
+  - `r1t_bg_sky.aseprite` 720×720, 달 (477, 117).
+  - 층 바닥 y = 1320/1032/744/456, 받침돌은 바닥 아래(+48).
+  - **옛 파일과 다른 점**: 2층 구멍 아래 떨어진 돌을 바닥(y 744) 위에 놓음. 옛 파일에서는 바닥보다 20px 위에 떠 있었음.
+  - 미리보기 `previews/region1/hd_r1t_bg_vs_sd.png`(왼쪽 SD ×1.5, 오른쪽 HD).
+- (5) 수련장(밤 대성당 회랑) HD, 소스 `ArtSource/src/environment/environment_hd.py`. 바닥선 y 333(옛 222).
+  - `HD/Environment/` 아래 파일:
+    - `bg_sky` 720×405, `bg_far` 1080×405(가로 이음), `bg_mid` 720×405(기둥 주기 144, 이음, 아치 안 투명)
+    - `ground` 96×72, `platform` 96×36(난간동자 주기 12)
+    - `props` 246×102: 레이어·슬라이스 5개(torch_stand 24×60, knight_statue 51×99, banner 27×75, weapon_rack 51×42, broken_pillar 39×72), 모두 바닥이 마지막 줄. 횃불 받침 윗면 y 12(옛 8).
+    - `torch_fire` 24×36, play 6×90.
+  - **옛 파일과 다른 점**:
+    - 달 음영을 직선 띠에서 구면 음영(휜 경계, 1px 디더 이음)으로 바꿈.
+    - 원경 장미창에 창살 8개와 빛나는 가운데를 넣음.
+    - 옛 바닥 윗줄 이음 간격 21은 64로 나누어떨어지지 않아 이음이 두 번 겹쳤음. HD는 32로 맞춤.
+  - 미리보기 `previews/environment/hd_training_vs_sd.png`(같은 화면 크기 장면 비교).
+- (6) 여러 스테이지가 같이 쓰는 소품 HD, 소스 `ArtSource/src/environment/region1_props_hd.py`. torch_fire는 (5)에 있음.
+  - `HD/Environment/Region1/` 아래 파일:
+    - `r1_props` 552×303: 레이어·슬라이스 6개(crenel 30×27, broken_banner 36×78, corrupt_vein 54×21, barricade 69×42, crate_pile 54×48, gate_sealed 246×300), 모두 정확히 ×1.5.
+    - `checkpoint_altar` 48×72, idle 4×150 / lit 6×80.
+    - `gate_bars` 24×144, down 1 / drop 4×50 / rise 6×60. 떨어질 때 바닥을 4px 물고 제자리로 돌아옴.
+  - **옛 파일과 다른 점**:
+    - 창살 가운데에 1px 광택 줄을 넣음. 옛 파일은 외곽선 때문에 창살이 거의 검게 보였음.
+    - 성문 기둥에 세로 이음을 넣음.
+    - 상자 귀퉁이에 못을, 제단 받침에 단 한 줄을 넣음.
+  - 미리보기 `previews/region1/hd_r1_props_vs_sd.png`(SD ×3 / HD ×2).
+- (7) 5단계 FX HD 28개 → `HD/FX/`. 같은 구성 코드 ×1.5로 다시 그렸고, 그림 확대는 쓰지 않음.
+  - 소스(`ArtSource/src/fx/`):
+    - `fx_slash_hd.py`: 베기 5개, dash, light_sword
+    - `fx_hits_hd.py`: hit 3개, crystal_shard, corrupt_burst, dust, glint, charge
+    - `fx_riposte_hd.py`: riposte 3개
+    - `fx_finisher_hd.py`: slash_3, rubble, light_orb
+    - `fx_boss1_hd.py`: shockwave, pillar, parry
+    - `fx_region1_hd.py`: block, bolt
+    - `fx_corrupt_hd.py`: corrupt_spike
+    - `fx_soul_hd.py`: soul_crystal
+  - 크기는 모두 정확히 ×1.5. 예외 두 개는 홀짝을 SD와 맞춤:
+    - `fx_light_sword` 112×23(옛 74×15)
+    - `fx_bolt` 24×7(옛 16×5, 가운데 1px 화살대 유지)
+  - 태그·프레임 수·프레임별 ms·타격 프레임은 옛 파일과 같음. riposte_blast/barrage의 ms 목록은 aseprite에서 다시 읽어 일치 확인. blast 타격 = 4.
+  - 1px 규칙: 테두리, 디더, 낱점 반짝임은 1px 유지. 그래서 화면에서는 SD보다 조금 작게 보임.
+  - **옛 파일과 다른 점**(읽힘을 위해):
+    - 작은 파편·조각은 2~3px. crystal_shard·rubble·영혼의 수정 속 인물은 손으로 새로 그림. 인물은 13×16으로, SD에서 테두리에 가려지던 부분을 안쪽으로 옮김.
+    - 큰 빛살 뿌리에 1px 어두운 가장자리. 먼지가 사라질 때 구멍을 덩어리 단위로.
+    - 반격 줄기 양 끝에 가늘어지는 단계를 하나 더. blast 파편을 꽉 채움(SD는 찍기 방식이라 구멍이 남았음).
+    - parry·spike 중심을 반 px 맞춤. 영혼의 수정 흔들림 2px.
+  - ~~열린 문제: slash_1·air 궤적이 9px 아래~~ → (8)에서 해결.
+  - 비교 그림: `previews/hd_fx/*__cmp.png` / `*__compare.png`(SD ×3 / HD ×2).
+- (8) **새 HD 주인공(A안, 키 68px)에 맞춘 다듬기** (메인 2026-11-21). 손도트만 씀. PixelLab은 쓰지 않음.
+  - **잔상 높이:**
+    - 9px 차이는 버린 5.5등신 시안 때문이었음. 실제 파일로 재면 slash_1은 칼끝 −1px로 SD와 같음.
+    - air만 6px 아래(SD도 4px)여서 `fx_slash_hd.py`에서 중심을 5px 올림 → 1px.
+    - 전/후: `previews/hd_retouch/slash_overlay_before/after.png`.
+  - **비율 점검:** `hd_scene_mock.py`로 640×360 장면 6개에 주인공을 세움. 문, 아치, 창, 횃불, 제단, 난간, 창살, 발판 모두 어색하지 않아 크기는 바꾸지 않음.
+    - 장면 그림: `previews/hd_retouch/scene_*_before / tiles / bg / after.png`
+    - 배치는 LevelView와 같음: 타일 윗변 −12, 소품 −9, 발판 −6, 횃불 불꽃은 받침 윗면 +6.
+  - **돌 질감 후처리:** `ArtSource/src/environment/hd_detail.py`.
+    - `stone_pass`: 돌 블록(연결 성분)마다 윗변 빛, 패임, 밝은 점, 실금, 깨진 모서리를 한 단계 대비로 넣음. 블록 위치를 타일 폭으로 나눈 나머지로 시드를 정해서 이음이 유지됨.
+    - `wood_plank`: 어두운 판재, 1px 빛 가장자리, 결, 옹이.
+  - **타일:**
+    - 돌: ground, platform, r1_ground, r1_platform, r1t_ground, r1t_crumble.
+    - 망루 나무 들보와 발판은 채도를 낮추고 다시 그림. 밝은 금갈색 n은 낱점으로만 씀.
+  - **배경 벽:**
+    - r1_bg_wall: texture 단계 추가, 레이어 원본도 갱신.
+    - r1t_bg_wall: 질감 추가.
+    - 수련장 bg_mid: 실제 돌쌓기와 아치 쐐기돌 띠.
+    - 모두 'a'보다 밝은 색 없음, 밀도는 낮게.
+    - 전/후: `r1_bg_wall_before_after.png`, `bg_walls_before_after.png`.
+  - **보스 광장 전용 뒷벽(새 파일):** `HD/Environment/Region1/r1b_bg_wall.aseprite` 1104×408, 소스 `r1b_wall_hd.py`.
+    - 테마 `@theme r1b_ r1_`(메인이 코드 반영).
+    - 가운데 뒤에 봉인된 성문 탑(x 430~770, 문 515~685), 양쪽 망루, 입구 보루, 1-1에서 이어지는 여장.
+    - 오른쪽 막힌 벽 칸(x 1032~)에 가리는 것이 없음.
+    - 미리보기 `scene_boss_ironwall_arena.png`.
+  - **소품 손보정**(서브에이전트 2, 검수함). 크기, 레이어, 슬라이스, 태그, ms는 그대로.
+    - 수련장 `props`: 새 소스 `props_train_hd.py`이고, `environment_hd.py`의 ALL이 이걸 씀.
+      - 기사상: 투구, 견갑, 건틀릿, 망토, 받침 문양.
+      - 횃불대: 꼬인 쇠 받침.
+      - 깃발: 주름, 각진 수정.
+      - 무기대: 칼을 손잡이가 위로 오게 걸었음(옛 그림은 거꾸로).
+      - 깨진 기둥: 홈과 사선 파단면.
+    - 1지역 `r1_props`와 `checkpoint_altar`(`region1_props_hd.py`):
+      - 성문: 쐐기돌 19개, 고리 사슬, 새긴 인장, 문턱.
+      - 제단: 둥근 수반, 기둥, 받침 단, 물결 대기 동작, 흰 심 불꽃.
+      - 상자, 바리케이드, 깃발, 침식 덩어리, 여장 조각.
+      - gate_bars는 그대로.
+    - 전/후: `props_train_compare.png`, `r1_props_small_before_after.png`, `r1_gate_sealed_before_after.png`, `checkpoint_altar_before_after.png`.
+- (9) **UI HD 12개** → `HD/UI/`, 소스 `ArtSource/src/ui/ui_hd.py`, 검토 `ui_hd_review.py`. 메인의 `ui_hd_spec.md`를 따름.
+  - 아이콘·메뉴:
+    - lumen 15×15, flask 12×18, menu_gem 12×12(4×120)
+    - menu_panel 36×36(9-slice 12), menu_button 24×24(8)
+    - slot 39×39, relic_endurance 36×36
+  - 띠·커서:
+    - boss·oath banner 96×48(18/12, 15px 반복이라 Tiled), mark 48×48
+    - cursor 18×22: 실제 그림 폭은 16, 핫스팟 (0,0)
+  - 메인이 게임에 연결해 확인함(`previews/hd_ui/ingame_ui_hd.png`). 막대 틀은 지금 필요 없음.
+- (10) **타이틀 HD 재작업: 취소** (사용자 결정, 2026-11-20).
+  - 타이틀 화면은 HD 이전의 기존 도트(title_logo, title_portrait, 성 배경)를 그대로 씀.
+  - `HD/UI/title_*`는 만들지 않음. verify 항목도 없음.
+  - 시안만 `ArtSource/previews/title_hd/`에 남김: `title_hd_mock_v3*.png`, `portrait_hd_x4.png`, `logo_hd_x3.png`.
+  - 소스 `ArtSource/src/title/portrait_hd.py`, `logo_hd.py`, `title_hd_mock.py`는 참고용. 게임 파일을 내보내지 않음.
+
+## 새 지역 시안: 1-3 지하 수로(r1s_) · 새벽 성소(hub_) · 1-4 성문 앞 광장(r1g_) (메인·사용자 2026-11-21, 게임에 미적용)
+- 사용자 지시: "도트 아트급으로, PixelLab 적극 활용", 받은 참고 그림(겹겹의 원근·안개·빛나는 초점)을 "우리 배경에 맞춰 재해석".
+- 방법:
+  - PixelLab **직접 생성만** 씀(변환 없음). 장면·층은 Pixen(1생성), 타일·소품·스테인드글라스는 Pro(서약 48색 팔레트 지정).
+  - Pixen 결과는 `src/environment/pl_remap.py`로 재질별 재채색: 무채 돌 → 보라회색 돌 램프, 푸른 안개 → 청회색(h~k), 밝은 수정 → 수정 파랑, 따뜻한 빛 → 성소만 갈색·황토(`--ochre`), 불꽃만 횃불색, 연한 장미빛 연기 → 어두운 진홍. 픽셀 위치는 그대로.
+  - 층은 LevelView 순서(sky → far → mid → 타일 → 소품 → 주인공)로 따로 둠. 조립 `src/environment/new_areas_draft.py`, 입력 준비 `new_areas_prep.py`.
+  - 원본·후보: `ArtSource/environment_src/pixellab_new/raw/`.
+- 시안(640×360, 바닥선 300, 주인공 HD 실제 파일) `ArtSource/previews/new_areas/`:
+  - `r1s_draft(_x2).png`: 먼 지하 저수조(빛나는 큰 수정·폭포·안개)가 아치 회랑의 뚫린 칸 사이로 보이는 2단 원근. 바닥 타일, 수정 무더기, 숏컷 문(닫힘).
+  - `hub_draft(_x2).png`: 따뜻한 촛불 성소, 2층 서고 발코니(발판 타일), 가운데 7기사 스테인드글라스. 첫 칸(1번 철벽)만 얼음 파랑으로 바꿔 진행 상태를 보여 줌.
+  - `r1g_draft(_x2).png`: 1-1과 같은 달 하늘 → 연기 오르는 수도의 첨탑 실루엣(초록 키아웃 층) → 봉인된 성문 탑 → 광장 포석. 목 없는 기사상, 화로 2, 깃발, 잔해.
+  - `new_areas_parts.png`: 스테인드글라스 두 상태, 소품 16종(수로 4, 성소 8, 광장 4).
+- 생성 횟수: 약 129회(Pro 장면 1회 25 · Pixen 9 · Pro 타일 4회 40 · 유리 15 · 소품 묶음 4회 40). 남은 양 1712.8(so-chara 사용분 포함).
+- **승인 뒤 할 일(게임 파일로 나누기):**
+  - r1s: `bg_mid` 이음 없는 반복(기둥 가운데에서 자르고 기둥 반쪽 맞춤), 위쪽 둥근 천장 연장(408 높이). `bg_far`(먼 아치 실루엣) 새로. 발판 타일, 물 표면 애니, 문 열림 상태(손으로), 창살·수로 입구.
+  - hub: 1800 폭 `bg_wall`을 위해 왼쪽(입구 제단·계단)·오른쪽(대장간·노점) 덩어리를 더 생성해 이어 붙임. 시안 배경에 붙어 있는 회중석·촛대·성수반은 소품으로 떼고 뒤를 채움. 유리 7칸은 칸마다 따로(진홍/파랑 2상태).
+  - r1g: `bg_far` = 수도 실루엣(반복 이음 필요), 성문 탑은 원경 소품, 광장 바닥·발판. 나머지는 r1_/r1b_ 재사용.
+  - 시안의 Pro 타일 후보는 이음 확인 후 손으로 이음 보정. 모두 verify 등록.
+
+## 1지역 환경 요소 HD 32종 (메인·사용자 2026-11-21: "같은 소품 반복, 빈 벽 → 깨기")
+- 파일: `Assets/Art/HD/Environment/Region1/Deco/<이름>.aseprite`.
+  - 소품마다 한 파일, 레이어 `art`. 캔버스는 그림 범위에 딱 맞추고, 맨 아래 줄을 기준(BottomCenter)으로 함.
+  - 애니는 태그 `idle`. `fg_`로 시작하는 것은 주인공 앞에 그림.
+  - 소스 `ArtSource/src/environment/r1_deco_hd.py`, 장면 확인 `r1_deco_scene.py`.
+- 생성: PixelLab 1-direction object 3묶음(128×4, 64×16, 32×64), 서약 48색, 30생성. 후보 84개 중 골라 씀. 원본 `environment_src/pixellab_new/raw/deco/`.
+- 손작업:
+  - 벽 조각 잘라내기: 덩굴은 줄기만 남기고 1px 그림자. 결정은 어두운 구멍 테. 침식 덩어리는 타원으로 잘라 외곽선. 화살 구멍은 테두리 4px만 남기고 한 단계 어둡게.
+  - 석상 칼을 13줄 아래에서 부러뜨려 끝을 발치에 눕힘.
+  - fg_pillar, fg_chain(8px 주기 고리), fx_fog_band(1비트 디더), fx_ash, fx_ember는 손으로 그림.
+  - 수갑(벽돌과 겹침)은 뺌.
+- 애니(모두 원본 한 장에서 손으로 만듦, 보일링 없음):
+  - brazier 6×90: 화로 + 기존 torch_fire, 불꽃은 그릇 테 뒤.
+  - banner_torn 6×110: 아래로 갈수록 큰 줄 흔들림.
+  - lantern_hanging 8×120: 위 고정, 진자.
+  - wall_crystal 6×120: 면이 한 단계 숨쉬기 + 반짝임 3곳이 차례로.
+  - corrupt_mass 8×100: 진홍 램프 −1~+2 맥동.
+  - arrow_slit_lit 4×120: 불빛 깜빡임.
+  - fx_ash 4×140, fx_ember 4×90.
+- 목록·크기·놓을 곳 제안은 메인 인계 노트 `side-session-notes/.../r1_deco_handover.md`.
+- **메인에 부탁:** 지금 임포터에는 Deco 폴더 피벗 규칙이 없어 Center로 들어감 → BottomCenter 규칙 필요(fx_ash·fx_ember 제외).
+- verify 167/167.
+- 메인이 게임에 넣음(인게임 `previews/r1_deco/ingame_r1_deco.png`). region1에 27, r1_tower에 18, boss_ironwall에 6. Deco 폴더 BottomCenter 규칙과 불빛도 메인이 코드에 반영.
+- **fg_pillar 다시 그림**(메인 피드백: "무늬 없는 검은 막대"):
+  - 기둥: 북(드럼)을 쌓은 돌기둥. 왼쪽 달빛 테 1~2px, 원기둥 음영(밴드 사이 1px 디더), 가장자리 깎임, 패임·실금, 받침·주두.
+  - 플레이 화면보다 두 단계 어둡게 해서 앞쪽으로 읽히게 함. 36×420.
+  - 새 변형 `fg_pillar_broken` 36×230: 같은 기둥이 부러진 것. 큰 이빨 6개로 깨진 윗면에 달빛 가장자리.
+  - 확인 그림 `previews/r1_deco/fg_pillar_scene.png`, `fg_pillar_zoom.png`. verify 168/168.
+
+## 새 지역 게임 파일 35개: 1-3 · 거점 · 1-4 (사용자 시안 승인 2026-11-21 "그대로 진행")
+- 소스 `src/environment/new_areas_split.py`(시안 → 게임 파일), 장면 확인 `new_areas_scene.py`(내보낸 파일을 다시 읽음).
+- 확인 그림 `previews/new_areas_split/`: `scene_r1s.png`, `scene_r1s_door_states.png`, `scene_hub.png`(방 전체 1800), `scene_r1g.png`, 목록 `new_areas_split_review.png`.
+- 규칙(1지역과 같음):
+  - 반복 층(bg_far 패럴랙스 0.2·조명 없음, bg_mid 0.5·조명 받음): 높이 405, 왼쪽 아래 기준, 캔버스 333줄 = 레벨 바닥(모델 y 48). 가로 이음 없이 반복.
+  - 땅 96×72·발판 96×36: 왼쪽 위 기준. 생성 타일 가장자리의 이음 줄은 `seam_fix`로 손봄.
+  - 소품은 `Deco/`, 맨 아래 줄 = 닿는 점(BottomCenter).
+- **1-3 지하 수로 (Region1)**
+  - `r1s_bg_far` 566×405: 먼 저수조(큰 수정·폭포). 왼쪽 기둥을 오른쪽 기둥으로 바꿔 양 끝을 같은 기둥으로 맞춤.
+  - `r1s_bg_mid` 457×405: 아치 회랑 2칸. 1번 기둥은 아래 절반이 잘려 3번 기둥으로 채움. 칸 안에 떠 있던 돌 조각은 지움. 둥근 천장을 위로 33줄 늘림. 걷는 길 아래는 어둡게 채워 구덩이에서 비어 보이지 않게 함.
+  - **횃불을 껐음**(빈 쇠 촛대만 남김): 패럴랙스 층에 그린 불은 Light2D를 못 받아 어둡게 죽어 보임. 진짜 불은 `torch_stand`·`brazier` 소품으로.
+  - 문·창살·배수구는 **벽 조각과 한 몸**인 땅 소품(176×360)으로 만듦. 그래서 움직이는 회랑 칸 앞에 떠 보이지 않음.
+    - 벽 조각: 양쪽 기둥 + 한 단계 어두운 마름돌 + 받침, 위 70줄은 디더로 어둠에 잠김.
+    - 문: 닫힘 / 여는 중 4×70ms / 열림. 문짝이 왼쪽 경첩으로 안쪽으로 돌며 좁아지고 어두워짐.
+    - 창살: 물줄기가 프레임마다 2줄씩 흘러내림(4×110).
+  - 바닥·발판: 발판은 바닥 타일의 판석 + 벽돌 한 줄 + 깨진 밑면(r1_platform과 같은 구조).
+- **거점 「새벽 성소」 (Hub)** — `hub_bg_wall` 1800×408(레벨 1200×272과 1:1, 바닥 336줄). Pixen 장면 셋을 큰 기둥 옆에서 이음:
+  - 왼쪽 0~558: `hub_left_2401`(새로 생성): 계단 아치(문 안으로 올라가는 계단) + 제단 감실.
+  - 가운데 558~1175: 승인된 시안(2101): 발코니 서고, 7기사 유리창, 성수반, 회중석.
+  - 오른쪽 1175~1800: 2102: 2층 회랑, 계단, 노점 아치, 대장간(화로·모루).
+  - 왼쪽·오른쪽은 가운데와 색이 맞게 채도·명도를 내린 뒤 재채색(왼쪽 0.6/0.62, 오른쪽 0.7/0.95).
+  - 오른쪽의 작은 기사 창 2개는 진홍 → 호박색 유리. 진홍 7기사 창이 하나뿐이게 함.
+  - 유리창: `hub_glass`(진홍 전체) + `hub_glass_1~7`(칸별 얼음 파랑 덧그림) + `hub_glass_rose`(일곱 다 돌아왔을 때 장미창·트레이서리). 모두 같은 캔버스 150×124, 같은 자리.
+  - `hub_forge_fire` 48×78: 화로 그림 위에 정확히 겹침. 원래 불을 끄고 torch_fire 불꽃 셋을 엇갈려 얹음, 재받이 불은 숨쉬기. 6×90.
+  - 소품: `hub_candelabrum`(촛불 6×110), `hub_bell`(침묵의 종, 나무틀 포함), `hub_bookshelf`, `hub_pew`.
+  - 성수반·대장간·모루·노점은 바탕에 이미 그려져 있어 소품으로 내지 않음.
+- **1-4 성문 앞 광장 (Region1)**
+  - `r1g_bg_sky` = r1_bg_sky와 같은 그림(시안대로 달 하늘).
+  - `r1g_bg_far` 446×405: 수도 첨탑. 44열(빈 틈)~490열(지붕 끝)에서 자름. 성벽 밑단은 난간·바닥에 가려짐.
+  - `r1g_bg_mid` 358×405: 광장 뒤쪽 난간. 새로 생성(Pixen, 초록 키)해 단지 기둥 사이 한 칸을 자르고, 왼쪽 기둥 = 오른쪽 기둥. 초록 번짐은 무채색으로 돌린 뒤 돌 램프.
+  - 땅·발판: 발판은 바닥에서 만듦.
+  - 소품: `r1g_gate_tower`(256×248, 멀리 보이는 성문 탑), `r1g_statue_headless`, `r1g_brazier`(그릇은 두고 torch_fire 셋, 6×90), `r1g_banner_pole`(천만 흔들림, 6×110), `r1g_rubble_spears`.
+- 생성: 이번 5회(거점 왼쪽 Pixen 3회 중 1장 채택, 광장 난간 Pixen 2회 중 1장). 새 지역 누계 약 134회. 남은 양 1632.8(다른 세션 사용분 포함).
+- **떠 있는 물건 점검**(메인·사용자 "하늘에 떠 있으면 안 되는 물건"):
+  - r1s 원경: 큰 결정이 뚫린 아치 바로 위 다리에 얹혀 떠 보였음. 그 아치를 다리 벽돌과 같은 색 벽돌로 메움. 이제 결정 → 돌무더기 → 다리 → 벽돌 기둥 → 웅덩이 바닥으로 이어짐. 폭포는 기둥 앞에 그대로.
+  - r1s 중경: 작은 벽 결정마다 밑동에 타원 균열 구멍(0/1), 달빛 받은 위쪽 돌 테, 아래 그림자 테, 실금 2줄, 오른쪽 아래 1px 그림자를 넣음. 천장 늘림에 복사된 결정과, 칸 가장자리에 매달린 1~4px 반짝임은 지움.
+  - hub: 새 유리창 바로 밑에 남아 있던 옛 창 아랫부분(진홍 패널, 기사 다리)을 따뜻한 벽돌로 바꿈. 노점 등불·화로 도구는 막대·걸이에 달려 있어 그대로.
+  - r1g: 난간·원경은 한 덩어리로 바닥에 닿음(떨어진 조각 0).
+  - 새 소품은 모두 땅용이거나 정확한 자리 겹침. 매다는 소품은 없음(종은 나무 틀, 깃발은 깃대 포함).
+  - 인계 메모의 "발코니 발판 2개" 제안은 바닥에서 올라오는 솔리드 계단 두 단(모델 y 92·136)으로 고침.
+- verify 203/203.
+- 인계 노트(파일·크기·기준점·땅/벽/매달기·추천 위치): `side-session-notes/.../new_areas_handover.md`.
+
 ## 남은 것 / 다음
 - 주인공 사용자 최종 승인.
 - 손 보정 2차: 나머지 공격 태그의 타격 프레임(slash2·3, heavy, charge_slash, dodge_slash, air_slash, execute) + run 다리 모양 → `frames/heroine/*.txt`.

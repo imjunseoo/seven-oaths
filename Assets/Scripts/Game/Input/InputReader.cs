@@ -15,6 +15,8 @@ namespace SevenOaths
         public bool PausePressed, MenuUp, MenuDown, MenuLeft, MenuRight, MenuConfirm, MenuBack, RelicsPressed;
         bool _jumpP, _attackP, _dashP, _dodgeP, _debugP, _healP;
         bool _usingMouse = true;
+        /// <summary>마지막으로 만진 게 패드(안내 문구를 패드 버튼으로). 키보드·마우스를 만지면 false.</summary>
+        public bool UsingPad { get; private set; }
         Vector2 _lastMouse;
         float _rumbleUntil;
 
@@ -118,6 +120,13 @@ namespace SevenOaths
                 _lastMouse = p;
             }
             if (_stickAim.ReadValue<Vector2>().sqrMagnitude > 0.2f) _usingMouse = false;
+            var gp = Gamepad.current;
+            if (gp != null && (gp.leftStick.ReadValue().sqrMagnitude > 0.25f || gp.rightStick.ReadValue().sqrMagnitude > 0.25f
+                || gp.buttonSouth.wasPressedThisFrame || gp.buttonWest.wasPressedThisFrame || gp.buttonEast.wasPressedThisFrame || gp.buttonNorth.wasPressedThisFrame
+                || gp.leftShoulder.wasPressedThisFrame || gp.rightShoulder.wasPressedThisFrame || gp.rightTrigger.wasPressedThisFrame || gp.leftTrigger.wasPressedThisFrame
+                || gp.startButton.wasPressedThisFrame || gp.dpad.ReadValue().sqrMagnitude > 0.25f)) UsingPad = true;
+            if ((Keyboard.current != null && Keyboard.current.anyKey.wasPressedThisFrame)
+                || (m != null && (m.leftButton.wasPressedThisFrame || m.rightButton.wasPressedThisFrame || m.delta.ReadValue().sqrMagnitude > 9f))) UsingPad = false;
 
             if (_rumbleUntil > 0f && Time.unscaledTime >= _rumbleUntil)
             {

@@ -165,7 +165,7 @@ namespace SevenOaths
                 float sw = Mathf.Sin(_t * Mathf.PI * 2f / Mathf.Max(0.1f, p.swayPeriod) + p.swayPhase);
                 float x = p.sway.x * sw + _mouse.x * p.depth * 2f;
                 float y = breath + p.sway.y * sw + _mouse.y * p.depth * 1f;
-                p.r.transform.localPosition = new Vector3(Mathf.Round(x) / PPU, Mathf.Round(y) / PPU, 0f);
+                p.r.transform.localPosition = new Vector3(PixelScreen.SnapU(x), PixelScreen.SnapU(y), 0f);
                 var c = p.r.color; c.a = Alpha; p.r.color = c;
             }
             if (_rimR != null)

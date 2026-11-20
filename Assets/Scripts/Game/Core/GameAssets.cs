@@ -62,6 +62,8 @@ namespace SevenOaths
         public List<AnimSet> animSets = new List<AnimSet>();
         public List<NamedSprite> sprites = new List<NamedSprite>();
         public List<NamedClip> audio = new List<NamedClip>();
+        /// <summary>배치 도구(F2)에 보일 환경 소품 이름: */Deco/ 폴더 그림(fx_ 제외) + 소품 시트(…props)의 레이어. Wire가 채운다.</summary>
+        public List<string> decoNames = new List<string>();
         public TMP_FontAsset font;       // Galmuri11 12px
         public TMP_FontAsset fontSmall;  // Galmuri9 10px
         public TMP_FontAsset fontTiny;   // Galmuri7 8px
@@ -86,13 +88,31 @@ namespace SevenOaths
             }
         }
 
+        /// <summary>Assets/Art/HD 그림의 이름 앞머리(AssetWiring이 붙임).</summary>
+        public const string HdPrefix = "hd:";
+
         void BuildCaches()
         {
             if (_anim != null) return;
             _anim = new Dictionary<string, AnimSet>(StringComparer.OrdinalIgnoreCase);
-            foreach (var a in animSets) if (a != null && !string.IsNullOrEmpty(a.name)) _anim[a.name] = a;
+            foreach (var a in animSets) if (a != null && !string.IsNullOrEmpty(a.name) && !a.name.StartsWith(HdPrefix)) _anim[a.name] = a;
             _sprite = new Dictionary<string, Sprite>(StringComparer.OrdinalIgnoreCase);
-            foreach (var s in sprites) if (s != null && s.sprite != null && !string.IsNullOrEmpty(s.name)) _sprite[s.name] = s.sprite;
+            foreach (var s in sprites) if (s != null && s.sprite != null && !string.IsNullOrEmpty(s.name) && !s.name.StartsWith(HdPrefix)) _sprite[s.name] = s.sprite;
+            // HD 모드: Assets/Art/HD의 그림("hd:" 이름)이 같은 이름의 옛 그림을 덮는다 — 없는 건 옛 그림 그대로(단계별 전환)
+            // SD 모드: HD에만 있는 새 그림(새 장소·소품)은 그대로 쓴다(PPU 48이라 세상 크기는 같음)
+            bool hd = PixelScreen.HD;
+            foreach (var a in animSets)
+                if (a != null && a.name != null && a.name.StartsWith(HdPrefix))
+                {
+                    string k = a.name.Substring(HdPrefix.Length);
+                    if (hd || !_anim.ContainsKey(k)) _anim[k] = a;
+                }
+            foreach (var s in sprites)
+                if (s != null && s.sprite != null && s.name != null && s.name.StartsWith(HdPrefix))
+                {
+                    string k = s.name.Substring(HdPrefix.Length);
+                    if (hd || !_sprite.ContainsKey(k)) _sprite[k] = s.sprite;
+                }
             _audio = new Dictionary<string, AudioClip>(StringComparer.OrdinalIgnoreCase);
             _variants = new Dictionary<string, List<AudioClip>>(StringComparer.OrdinalIgnoreCase);
             foreach (var a in audio)

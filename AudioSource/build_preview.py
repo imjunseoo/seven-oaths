@@ -18,10 +18,11 @@ LONG_DESC = {
     "bgm_region1": ("1지역 잿빛 성벽", ""),
     "bgm_title": ("타이틀", ""),
     "amb_rampart": ("성벽 위", ""),
+    "amb_tower": ("무너진 망루", ""),
     "amb_cloister": ("회랑 앰비언스", ""),
 }
 LONG_DESC_FILE = HERE / "build" / "long_meta.json"   # written by make_bgm.py / make_amb.py
-LOOPS = {"bgm_training", "bgm_boss", "bgm_region1", "bgm_title", "amb_cloister", "amb_rampart", "sfx_charge_loop", "sfx_boss_charge_loop"}
+LOOPS = {"bgm_training", "bgm_boss", "bgm_region1", "bgm_title", "amb_cloister", "amb_rampart", "amb_tower", "sfx_charge_loop", "sfx_boss_charge_loop"}
 
 # card sections: (title, prefixes in display order)
 SECTIONS = [
@@ -36,6 +37,7 @@ SECTIONS = [
     ("보스 철벽 · 유물 (v1.2)", "", ["sfx_boss", "sfx_corrupt", "sfx_spike", "sfx_pillar", "sfx_parry", "sfx_relic", "sfx_ui_equip"]),
     ("패리 반격 · 서약 계승", "시간 정지 → 9연 참격 → 폭발 / 클리어 배너", ["sfx_time", "sfx_riposte", "sfx_oath"]),
     ("바탕 시스템", "루멘 · 성수병 · 영혼의 수정", ["sfx_lumen", "sfx_flask", "sfx_soul"]),
+    ("1-2 무너진 망루", "침식 사냥개 · 무너지는 발판", ["sfx_hound", "sfx_crumble"]),
     ("UI", "", ["sfx_ui"]),
 ]
 
@@ -337,10 +339,10 @@ const TESTS = {
     for (let k = 0; k < 6; k++){ later(s, () => sfx(pick(st))); s += 250; }
     later(s, () => sfx("sfx_jump")); s += 650; later(s, () => sfx("sfx_land")); s += 250;
     for (let k = 0; k < 5; k++){ later(s, () => sfx(pick(st))); s += 250; } }},
-  sword: {t:"검 뽑기 · 넣기 (v1.1)", p:"검을 넣은 채 → 발도 베기(뽑기 + 바로 베기1) → 2초 가만히 → 넣기(동작 시작 0.12초 뒤 재생, 0.35초에 딸깍).", period: 4200, run(){
+  sword: {t:"검 뽑기 · 넣기 (v1.1)", p:"검을 넣은 채 → 발도 베기(뽑기 + 바로 베기1) → 2초 가만히 → 넣기 v2(서서 넣기: 동작 시작 0.22초 뒤 재생, 파일 0.10초에 딸깍).", period: 4200, run(){
     const dr = pick(names("sfx_sword_draw")); if (dr) sfx(dr);
     attack(40, 7, "light", SW(), L());
-    later(2600 + 120, () => sfx("sfx_sword_sheathe")); }},
+    later(2600 + 220, () => sfx("sfx_sword_sheathe")); }},
   plunge: {t:"베기3 내려꽂기 (v1.3)", p:"빛의 구로 떠올랐다가 수직 낙하: 착지 0.22초 전 큰 휘익 → 착지(땅·돌). 첫 번째는 헛침, 두 번째는 적중(+마무리 타격음 겹침).", period: 4200, run(){
     const W = SWH(); sfx(W); later(220, () => sfx("sfx_plunge_land"));
     later(2100, () => sfx(SWH())); later(2320, () => { sfx("sfx_plunge_land"); sfx("sfx_hit_finisher"); }); }},
@@ -389,6 +391,11 @@ const TESTS = {
     for (let k = 0; k < 6; k++) later(500 + k*60, () => sfx(Lm[k % 3]));
     later(1800, () => sfx("sfx_flask_drink")); later(3000, () => sfx("sfx_flask_empty"));
     later(4200, () => sfx("sfx_soul_crystal_form")); later(6300, () => sfx(pick(names("sfx_swing_0")))); later(6400, () => sfx("sfx_soul_crystal_break")); }},
+  tower: {t:"1-2 무너진 망루", p:"amb_tower 위에서: 사냥개 3마리 으르렁 → 뛰어들며 물기 → 베기에 깨갱 → 쓰러짐 / 발판에 금 → 부서져 떨어짐.", period: 8000, bedList:[["amb_tower"]], needs:["amb_tower"], run(){
+    const G = names("sfx_hound_growl"); sfx(G[0]); later(180, () => sfx(G[1], -3));
+    later(700, () => sfx("sfx_hound_bite")); later(1200, () => sfx(pick(names("sfx_player_hurt")), -4));
+    attack(1900, 7, "light", SW(), "sfx_hound_yelp"); later(2700, () => sfx("sfx_hound_death"));
+    later(4600, () => sfx("sfx_crumble_shake")); later(5500, () => sfx("sfx_crumble_break")); }},
   region: {t:"1지역 인게임 믹스", p:"bgm_region1 + amb_rampart 위에 콤보·방패·석궁이 무작위로. 권장 그룹 볼륨 적용.", period: 3200, needs:["bgm_region1"], bedList:[["bgm_region1"],["amb_rampart"]], run(){
     pick([TESTS.combo, TESTS.shield, TESTS.crossbow, TESTS.rhythm, TESTS.dash]).run(); }},
   mix: {t:"수련장 인게임 믹스", p:"bgm_training + amb_cloister 위에 콤보·회피·처형이 무작위로. 권장 그룹 볼륨 적용.", period: 3000, needs:["bgm_training"], bedList:[["bgm_training"],["amb_cloister"]], run(){

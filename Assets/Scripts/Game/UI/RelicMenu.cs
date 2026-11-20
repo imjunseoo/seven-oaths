@@ -37,9 +37,13 @@ namespace SevenOaths
         float _newUntil, _toastUntil;
         Vector2 _lastMouse;
         Image _bigIcon;
+        int _bigIconS = 48;
         TextMeshProUGUI _name, _oath, _status, _effect, _story, _toast;
 
-        const int W = 372, H = 226;
+        // 창 크기: SD 372×226 / HD 500×300(UI 640×360). 칸 크기는 ui_slot 그림 원래 크기(26 / 39)
+        static int W => PixelScreen.HD ? 500 : 372;
+        static int H => PixelScreen.HD ? 300 : 226;
+        int _slot = 26, _pitch = 32;
 
         public bool IsOpen => _canvas != null && _canvas.gameObject.activeSelf;
 
@@ -50,18 +54,18 @@ namespace SevenOaths
             TMP_Settings.useModernHangulLineBreakingRules = true;   // 한글을 글자 단위가 아니라 띄어쓰기에서 줄바꿈
             m._input = input;
             m._changed = changed;
-            m._canvas = Ui.OverlayCanvas("RelicCanvas", 41, PixelScreen.Instance.Scale);
+            m._canvas = Ui.OverlayCanvas("RelicCanvas", 41, PixelScreen.Instance.UiScale);
             m._canvas.transform.SetParent(go.transform, false);
             m._scaler = m._canvas.GetComponent<CanvasScaler>();
             var dim = Ui.Image(m._canvas.transform, "Dim", new Color(0.01f, 0.01f, 0.03f, 0.7f), raycast: true);
             dim.rectTransform.Stretch();
             m._view = Ui.Rect("View", m._canvas.transform);
-            m._view.Place(0, 0, PixelScreen.ViewW, PixelScreen.ViewH);
+            m._view.Place(0, 0, PixelScreen.UiW, PixelScreen.UiH);
             m._canvas.gameObject.SetActive(false);
             return m;
         }
 
-        static Sprite PanelSprite() => GameAssets.Instance.Sprite("ui_menu_panel") is Sprite s ? GameAssets.Instance.Bordered9(s, 8) : Placeholder.MenuPanel();
+        static Sprite PanelSprite() => GameAssets.Instance.Sprite("ui_menu_panel") is Sprite s ? GameAssets.Instance.Bordered9(s, Ui.IsHdArt(s) ? 12 : 8) : Placeholder.MenuPanel();
         static Sprite SlotSprite(string state) => GameAssets.Instance.Sprite("ui_slot/" + state, "ui_slot") ?? Placeholder.Panel();
 
         /// <summary>창 열기. fresh = 방금 얻은 유물(반짝이며 선택된 채로 열림).</summary>
@@ -92,44 +96,54 @@ namespace SevenOaths
             _cells.Clear();
             var bg = Ui.Image(_view, "Panel", Color.white, PanelSprite(), sliced: true, raycast: true);
             _panel = bg.rectTransform;
-            _panel.Place((PixelScreen.ViewW - W) / 2, (PixelScreen.ViewH - H) / 2, W, H);
+            _panel.Place((PixelScreen.UiW - W) / 2, (PixelScreen.UiH - H) / 2, W, H);
 
+            bool hd = PixelScreen.HD;
+            _slot = Mathf.RoundToInt(Ui.Native(SlotSprite("empty"), new Vector2(26f, 26f)).x);
+            _pitch = _slot + (hd ? 7 : 6);
+            int L = hd ? 22 : 18, S = _slot, P = _pitch;
             var title = Ui.Text(_panel, "Title", "서약 유물", 12, (Color)Palette.Cry6, TextAlignmentOptions.Midline);
-            title.rectTransform.Place(0, H - 22, W, 14);
+            title.rectTransform.Place(0, H - (hd ? 26 : 22), W, 14);
             var line = Ui.Image(_panel, "Line", (Color)Palette.Cry2);
-            line.rectTransform.Place(24, H - 28, W - 48, 1);
+            line.rectTransform.Place(24, H - (hd ? 33 : 28), W - 48, 1);
 
             // 왼쪽: 장착 칸 3 + 유물 7칸(4 + 3)
-            Label("장착", 18, H - 46);
-            for (int i = 0; i < Stats.RelicSlots; i++) AddCell(true, i, 18 + i * 32, H - 78, 0, i);
-            Label("보유", 18, H - 98);
+            int lab1 = H - (hd ? 50 : 46), eqY = lab1 - 6 - S;   // SD: 장착 칸 = H-78
+            Label("장착", L, lab1);
+            for (int i = 0; i < Stats.RelicSlots; i++) AddCell(true, i, L + i * P, eqY, 0, i);
+            int lab2 = eqY - 8 - 12, row1 = lab2 - 6 - S;   // SD: 보유 = H-98, 첫 줄 = H-130
+            Label("보유", L, lab2);
             for (int i = 0; i < Relics.All.Count; i++)
             {
                 int row = i < 4 ? 1 : 2, col = i < 4 ? i : i - 4;
-                AddCell(false, i, 18 + col * 32, H - 130 - (row - 1) * 32, row, col);
+                AddCell(false, i, L + col * P, row1 - (row - 1) * P, row, col);
             }
             var sep = Ui.Image(_panel, "Sep", (Color)Palette.Cry1);
-            sep.rectTransform.Place(158, 28, 1, H - 64);
+            int sepX = L + 4 * P + (hd ? 12 : 12);   // SD 158
+            sep.rectTransform.Place(sepX, 28, 1, H - 64);
 
             // 오른쪽: 설명
-            int x = 168, rw = W - x - 16;
+            int x = sepX + 10, rw = W - x - 16;
+            int big = S * 2, top = H - 36;   // 큰 칸 = 칸 그림 정수 2배
             var frame = Ui.Image(_panel, "BigSlot", Color.white, SlotSprite("equipped"), sliced: false);
-            frame.rectTransform.Place(x, H - 88, 52, 52);
+            frame.rectTransform.Place(x, top - big, big, big);
             _bigIcon = Ui.Image(frame.rectTransform, "Icon", Color.white);
-            _bigIcon.rectTransform.Place(2, 2, 48, 48);
+            _bigIconS = big - (hd ? 6 : 4);
+            _bigIcon.rectTransform.Place((big - _bigIconS) / 2, (big - _bigIconS) / 2, _bigIconS, _bigIconS);
             _name = Ui.Text(_panel, "Name", "", 12, (Color)Palette.Holy);
-            _name.rectTransform.Place(x + 58, H - 52, rw - 58, 14);
+            _name.rectTransform.Place(x + big + 6, H - 52, rw - big - 6, 14);
             _oath = Ui.Text(_panel, "Oath", "", 10, (Color)Palette.Gold4);
-            _oath.rectTransform.Place(x + 58, H - 68, rw - 58, 12);
+            _oath.rectTransform.Place(x + big + 6, H - 68, rw - big - 6, 12);
             _status = Ui.Text(_panel, "Status", "", 8, (Color)Palette.Cry5);
-            _status.rectTransform.Place(x + 58, H - 84, rw - 58, 10);
-            _effect = Wrapped("Effect", 10, (Color)Palette.Stone6, x, H - 96, rw, 66);
-            _story = Wrapped("Story", 8, Palette.WithA(Palette.Stone4, 0.95f), x, H - 166, rw, 36);   // 아래 안내 글(y 12~21)과 겹치지 않게 바닥 = 24
+            _status.rectTransform.Place(x + big + 6, H - 84, rw - big - 6, 10);
+            int effTop = top - big - 8, effH = hd ? 84 : 66, stTop = effTop - effH - 4, bottom = hd ? 30 : 24;
+            _effect = Wrapped("Effect", 10, (Color)Palette.Stone6, x, effTop, rw, effH);
+            _story = Wrapped("Story", 8, Palette.WithA(Palette.Stone4, 0.95f), x, stTop, rw, stTop - bottom);   // 아래 안내 글(y 12~21)과 겹치지 않게 바닥 = 24
 
             _toast = Ui.Text(_panel, "Toast", "", 10, (Color)Palette.Rot5, TextAlignmentOptions.Midline);
-            _toast.rectTransform.Place(0, 28, 158, 12);
+            _toast.rectTransform.Place(0, hd ? 34 : 28, sepX, 12);
             var hint = Ui.Text(_panel, "Hint", "클릭·Enter 장착/해제 · 방향키 이동 · Tab/ESC 닫기", 8, Palette.WithA(Palette.Stone4, 0.9f), TextAlignmentOptions.Midline);
-            hint.rectTransform.Place(0, 12, W, 9);   // 테두리(약 8px) 안쪽
+            hint.rectTransform.Place(0, hd ? 16 : 12, W, 9);   // 테두리(SD 8 / HD 12px) 안쪽
         }
 
         void Label(string text, int x, int y)
@@ -152,12 +166,13 @@ namespace SevenOaths
         {
             var c = new Cell { equipSlot = equipSlot, index = index, row = row, col = col };
             c.glow = Ui.Image(_panel, "Glow", new Color(0.6f, 0.85f, 1f, 0f));
-            c.glow.rectTransform.Place(x - 3, y - 3, 32, 32);
+            int S = _slot, ic = S - (S >= 36 ? 3 : 2);   // 아이콘 = 유물 그림 원래 크기(24 / 36)
+            c.glow.rectTransform.Place(x - 3, y - 3, S + 6, S + 6);
             c.slot = Ui.Image(_panel, equipSlot ? "Equip" + index : "Relic" + index, Color.white, SlotSprite("empty"), raycast: true);
             c.rt = c.slot.rectTransform;
-            c.rt.Place(x, y, 26, 26);
+            c.rt.Place(x, y, S, S);
             c.icon = Ui.Image(c.rt, "Icon", Color.white);
-            c.icon.rectTransform.Place(1, 1, 24, 24);
+            c.icon.rectTransform.Place((S - ic) / 2, (S - ic) / 2, ic, ic);
             c.mark = Ui.Text(c.rt, "Mark", "", 10, (Color)Palette.Stone3, TextAlignmentOptions.Midline);
             c.mark.rectTransform.Stretch();
             _cells.Add(c);
@@ -264,9 +279,9 @@ namespace SevenOaths
         /// <summary>열려 있을 때 매 프레임(GameRoot). 닫혀야 하면 true.</summary>
         public bool Tick()
         {
-            _scaler.scaleFactor = PixelScreen.Instance.Scale;
+            _scaler.scaleFactor = PixelScreen.Instance.UiScale;
             var o = PixelScreen.Instance.ViewOriginScreen;
-            _view.anchoredPosition = new Vector2(o.x / (float)PixelScreen.Instance.Scale, o.y / (float)PixelScreen.Instance.Scale);
+            _view.anchoredPosition = new Vector2(o.x / (float)PixelScreen.Instance.UiScale, o.y / (float)PixelScreen.Instance.UiScale);
 
             if (_input.MenuBack || _input.RelicsPressed) return true;
             if (_input.MenuUp) MoveSel(-1, 0);

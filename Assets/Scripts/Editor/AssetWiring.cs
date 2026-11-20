@@ -39,6 +39,8 @@ namespace SevenOaths.EditorTools
             ga.animSets.Clear();
             ga.sprites.Clear();
             ga.audio.Clear();
+            ga.decoNames.Clear();
+            var deco = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
             ga.spriteLit = AssetDatabase.LoadAssetAtPath<Material>(ProjectSetup.LitMatPath);
 
             int files = 0, clips = 0;
@@ -56,7 +58,9 @@ namespace SevenOaths.EditorTools
                     string path = AssetDatabase.GUIDToAssetPath(guid);
                     string ext = Path.GetExtension(path).ToLowerInvariant();
                     if (ext != ".aseprite" && ext != ".ase" && ext != ".png") continue;
-                    string file = Path.GetFileNameWithoutExtension(path);
+                    string file = Path.GetFileNameWithoutExtension(path), baseName = file;
+                    bool hd = path.Replace("\\", "/").StartsWith("Assets/Art/HD/");   // 640×360용 그림: 같은 이름 앞에 "hd:" (게임이 HD 모드에서 덮어 씀)
+                    if (hd) file = GameAssets.HdPrefix + file;
                     var all = AssetDatabase.LoadAllAssetsAtPath(path);
                     var sprites = all.OfType<Sprite>().OrderBy(s => s.name, StringComparer.Ordinal).ToList();
                     var animClips = all.OfType<AnimationClip>().ToList();
@@ -65,7 +69,7 @@ namespace SevenOaths.EditorTools
                     var set = new AnimSet { name = file, defaultSprite = sprites.FirstOrDefault() };
                     foreach (var clip in animClips)
                     {
-                        var data = Extract(clip, file);
+                        var data = Extract(clip, baseName);
                         if (data == null) continue;
                         set.clips.Add(data);
                         clips++;
@@ -79,9 +83,15 @@ namespace SevenOaths.EditorTools
                     }
                     AddSprite(file, set.defaultSprite);
                     if (sprites.Count > 1)
-                        foreach (var s in sprites) { AddSprite(file + "/" + s.name, s); AddSprite(s.name, s); }
+                        foreach (var s in sprites) { AddSprite(file + "/" + s.name, s); AddSprite(hd ? GameAssets.HdPrefix + s.name : s.name, s); }
+                    // 배치 도구 목록: Deco 폴더 그림(입자·안개 fx_ 제외), 소품 시트는 레이어(소품) 이름
+                    string norm = path.Replace("\\", "/");
+                    if (norm.Contains("/Deco/") && !baseName.StartsWith("fx_")) deco.Add(baseName);
+                    else if (baseName.EndsWith("props") && norm.Contains("/Environment/"))
+                        foreach (var s in sprites) if (!s.name.Contains("/")) deco.Add(s.name);
                 }
             }
+            ga.decoNames.AddRange(deco);
 
             int sounds = 0;
             if (AssetDatabase.IsValidFolder("Assets/Audio"))

@@ -32,6 +32,15 @@ namespace SevenOaths.Model
         public bool Warning => Age < Erupt;
     }
 
+    /// <summary>무너지는 발판 하나의 상태: 서 있음 → (올라서면) 흔들림 → 무너짐 → (시간이 지나면) 다시 생김.</summary>
+    public sealed class Crumble
+    {
+        public Box Box;
+        public int Shake = -1;    // 흔들리기 시작한 뒤 틱(-1 = 멀쩡)
+        public int Gone = -1;     // 무너진 뒤 틱(-1 = 있음)
+        public bool Solid => Gone < 0;
+    }
+
     /// <summary>영혼의 수정: 죽은 자리에 박혀 잃은 루멘을 가둔다. 베어 부수면 되찾는다.</summary>
     public sealed class SoulCrystal
     {
@@ -77,6 +86,7 @@ namespace SevenOaths.Model
         public readonly List<Spike> Spikes = new List<Spike>();
         /// <summary>이 레벨에 박힌 영혼의 수정(없으면 null). GameRoot가 저장과 맞춘다.</summary>
         public SoulCrystal Soul;
+        public readonly List<Crumble> Crumbles = new List<Crumble>();
         int _spikeLine;
         readonly HashSet<int> _spikeDone = new HashSet<int>();
         int _relicTimer;
@@ -124,6 +134,7 @@ namespace SevenOaths.Model
             Player = new Player(level.PlayerSpawn);
             foreach (var s in level.Enemies) Enemies.Add(new Enemy(s.Kind, s.Pos) { Respawns = level.EnemiesRespawn });
             foreach (var e in Enemies) if (e.IsBoss) Boss = e;
+            foreach (var c in level.Crumbles) { Crumbles.Add(new Crumble { Box = c }); level.Platforms.Add(c); }
             foreach (var r in level.Rooms)
                 Rooms.Add(new RoomState
                 {
@@ -172,6 +183,7 @@ namespace SevenOaths.Model
             for (int i = 0; i < Enemies.Count; i++) Enemies[i].Step(this);
             StepProjectiles();
             StepSpikes();
+            StepCrumbles();
             StepSoul();
             SeparateBodies();
             ResolveHits();
@@ -589,7 +601,7 @@ namespace SevenOaths.Model
         /// <summary>쓰러뜨린 적의 루멘(허수아비·수련장 제외).</summary>
         void GiveLumen(Enemy e)
         {
-            int n = e.Kind == EnemyKind.Soldier ? Stats.LumenSoldier : e.Kind == EnemyKind.Shieldman ? Stats.LumenShieldman
+            int n = e.Kind == EnemyKind.Hound ? Stats.LumenHound : e.Kind == EnemyKind.Soldier ? Stats.LumenSoldier : e.Kind == EnemyKind.Shieldman ? Stats.LumenShieldman
                   : e.Kind == EnemyKind.Crossbow ? Stats.LumenCrossbow : e.IsBoss ? Stats.LumenBoss : 0;
             if (n <= 0 || (e.Respawns && Checkpoint < 0 && Level.EnemiesRespawn)) return;   // 수련장 적은 루멘 없음
             Player.Lumen += n;
@@ -608,6 +620,60 @@ namespace SevenOaths.Model
                 Emit(EventType.SoulCrystalPlaced, p, value: Soul.Lumen, pos: Soul.Pos);
             }
             else p.Lumen = 0;
+        }
+
+        /// <summary>두 점 사이를 벽(Solids)이 막지 않나 — 석궁병이 바닥 너머 다른 층을 쏘지 않게. 4px 간격 표본.</summary>
+        internal bool LineClear(Vec2 a, Vec2 b)
+        {
+            float dx = b.X - a.X, dy = b.Y - a.Y;
+            int n = Math.Max(1, (int)(Math.Sqrt(dx * dx + dy * dy) / 4f));
+            for (int i = 1; i < n; i++)
+            {
+                float t = i / (float)n, x = a.X + dx * t, y = a.Y + dy * t;
+                foreach (var s in Level.Solids) if (x > s.X && x < s.Right && y > s.Y && y < s.Top) return false;
+            }
+            return true;
+        }
+
+        /// <summary>적 앞쪽 발밑에 땅(벽·발판 윗면)이 있나 — 사냥개가 낭떠러지로 뛰어내리지 않게.</summary>
+        internal bool GroundAhead(Enemy e)
+        {
+            float x = e.Body.Pos.X + e.Body.Facing * (e.Body.W * 0.5f + 6f), y = e.Body.Pos.Y;
+            foreach (var s in Level.Solids) if (x >= s.X && x <= s.Right && y - s.Top <= 4f && y - s.Top >= -2f) return true;
+            foreach (var p in Level.Platforms) if (x >= p.X && x <= p.Right && Math.Abs(y - p.Top) <= 3f) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// 무너지는 발판: 주인공이 위에 서면 흔들리기 시작 → CrumbleDelay 뒤 무너짐(발판 판정 빠짐) →
+        /// CrumbleRespawn 뒤, 주인공이 그 자리에 겹쳐 있지 않으면 다시 생김.
+        /// </summary>
+        void StepCrumbles()
+        {
+            var b = Player.Body;
+            for (int i = 0; i < Crumbles.Count; i++)
+            {
+                var c = Crumbles[i];
+                var at = new Vec2(c.Box.CenterX, c.Box.Top);
+                if (c.Solid)
+                {
+                    bool standing = Player.Alive && b.OnGround && Math.Abs(b.Pos.Y - c.Box.Top) < 0.5f && b.Pos.X + b.W * 0.5f > c.Box.X && b.Pos.X - b.W * 0.5f < c.Box.Right;
+                    if (c.Shake < 0 && standing) { c.Shake = 0; Emit(EventType.CrumbleShake, null, value: i, pos: at); }
+                    else if (c.Shake >= 0 && ++c.Shake >= Stats.CrumbleDelay)
+                    {
+                        c.Shake = -1;
+                        c.Gone = 0;
+                        Level.Platforms.Remove(c.Box);
+                        Emit(EventType.CrumbleBreak, null, value: i, pos: at);
+                    }
+                }
+                else if (++c.Gone >= Stats.CrumbleRespawn && !b.Bounds.Overlaps(new Box(c.Box.X, c.Box.Y - 2f, c.Box.W, c.Box.H + 4f)))
+                {
+                    c.Gone = -1;
+                    Level.Platforms.Add(c.Box);
+                    Emit(EventType.CrumbleRestore, null, value: i, pos: at);
+                }
+            }
         }
 
         /// <summary>테스트·자동 검증: 보통 죽음과 같은 길로 쓰러짐(영혼의 수정이 박힘).</summary>
@@ -669,6 +735,7 @@ namespace SevenOaths.Model
                 if (r.Phase == 0)
                 {
                     if (!p.Alive || p.Body.Pos.X < d.Left + 40f || p.Body.Pos.X > d.Right - 40f) continue;
+                    if (Math.Abs(p.Body.Pos.Y - d.FloorY) > 64f) continue;   // 세로 스테이지: 다른 층(위·아래)에서는 켜지지 않음
                     r.Phase = 1;
                     r.Wave = 0;
                     r.Timer = 0;

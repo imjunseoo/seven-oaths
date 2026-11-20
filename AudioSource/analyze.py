@@ -28,7 +28,7 @@ from nb.measure import analyze
 ROOT = Path(__file__).resolve().parent.parent
 AUD = ROOT / "Assets" / "Audio"
 REP = Path(__file__).resolve().parent / "report"
-LOOPS = ("bgm_training", "bgm_boss", "bgm_region1", "bgm_title", "amb_cloister", "amb_rampart", "sfx_charge_loop", "sfx_boss_charge_loop")
+LOOPS = ("bgm_training", "bgm_boss", "bgm_region1", "bgm_title", "amb_cloister", "amb_rampart", "amb_tower", "sfx_charge_loop", "sfx_boss_charge_loop")
 
 
 def spec_ax(ax, x, title, nper=1024, fmax=16000):

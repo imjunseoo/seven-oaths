@@ -11,6 +11,14 @@ namespace SevenOaths
     /// </summary>
     public static class Ui
     {
+        /// <summary>CanvasScaler 기본 referencePixelsPerUnit.</summary>
+        public const float RefPPU = 100f;
+
+        /// <summary>HD 그림(Assets/Art/HD, PPU 48)인지 — UI 크기·9-slice 테두리를 고를 때.</summary>
+        public static bool IsHdArt(Sprite s) => s != null && s.pixelsPerUnit > 40f;
+        /// <summary>그림 원래 크기(UI px = 그림 px). 없으면 fallback.</summary>
+        public static Vector2 Native(Sprite s, Vector2 fallback) => s != null ? s.rect.size : fallback;
+
         public static TMP_FontAsset FontFor(float size, out float snapped)
         {
             var a = GameAssets.Instance;
@@ -59,7 +67,12 @@ namespace SevenOaths
             img.sprite = sprite != null ? sprite : Placeholder.White();
             img.color = color;
             img.raycastTarget = raycast;
-            if (sliced && img.sprite.border != Vector4.zero) img.type = UnityEngine.UI.Image.Type.Sliced;
+            if (sliced && img.sprite.border != Vector4.zero)
+            {
+                img.type = UnityEngine.UI.Image.Type.Sliced;
+                // 9-slice 테두리를 그림 1px = UI 1px로(캔버스 기준 PPU 100 ÷ 그림 PPU) — 안 맞추면 테두리가 3배쯤 두껍고 고르지 않게 늘어남
+                img.pixelsPerUnitMultiplier = RefPPU / img.sprite.pixelsPerUnit;
+            }
             return img;
         }
 

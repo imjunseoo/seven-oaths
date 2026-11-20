@@ -29,7 +29,8 @@ namespace SevenOaths
             var p = a.Sprite("ui_cursor/press") ?? n;
             if (n == null) return;
             int max = Mathf.Max((int)n.rect.width, (int)n.rect.height);
-            int scale = Mathf.Max(1, 32 / Mathf.Max(1, max));
+            // 화면에서 약 32px(SD 12×15 ×2) / HD 그림(18×22)은 ×2 = 36×44 — 정수 배율만
+            int scale = Mathf.Max(1, Mathf.RoundToInt((Ui.IsHdArt(n) ? 44f : 32f) / Mathf.Max(1, max)));
             _normal = Upscale(n, scale);
             _press = Upscale(p, scale);
             Apply(false);

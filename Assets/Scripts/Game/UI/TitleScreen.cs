@@ -22,7 +22,11 @@ namespace SevenOaths
         // 캔버스 가운데보다 오른쪽 18칸(잘린 칼·머리를 왼쪽으로 이어 그림, ART_LOG) × 2배 = 36px만큼 왼쪽에 둔다.
         const float PortraitX = 330f - 18f * 2f;
         const float PPU = PixelScreen.PPU;
-        const int W = PixelScreen.ViewW, H = PixelScreen.ViewH;
+        const int W = PixelScreen.ViewW, H = PixelScreen.ViewH;   // 타이틀 세상(모델 px) 구도
+        // UI 문구·메뉴: UI 뷰(SD 480×270 / HD 640×360). 자리는 480 기준 값을 비율(K)로 옮기고, 도트 크기는 그대로(1:1)
+        static int UW => PixelScreen.UiW;
+        static float K => PixelScreen.UiW / (float)PixelScreen.ViewW;
+        static float Kp(float v) => Mathf.Round(v * K);
 
         class Item { public string label; public Action act; public RectTransform rt; public TextMeshProUGUI text; }
         class Mote { public SpriteRenderer r; public Vector2 p, v; public float life, max; public bool red; }
@@ -103,13 +107,15 @@ namespace SevenOaths
             _world = new GameObject("TitleWorld").transform;
             _world.SetParent(transform, false);
 
-            var sky = Sr("Sky", a.Sprite("bg_sky") ?? Placeholder.Sky(), _world, -100, _unlit);
-            sky.transform.position = P(W * 0.5f, H * 0.5f);
+            var skyS = a.Sprite("bg_sky") ?? Placeholder.Sky();
+            var sky = Sr("Sky", skyS, _world, -100, _unlit);
+            // 그림 왼쪽 아래 = 타이틀 세상 (0,0) — 피벗이 어디든(가운데·왼쪽 아래) 같은 자리
+            sky.transform.position = P(0f, 0f) + new Vector3(skyS.pivot.x / skyS.pixelsPerUnit, skyS.pivot.y / skyS.pixelsPerUnit, 0f);
 
             var farS = a.Sprite("r1_bg_far", "bg_far") ?? Placeholder.Far();
             _far = new GameObject("Far").transform;
             _far.SetParent(_world, false);
-            float fw = farS.rect.width;
+            float fw = farS.rect.width * PPU / farS.pixelsPerUnit;   // 모델 px(HD 그림이면 2/3)
             for (int i = 0; i < 3; i++)
             {
                 var r = Sr("Far", farS, _far, -90, _unlit);
@@ -136,15 +142,15 @@ namespace SevenOaths
 
         void BuildUi(IList<(string label, Action act)> items, string version)
         {
-            _canvas = Ui.OverlayCanvas("TitleCanvas", 35, PixelScreen.Instance.Scale);   // 옵션 창(일시정지 메뉴 40)보다 아래 — 옵션을 열면 문구가 덮지 않게
+            _canvas = Ui.OverlayCanvas("TitleCanvas", 35, PixelScreen.Instance.UiScale);   // 옵션 창(일시정지 메뉴 40)보다 아래 — 옵션을 열면 문구가 덮지 않게
             _canvas.transform.SetParent(transform, false);
             _scaler = _canvas.GetComponent<CanvasScaler>();
             _view = Ui.Rect("View", _canvas.transform);
-            _view.Place(0, 0, W, H);
+            _view.Place(0, 0, UW, PixelScreen.UiH);
 
             // 타이틀 문구(영어, 사용자 결정): 도트(title_logo)가 오면 원래 크기 그대로, 없으면 임시 글자(12px 글꼴 2배 + 파랑·빨강 그림자)
             _logoRt = Ui.Rect("Logo", _view);
-            _logoRt.Place(24, 150, 240, 84);
+            _logoRt.Place(Kp(24), Kp(150), 240, 84);
             var logo = GameAssets.Instance.Sprite("title_logo");
             if (logo != null)
             {
@@ -160,7 +166,7 @@ namespace SevenOaths
 
             // 메뉴(왼쪽 아래, 상자 없이 글자만 — 고른 항목에 수정 조각)
             _menuRt = Ui.Rect("Menu", _view);
-            _menuRt.Place(40, 40, 160, 100);
+            _menuRt.Place(Kp(40), Kp(40), 160, 100);
             int y = 82;
             foreach (var (label, act) in items)
             {
@@ -175,17 +181,17 @@ namespace SevenOaths
             var gemSet = GameAssets.Instance.Anim("ui_menu_gem");
             _gemClip = gemSet != null && gemSet.clips.Count > 0 ? gemSet.clips[0] : null;
             _gem = Ui.Image(_menuRt, "Gem", (Color)Palette.Cry5, _gemClip != null ? _gemClip.frames[0] : null);
-            _gem.rectTransform.sizeDelta = new Vector2(8f, 8f);
+            _gem.rectTransform.sizeDelta = Ui.Native(_gemClip != null ? _gemClip.frames[0] : null, new Vector2(8f, 8f));
             _gem.rectTransform.anchorMin = _gem.rectTransform.anchorMax = Vector2.zero;
             _gem.rectTransform.pivot = new Vector2(0f, 0.5f);
 
             _hint = Ui.Text(_view, "Hint", "", 8, Palette.WithA(Palette.Stone4, 0.85f));
-            _hint.rectTransform.Place(40, 26, 150, 9);
+            _hint.rectTransform.Place(Kp(40), Kp(26), 150, 9);
             var ver = Ui.Text(_view, "Version", version, 8, Palette.WithA(Palette.Stone3, 0.9f), TextAlignmentOptions.MidlineRight);
-            ver.rectTransform.Place(W - 130, 6, 124, 9);
+            ver.rectTransform.Place(UW - 130, 6, 124, 9);
 
             _fade = Ui.Image(_view, "Fade", Color.black);
-            _fade.rectTransform.Place(-PixelScreen.Margin, -PixelScreen.Margin, PixelScreen.RtW, PixelScreen.RtH);
+            _fade.rectTransform.Place(-PixelScreen.UiMargin, -PixelScreen.UiMargin, UW + PixelScreen.UiMargin * 2, PixelScreen.UiH + PixelScreen.UiMargin * 2);
             Refresh();
         }
 
@@ -262,9 +268,9 @@ namespace SevenOaths
             float t = Time.unscaledTime - _t0;
             float dt = Time.unscaledDeltaTime;
             screen.CamPx = new Vector2(OriginX + W * 0.5f, H * 0.5f);
-            _scaler.scaleFactor = screen.Scale;
+            _scaler.scaleFactor = screen.UiScale;
             var o = screen.ViewOriginScreen;
-            _view.anchoredPosition = new Vector2(o.x / (float)screen.Scale, o.y / (float)screen.Scale);
+            _view.anchoredPosition = new Vector2(o.x / (float)screen.UiScale, o.y / (float)screen.UiScale);
 
             // 등장: 검은 화면 1.2초 → 포트레이트 0.6~1.8초 스며듦 → 문구 번쩍 1.4초 → 메뉴 2.0초
             _fade.color = new Color(0f, 0f, 0f, 1f - Mathf.Clamp01(t / 1.2f));
@@ -281,7 +287,8 @@ namespace SevenOaths
             if (_gemClip != null) _gem.sprite = _gemClip.frames[_gemClip.FrameAt(Time.unscaledTime, true)];
 
             // 배경: 먼 성이 아주 천천히 흐르고, 안개가 엇갈려 흐름
-            float fw = _far.childCount > 0 ? _far.GetChild(0).GetComponent<SpriteRenderer>().sprite.rect.width : 720f;
+            var farSpr = _far.childCount > 0 ? _far.GetChild(0).GetComponent<SpriteRenderer>().sprite : null;
+            float fw = farSpr != null ? farSpr.rect.width * PPU / farSpr.pixelsPerUnit : 720f;
             float fx = -((t * 3f) % fw);
             _far.position = P(Mathf.Round(fx), -10f);
             _fogA.transform.position = P(Mathf.Round(W * 0.5f + Mathf.Sin(t * 0.13f) * 40f), 60f);

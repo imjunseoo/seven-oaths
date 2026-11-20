@@ -130,7 +130,7 @@ namespace SevenOaths
             a.r.sortingOrder = order;
             a.r.color = tint ?? Color.white;
             var tr = a.r.transform;
-            tr.position = new Vector3(Mathf.Round(posPx.x) / PPU, Mathf.Round(posPx.y) / PPU, 0f);
+            tr.position = new Vector3(PixelScreen.SnapU(posPx.x), PixelScreen.SnapU(posPx.y), 0f);
             tr.localScale = new Vector3(facing >= 0 ? scale : -scale, scale, 1f);
             tr.rotation = Quaternion.Euler(0f, 0f, facing >= 0 ? angle : -angle);
         }
@@ -150,7 +150,7 @@ namespace SevenOaths
             p.r.sharedMaterial = hot ? _addHot : _add;
             p.r.sortingOrder = order;
             p.r.color = c0;
-            p.r.transform.position = new Vector3(Mathf.Round(posPx.x) / PPU, Mathf.Round(posPx.y) / PPU, 0f);
+            p.r.transform.position = new Vector3(PixelScreen.SnapU(posPx.x), PixelScreen.SnapU(posPx.y), 0f);
         }
 
         /// <summary>수정 파편 폭발(주인공 타격).</summary>
@@ -278,7 +278,7 @@ namespace SevenOaths
                     if (u >= 1f) { h.alive = false; h.r.gameObject.SetActive(false); h.arrive?.Invoke(); continue; }
                 }
                 h.r.color = h.c;
-                h.r.transform.position = new Vector3(Mathf.Round(h.pos.x) / PPU, Mathf.Round(h.pos.y) / PPU, 0f);
+                h.r.transform.position = new Vector3(PixelScreen.SnapU(h.pos.x), PixelScreen.SnapU(h.pos.y), 0f);
             }
 
             foreach (var a in _anims)
@@ -310,7 +310,7 @@ namespace SevenOaths
                 }
                 float u = 1f - p.life / p.max;
                 p.r.color = Color.Lerp(p.c0, p.c1, u * u);
-                p.r.transform.position = new Vector3(Mathf.Round(p.pos.x) / PPU, Mathf.Round(p.pos.y) / PPU, 0f);
+                p.r.transform.position = new Vector3(PixelScreen.SnapU(p.pos.x), PixelScreen.SnapU(p.pos.y), 0f);
             }
 
             foreach (var g in _ghosts)

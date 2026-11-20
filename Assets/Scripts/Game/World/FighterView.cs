@@ -12,15 +12,15 @@ namespace SevenOaths
     /// </summary>
     public class FighterView : MonoBehaviour
     {
-        public enum Kind { Heroine, Soldier, Dummy, Shieldman, Crossbow, Ironwall }
+        public enum Kind { Heroine, Soldier, Dummy, Shieldman, Crossbow, Ironwall, Hound }
 
-        public static Kind KindOf(EnemyKind k) => k == EnemyKind.Dummy ? Kind.Dummy : k == EnemyKind.Shieldman ? Kind.Shieldman : k == EnemyKind.Crossbow ? Kind.Crossbow : k == EnemyKind.Ironwall ? Kind.Ironwall : Kind.Soldier;
+        public static Kind KindOf(EnemyKind k) => k == EnemyKind.Dummy ? Kind.Dummy : k == EnemyKind.Shieldman ? Kind.Shieldman : k == EnemyKind.Crossbow ? Kind.Crossbow : k == EnemyKind.Ironwall ? Kind.Ironwall : k == EnemyKind.Hound ? Kind.Hound : Kind.Soldier;
 
         static readonly Dictionary<string, int> ImpactFrame = new Dictionary<string, int>
         {
             { "slash1", 2 }, { "slash2", 2 }, { "heavy", 4 }, { "charge_slash", 3 },
             { "dodge_slash", 2 }, { "air_slash", 2 }, { "execute", 5 }, { "dash_attack", 2 }, { "dash_attack_up", 2 }, { "dash_attack_down", 2 }, { "attack", 5 }, { "draw_slash", 2 }, { "slash3", 8 },
-            { "bash", 3 }, { "poke", 3 }, { "shoot", 1 }, { "kick", 3 },
+            { "bash", 3 }, { "poke", 3 }, { "shoot", 1 }, { "kick", 3 }, { "lunge", 3 },
             { "ironwall/bash", 4 }, { "ironwall/slam", 6 }, { "ironwall/counter", 2 }, { "ironwall/leap", 6 }, { "ironwall/thrust", 3 },
         };
 
@@ -50,11 +50,14 @@ namespace SevenOaths
         float _loopTime, _simDt;
 
         // 검 넣기·뽑기(주인공, 표시 전용 — 판정·타이밍에는 영향 없음)
-        // 2초 가만히 서 있으면 sheathe → idle(검 넣음). 움직이면 draw, 넣은 채로 베면 draw_slash(발도 베기).
+        // 2초 가만히 서 있으면 sheathe → idle(검 넣음). 넣은 채로 베면 draw_slash(발도 베기).
+        // run_sheathe 그림이 있으면: 달리기·점프·낙하는 넣은 채(든 채로 달리면 run_sheathe), 전투 동작만 뽑음. 없으면 옛 규칙(움직이면 draw).
         // 태그가 아직 없으면 지금처럼 검을 든 idle 하나로 동작한다.
         const float SheatheAfter = 2f;
         bool _sheathed = true;
-        float _stillTime, _oneShotT;
+        static readonly bool TraceSword = DebugAutomation.Flag("-soTrace");   // 자동 검증: 검 넣기·뽑기 로그
+        float _stillTime, _oneShotT, _calmTime = 99f;
+        const float CalmAfter = 3f;   // 마지막 전투 동작 뒤 이만큼 지나야 달리며 칼을 넣음
         string _oneShot;
         int _drawSlashInstance = -1;
         int _flashFrames;
@@ -77,7 +80,7 @@ namespace SevenOaths
             Fighter = f;
             ViewKind = kind;
             var assets = GameAssets.Instance;
-            _set = assets.Anim(kind == Kind.Heroine ? "heroine" : kind == Kind.Soldier ? "soldier" : kind == Kind.Shieldman ? "shieldman" : kind == Kind.Crossbow ? "crossbow" : kind == Kind.Ironwall ? "ironwall" : "dummy");
+            _set = assets.Anim(kind == Kind.Heroine ? "heroine" : kind == Kind.Soldier ? "soldier" : kind == Kind.Shieldman ? "shieldman" : kind == Kind.Crossbow ? "crossbow" : kind == Kind.Ironwall ? "ironwall" : kind == Kind.Hound ? "hound" : "dummy");
             _lit = assets.spriteLit;
             var fx = Resources.Load<Shader>("Shaders/SpriteFX");
             _flashMat = new Material(fx);
@@ -167,9 +170,7 @@ namespace SevenOaths
             _simDt = simDt;
 
             // 위치(정수 픽셀) + 히트스톱 떨림
-            float px = Mathf.Round(f.Body.Pos.X) + shakePx;
-            float py = Mathf.Round(f.Body.Pos.Y);
-            transform.localPosition = new Vector3(px / PixelScreen.PPU, py / PixelScreen.PPU, 0f);
+            transform.localPosition = new Vector3(PixelScreen.SnapU(f.Body.Pos.X + shakePx), PixelScreen.SnapU(f.Body.Pos.Y), 0f);   // 화면 그림 px 격자(HD 1.5배)
             transform.localScale = new Vector3(f.Body.Facing >= 0 ? 1f : -1f, 1f, 1f);
 
             if (_set != null) RenderAnim(w);
@@ -282,17 +283,23 @@ namespace SevenOaths
                 var fb = _set.Get("parry_counter") ?? _set.Get("charge");
                 if (fb != null && fb.frames.Length > 0) { Body.sprite = fb.frames[0]; return; }
             }
-            if (f is Player hp && SwordOneShot(hp)) return;
+            if (f is Player hp && SwordOneShot(hp, w)) return;
             if (ViewKind == Kind.Ironwall) { BossAnim((Enemy)f, t); return; }
             switch (f.State)
             {
                 case FState.Free:
                     if (f.Team == Team.Player)
-                        tag = !f.Body.OnGround ? (f.Body.Vel.Y > 0 ? "jump" : "fall") : Mathf.Abs(f.Body.Vel.X) > 0.4f ? "run"
+                    {
+                        // 납도 이동 그림이 있으면 칼 넣은 채 점프·낙하(공격 직후 공중이면 뽑은 그림)
+                        string air = f.Body.Vel.Y > 0 ? "jump" : "fall";
+                        if (_sheathed && _set.Get(air + "_sheathed") != null) air += "_sheathed";
+                        string run = !_sheathed && _set.Get("run_drawn") != null ? "run_drawn" : "run";   // 전투 중엔 든 채 달림
+                        tag = !f.Body.OnGround ? air : Mathf.Abs(f.Body.Vel.X) > 0.4f ? run
                             : (_sheathed || _set.Get("idle_drawn") == null ? "idle" : "idle_drawn");
+                    }
                     else if (f is Enemy fe && fe.Turning > 0 && _set.Get("turn") != null) { tag = "turn"; frame = Proportional("turn", 10 - fe.Turning, 10); }
                     else if (f is Enemy fb && fb.BlockFlash > 0 && _set.Get("block") != null) tag = "block";
-                    else tag = Mathf.Abs(f.Body.Vel.X) > 0.2f ? "walk" : "idle";
+                    else tag = Mathf.Abs(f.Body.Vel.X) > 0.2f ? (_set.Get("walk") != null ? "walk" : "run") : "idle";   // 사냥개는 run
                     break;
                 case FState.Attack:
                     tag = f.Move.Anim;
@@ -422,8 +429,12 @@ namespace SevenOaths
         }
 
         /// <summary>검 넣기·뽑기 상태 갱신. 한 번 재생(draw/sheathe) 중이면 그 프레임을 그리고 true.</summary>
-        bool SwordOneShot(Player p)
+        bool SwordOneShot(Player p, World w)
         {
+            // 전투 중(공격·회피·피격 뒤 CalmAfter초 안, 또는 적이 가까이 있음)에는 칼을 든 채 달린다 — 달릴 때마다 넣었다 뽑지 않게
+            if (p.State != FState.Free) _calmTime = 0f; else _calmTime += _simDt;
+            bool calm = _calmTime >= CalmAfter && !EnemyNear(p, w);
+            bool holdDrawn = _set.Get("run_drawn") != null && !calm;   // 든 채 달리는 그림이 없으면 옛 규칙(바로 넣음)
             bool still = p.State == FState.Free && p.Body.OnGround && Mathf.Abs(p.Body.Vel.X) <= 0.4f;
             if (still)
             {
@@ -432,8 +443,28 @@ namespace SevenOaths
                 {
                     _sheathed = true;
                     StartOneShot("sheathe");
-                    AudioManager.Instance?.Play("sfx_sword_sheathe", delay: 0.12f);
+                    AudioManager.Instance?.Play("sfx_sword_sheathe", delay: 0.22f);   // 소리의 딸깍(0.10초) = 그림의 딸깍(프레임 4, 0.32초)
                 }
+            }
+            else if (_set.Get("run_sheathe") != null && p.State == FState.Free)
+            {
+                // 납도 이동(사용자 결정 2026-11-21): 달리기·점프·낙하는 칼을 넣은 채. 든 채로 달리기 시작하면 달리면서 넣는다.
+                // 공중에서 든 채(공격 직후)면 그대로 들고 있다가 착지해 달리면 넣음.
+                _stillTime = 0f;
+                bool running = p.Body.OnGround && Mathf.Abs(p.Body.Vel.X) > 0.4f;
+                if (_oneShot == "sheathe")
+                {
+                    _oneShot = null;
+                    if (running) _sheathed = false;   // 서서 넣던 중 달리면 → 달리며 넣기로 이어 감(전투 중이면 든 채로, 공중이면 이미 넣은 것으로)
+                }
+                if (running && !_sheathed && !holdDrawn)
+                {
+                    _sheathed = true;
+                    StartOneShot("run_sheathe");
+                    AudioManager.Instance?.Play("sfx_sword_sheathe", delay: 0.14f);   // 딸깍 = 프레임 4(0.24초)
+                }
+                if (_oneShot == "run_sheathe" && !running) _oneShot = null;   // 멈추거나 뛰어오르면 바로 그 동작으로(이미 넣은 상태)
+                if (_oneShot == "draw") _oneShot = null;
             }
             else
             {
@@ -442,6 +473,7 @@ namespace SevenOaths
                 else if (_sheathed)
                 {
                     _sheathed = false;
+                    if (TraceSword) Debug.Log($"[Sword] unsheathe state={p.State} move={(p.State == FState.Attack ? p.Move?.Anim : "-")} ground={p.Body.OnGround}");
                     AudioManager.Instance?.Play("sfx_sword_draw");
                     if (p.State == FState.Attack && p.Move == Moves.Slash1) _drawSlashInstance = p.MoveInstance; // 발도 베기
                     else if (p.State == FState.Free) StartOneShot("draw");                                      // 움직이기 전 빠른 뽑기
@@ -451,14 +483,31 @@ namespace SevenOaths
             if (_oneShot == null) return false;
             var clip = _set.Get(_oneShot);
             _oneShotT += _simDt;
-            if (clip == null || _oneShotT >= clip.Length) { _oneShot = null; return false; }
+            if (clip == null || _oneShotT >= clip.Length)
+            {
+                if (_oneShot == "run_sheathe") _loopTime = 0f;   // 달리며 넣기의 다리는 run 1→7을 이어 감 → 끝나면 run 0부터
+                _oneShot = null;
+                return false;
+            }
             Body.sprite = clip.frames[clip.FrameAt(_oneShotT, false)];
             return true;
+        }
+
+        /// <summary>살아 있는 적(허수아비 제외)이 가까이 있는가 — 있으면 칼을 넣지 않는다.</summary>
+        static bool EnemyNear(Player p, World w)
+        {
+            foreach (var e in w.Enemies)
+            {
+                if (!e.Alive || e.Kind == EnemyKind.Dummy) continue;
+                if (Mathf.Abs(e.Body.Pos.X - p.Body.Pos.X) < 220f && Mathf.Abs(e.Body.Pos.Y - p.Body.Pos.Y) < 110f) return true;
+            }
+            return false;
         }
 
         void StartOneShot(string tag)
         {
             if (_set.Get(tag) == null) { _oneShot = null; return; }
+            if (TraceSword) Debug.Log($"[Sword] {tag} state={Fighter.State} ground={Fighter.Body.OnGround} vx={Fighter.Body.Vel.X:0.00} sheathed={_sheathed}");
             _oneShot = tag;
             _oneShotT = 0f;
         }
